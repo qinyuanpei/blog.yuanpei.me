@@ -1,0 +1,1 @@
+(()=>{function c(r,d,o,a){console.log(`%c ${r} %c ${d} %c`,`background: ${o}; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff`,`background: ${a}; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`,"background:transparent")}window.createBadge=c;})();
