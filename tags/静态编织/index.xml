@@ -1,1 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>静态编织 on 元视角</title><link>https://blog.yuanpei.me/tags/%E9%9D%99%E6%80%81%E7%BC%96%E7%BB%87/</link><description>Recent content in 静态编织 on 元视角</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate><atom:link href="https://blog.yuanpei.me/tags/%E9%9D%99%E6%80%81%E7%BC%96%E7%BB%87/index.xml" rel="self" type="application/rss+xml"/><item><title>使用 Fody 实现 .NET 的静态编织</title><link>https://blog.yuanpei.me/posts/implement-static-weaving-of-dot-net-via-fody/</link><pubDate>Tue, 23 Aug 2022 12:52:10 +0000</pubDate><guid>https://blog.yuanpei.me/posts/implement-static-weaving-of-dot-net-via-fody/</guid><description>在很长的一段时间里，我们的项目中一直使用 OnMethodBoundaryAspect 这个基类来记录每个方法的日志。诚然，FodyWeavers.xml 这个文件的存在，早已在冥冥之中暗示我，Fody 才是这座冰山下真正的墨西哥湾暖流。可惜，因为某种阴差阳错的巧合，譬如两者都使用了 OnMethodBoundaryAspect 这个</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>静态编织 on 元视角</title>
+    <link>http://localhost:1313/tags/%E9%9D%99%E6%80%81%E7%BC%96%E7%BB%87/</link>
+    <description>Recent content in 静态编织 on 元视角</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/%E9%9D%99%E6%80%81%E7%BC%96%E7%BB%87/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>使用 Fody 实现 .NET 的静态编织</title>
+      <link>http://localhost:1313/posts/implement-static-weaving-of-dot-net-via-fody/</link>
+      <pubDate>Tue, 23 Aug 2022 12:52:10 +0000</pubDate>
+      <guid>http://localhost:1313/posts/implement-static-weaving-of-dot-net-via-fody/</guid>
+      <description>在很长的一段时间里，我们的项目中一直使用 OnMethodBoundaryAspect 这个基类来记录每个方法的日志。诚然，FodyWeavers.xml 这个文件的存在，早已在冥冥之中暗示我，Fody 才是这座冰山下真正的墨西哥湾暖流。可惜，因为某种阴差阳错的巧合，譬如两者都使用了 OnMethodBoundaryAspect 这个</description>
+    </item>
+  </channel>
+</rss>

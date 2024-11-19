@@ -1,97 +1,1223 @@
-<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=referrer content="no-referrer"><meta name=viewport content='width=device-width,initial-scale=1'><meta http-equiv=content-language content='zh-CN'><link rel=apple-touch-icon href=/imgs/avatar.jpg><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="black"><link rel=icon type=image/x-icon href=/imgs/favicon.ico><link rel=icon type=image/png href=/imgs/favicon.png><meta name=description content='Payne在他的博客中讨论了在Linux平台上部署ASP.NET项目的问题。他介绍了选择使用Jexus来实现ASP.NET在Linux平台的部署的背景和原因，以及Jexus的特点和配置方法。此外，Payne还讨论了如何将工作转移到Docker容器中，并提供了通过Dockerfile构建网站镜像的步骤。最后，他总结了文章的主要内容，并提及了技术选型的复杂性和对Jexus性能等方面的考量，强调了技术决策的多方面影响。'><meta name=keywords content='Jexus,Docker,Linux'><meta name=author content="飞鸿踏雪"><title>使用 Jexus 实现 ASP.NET 在 Linux 平台下的部署 - 元视角</title>
-<link rel=canonical href=https://blog.yuanpei.me/posts/815861661/><link rel=stylesheet href=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css><meta property='og:title' content='使用 Jexus 实现 ASP.NET 在 Linux 平台下的部署 - 元视角'><meta property='og:description' content='Payne在他的博客中讨论了在Linux平台上部署ASP.NET项目的问题。他介绍了选择使用Jexus来实现ASP.NET在Linux平台的部署的背景和原因，以及Jexus的特点和配置方法。此外，Payne还讨论了如何将工作转移到Docker容器中，并提供了通过Dockerfile构建网站镜像的步骤。最后，他总结了文章的主要内容，并提及了技术选型的复杂性和对Jexus性能等方面的考量，强调了技术决策的多方面影响。'><meta property='og:url' content='https://blog.yuanpei.me/posts/815861661/'><meta property='og:site_name' content='元视角'><meta property='og:type' content='article'><meta property='article:section' content='Posts'><meta property='article:tag' content='Jexus'><meta property='article:tag' content='Docker'><meta property='article:tag' content='Linux'><meta property='article:published_time' content='2018-05-20T14:00:03+00:00'><meta property='article:modified_time' content='2024-02-19T17:31:36+08:00'><meta property='og:image' content='https://blog.yuanpei.me/'><meta name=twitter:title content="使用 Jexus 实现 ASP.NET 在 Linux 平台下的部署 - 元视角"><meta name=twitter:description content="Payne在他的博客中讨论了在Linux平台上部署ASP.NET项目的问题。他介绍了选择使用Jexus来实现ASP.NET在Linux平台的部署的背景和原因，以及Jexus的特点和配置方法。此外，Payne还讨论了如何将工作转移到Docker容器中，并提供了通过Dockerfile构建网站镜像的步骤。最后，他总结了文章的主要内容，并提及了技术选型的复杂性和对Jexus性能等方面的考量，强调了技术决策的多方面影响。"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://blog.yuanpei.me/'><meta name=msvalidate.01 content="713A48A3FE17D4841C292A6B3942EB4C"><meta name=baidu-site-verification content="c50FGqYOSh"><meta name=google-site-verification content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s"><script src=//instant.page/5.1.0 type=module integrity=sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex
-on-phone--column extended"><div id=article-toolbar><a href=/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
-<span>返回</span></a></div><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
-<span class=hamburger-box><span class=hamburger-inner></span></span></button><header class=site-info><figure class=site-avatar><a href=/><img src=/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar>
-</a><span class=emoji>👌</span></figure><h1 class=site-name><a href=/>元视角</a></h1><h2 class=site-description>起风了，唯有努力生存</h2><ol class=social-menu><li><a href=mailto:qinyuanpei@163.com rel=noreferrer target=_blank title=Mail><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg></a></li><li><a href=https://github.com/qinyuanpei rel=noreferrer target=_blank title=GitHub><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://www.zhihu.com/people/qinyuanpei rel=noreferrer target=_blank title=Zhihu><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 6h6v12h-2l-2 2-1-2h-1z"/><path d="M4 12h6.5"/><path d="M10.5 6h-5"/><path d="M6 4c-.5 2.5-1.5 3.5-2.5 4.5"/><path d="M8 6v7c0 4.5-2 5.5-4 7"/><path d="M11 18l-3-5"/></svg></a></li><li><a href=https://www.douban.com/people/60029335 rel=noreferrer target=_blank title=Douban><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h16"/><path d="M5 4h14"/><path d="M8 8h8a2 2 0 012 2v2a2 2 0 01-2 2H8a2 2 0 01-2-2v-2a2 2 0 012-2z"/><path d="M16 14l-2 6"/><path d="M8 17l1 3"/></svg></a></li><li><a href=https://weibo.com/1278609231/profile rel=noreferrer target=_blank title=Weibo><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 14.127C19 17.2 15.498 20 11 20c-4.126.0-8-2.224-8-5.565.0-1.78.984-3.737 2.7-5.567 2.362-2.51 5.193-3.687 6.551-2.238.415.44.752 1.39.749 2.062 2-1.615 4.308.387 3.5 2.693 1.26.557 2.5.538 2.5 2.742z"/><path d="M15 4h1a5 5 0 015 5v1"/></svg></a></li><li><a href=/index.xml rel=noreferrer target=_blank title=RSS><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="5" cy="19" r="1"/><path d="M4 4a16 16 0 0116 16"/><path d="M4 11a9 9 0 019 9"/></svg></a></li></ol></header><ol class=menu id=main-menu><li><a href=/><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
-<span>首页</span></a></li><li><a href=/archives><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-<span>归档</span></a></li><li><a href=/works><!doctype html><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style/></defs><path d="M843.093333 815.36l-189.44-294.826667A85.333333 85.333333.0 01640 474.453333V170.666667h21.333333a21.333333 21.333333.0 0021.333334-21.333334v-42.666666a21.333333 21.333333.0 00-21.333334-21.333334H362.666667a21.333333 21.333333.0 00-21.333334 21.333334v42.666666a21.333333 21.333333.0 0021.333334 21.333334H384V474.88a85.333333 85.333333.0 01-13.653333 46.08l-189.44 294.826667a64.426667 64.426667.0 000 66.56l13.653333 24.32a64.853333 64.853333.0 0055.466667 32h525.226666a64.853333 64.853333.0 0055.466667-32L844.8 881.92a63.573333 63.573333.0 00-1.706667-66.56zm-400.64-248.32a173.226667 173.226667.0 0026.88-92.16V170.666667h85.333334v303.786666a167.68 167.68.0 0027.306666 92.16l74.24 116.053334H367.786667z" p-id="1250" fill="#8a8a8a"/></svg>
-<span>作品</span></a></li><li><a href=/search><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
-<span>搜索</span></a></li><li><a href=/links><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572 12 20l-7.5-7.428A5 5 0 1112 6.006a5 5 0 117.5 6.572"/><path d="M12 6 8.707 9.293a1 1 0 000 1.414l.543.543c.69.69 1.81.69 2.5.0l1-1a3.182 3.182.0 014.5.0l2.25 2.25"/><path d="M12.5 15.5l2 2"/><path d="M15 13l2 2"/></svg>
-<span>友链</span></a></li><li class=current><a href=/about><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
-<span>关于</span></a></li><li id=dark-mode-toggle><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14.828 14.828A4 4 0 109.172 9.172a4 4 0 005.656 5.656z"/><path d="M6.343 17.657l-1.414 1.414"/><path d="M6.343 6.343 4.929 4.929"/><path d="M17.657 6.343l1.414-1.414"/><path d="M17.657 17.657l1.414 1.414"/><path d="M4 12H2"/><path d="M12 4V2"/><path d="M20 12h2"/><path d="M12 20v2"/></svg>
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3c.132.0.263.0.393.0a7.5 7.5.0 007.92 12.446A9 9 0 1112 2.992z"/><path d="M17 4a2 2 0 002 2 2 2 0 00-2 2 2 2 0 00-2-2 2 2 0 002-2"/><path d="M19 11h2m-1-1v2"/></svg>
-<span id=dark-mode-text>夜间模式</span></li></ol></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/>开发工具</a></header><h2 class=article-title><a href=/posts/815861661/>使用 Jexus 实现 ASP.NET 在 Linux 平台下的部署</a></h2><footer class=article-time><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published>2018-05-20</time></div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 10 分钟</time></div></footer></div></header><div class=post-ai><div class=ai-title><i class=ai-title-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/><path d="M9 16c1 .667 2 1 3 1s2-.333 3-1"/><path d="M9 7 8 3"/><path d="M15 7l1-4"/><path d="M9 12v-1"/><path d="M15 12v-1"/></svg></i><div class=ai-title-text>AI 摘要</div></div><div id=ai-explanation class=ai-explanation></div><div class="ai-explanation ai-explanation-content">Payne在他的博客中讨论了在Linux平台上部署ASP.NET项目的问题。他介绍了选择使用Jexus来实现ASP.NET在Linux平台的部署的背景和原因，以及Jexus的特点和配置方法。此外，Payne还讨论了如何将工作转移到Docker容器中，并提供了通过Dockerfile构建网站镜像的步骤。最后，他总结了文章的主要内容，并提及了技术选型的复杂性和对Jexus性能等方面的考量，强调了技术决策的多方面影响。</div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector(".ai-explanation-content").textContent;new TypeIt("#ai-explanation",{strings:e,speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><section class=article-content><p>Hello，大家好，我是 Payne，欢迎大家关注我的博客，我的博客地址是：<a class=link href=https://qinyuanpei.github.io target=_blank rel=noopener>https://qinyuanpei.github.io</a>。今天想写一点关于 Linux 部署 ASP.NET 相关的话题，为什么突然想写这个话题呢？因为就在几天前，我被我所认识的一位前辈深深地鄙视了一番，原因是我依然在使用一个落后的 IoC 框架——Unity，在如今已然是公元 2018 年的今天。我突然想到，距离.NET Core 2.0 发布已经有一段时间，而.NET Core 3.0 的 roadmap 已经开始提上日程，可我好像还没来得及认真地去对待这个现状。我一直在关注跨平台和跨语言的技术，就像我在大学里的时候就开始接触 Linux 一样，未来我们要面对的是种类繁多的终端平台，从 PC 时代到移动互联网，再到 VR、AR、IoT 和 AI，有太多太多的事情在悄然发生着变化。偶尔我的内心会泛起焦虑和迷茫，可在时光蹉跎直至褪色以前，我或许只是变回了曾经的自己。既然要如同涅槃一般重新开始，为什么不首先重新拾起曾经关注的领域呢？所以，在这今天这篇文章里，你将看到：<strong>如何使用 Jexus 实现 ASP.NET 在 Linux 平台下的部署</strong>。</p><h1 id=故事背景>故事背景</h1><p>我们项目组在开发这样一种服务，它可以通过收集招聘网站的简历来提取相关信息，而这些信息将作为训练集供 AI 算法使用。考虑到 Python 在 AI 领域的优势，我们决定采用 Python 来开发自然语言处理相关的业务，而简历的收集则是通过.NET 中的 Web Service 暴露给前端。整个开发相对顺利，可是在部署环节出现了问题。因为项目组以往的的项目都是部署在 Linux Server 上，所以在部署 Web Service 的问题上产生了分歧，负责运维的同事不愿意为这一个项目而单独配置一台 Windows Server。这里需要说明的是，采用.NET 来开发 Web Service 的一个重要原因是，这些简历中存在大量 Word 文档(.doc/.docx)，因此不得不采用 Office 提供的 COM 组件来支持文档的解析，虽然后来证明的确是这些 COM 组件拖了跨平台的后腿。所以，在这个时候，我们面临着两种选择，第一种方案是采用 Windows Server 来部署，我们的运维同事表示不开心；第二种方案是采用 Linux Server 来部署。我们知道.NET 跨平台的一个关键技术是 Mono，可 Mono 的问题是它的基础类库不大健全，相信微软收购 Mono 以后这个问题能够得到解决。目前官方主推的跨平台技术是.NET Core，考虑到迁移到.NET Core 版本的成本，我们最终没有选择这个方案。事实上，即使采用.NET Core 进行开发，最终我们的部署依然需要依赖<a class=link href=https://www.jexus.org/ target=_blank rel=noopener>Jexus</a>。综合考虑这些因素，我们决定采用<a class=link href=https://www.jexus.org/ target=_blank rel=noopener>Jexus</a>来将 ASP.NET 项目部署到 Linux 平台。</p><h1 id=关于-jexus>关于 Jexus</h1><p>Jexus 是由<a class=link href=http://www.cnblogs.com/yunei target=_blank rel=noopener>宇内流云</a>开发的一款 Linux 平台上的高性能 Web 服务器，它是一个可以免费使用、不开源的项目，最大的特色是可以支持 ASP.NET、ASP.NET Core、PHP。通俗地来讲，我们可以认为它是 Linux 平台上的 IIS，这并不为过，因为你可以注意到<a class=link href=https://www.jexusmanager.com/en/latest/ target=_blank rel=noopener>Jexus Manager</a>这个项目，它可以同时支持 Jexus，IIS 和 IIS Express 三种服务器的管理，并提供了各个平台下一致的使用体验，而 Linux 平台则主要是针对 Jexus。Jexus 提供了不亚于商用服务器的众多特性，比如多站点支持、使用应用程序池来调度管理工作进程、具有良好的稳定性和容错能力、支持 HTTPS 和 WebSockets、支持 FastCGI 协议和 OWIN 标准。除此以外，它同时支持 URL 重写、反向代理、压缩传输、入侵检测等重要功能。Jexus 底层采用 Linux 中的 epoll 机制来处理网站请求，所以会比通常使用 libuv 实现的技术拥有更高的性能。作为一款跨平台软件，Jexus 支持主流的 Linux 发行版本。目前，国内外已经有大量的网站采用 Jexus 作为它的服务器，我们可以在 Jexus 的官网上找到这些<a class=link href=https://www.jexus.org/Examples.htm target=_blank rel=noopener>案例</a>。虽然微软官方正在全力推广.NET Core，但对于那些需要维护的旧项目而言，迁移到全新的.NET Core 平台着实是个不小的挑战，而且目前支持.NET Core 版本的类库并不丰富，虽然最终的趋势一定是.NET Core 替代 Mono，但对于 Mono 而言，在.NET 宣布开源以后，从.NET Framework 中吸收的基础类库，极大的改善了 Mono 基础类库不完善的状况，而 Mono 针对 CLR 的实现、C#编译器的实现、AOT 环境等等特性，或许可以为.NET 跨平台提供借鉴，这是一个相互促进的过程。在新时代到来以前，我们暂时需要使用 Jexus 来过渡。</p><h1 id=hello-linux>Hello Linux</h1><p>OK，下面我们来体验一下 Jexus 在 Linux 平台上的效果，这里我们以 ASP.NET MVC4 为例，我们直接通过 Visual Studio 创建一个项目即可，这里我们需要的是这个项目发布以后的所有文件。总之，这些文件需要通过某种方式放到 Linux 平台上，大家自己去想办法就好啦，这个不再说多余的话。</p><h2 id=安装-jexus>安装 Jexus</h2><p>Jexus 安装起来是非常简单的，这里博主使用的是 Elementary OS，基于 Ubuntu14.0 的衍生版本。在终端下执行如下命令：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>curl https://jexus.org/release/x64/install.sh<span class=p>|</span>sudo sh
-</span></span></code></pre></div><p>你没有看错，真的只需要一行命令。事实上，Jexus 分为两个版本，即通用版和独立版。其差别是通用版不含 Mono 运行时，独立版含有 Mono 运行时。官方建议使用独立版，如果有朋友想尝试安装通用版，请在终端下执行如下命令：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>curl https://jexus.org/release/install<span class=p>|</span>sudo sh
-</span></span></code></pre></div><p>无论采用哪一种方式安装，当你看到终端中显示：Jexus 已经被成功安装到系统，就表示 Jexus 安装成功了。</p><h2 id=配置-jexus>配置 Jexus</h2><p>Jexus 部署到网站，需要两个东西，一个是网站内容(废话)，一个是网站配置。假定我们这里将这两个东西打包在一起，压缩包的名字为 app.tar。为什么这里选择了.tar 格式的压缩文件呢？因为在 Linux 平台下这个格式更好用些，我们熟悉的.zip 格式，可能会需要我们安装相应的扩展。此时，我们可以使用如下脚本来部署网站：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>tar -xf app.tar
-</span></span><span class=line><span class=cl>sudo mv  -f .aspnetconf usr/jexus/siteconf/aspnetconf
-</span></span><span class=line><span class=cl>sudo mv ./aspnet /var/www
-</span></span></code></pre></div><p>OK，现在来解释下这个脚本，这里我们需要部署一个名为“aspnet”的网站，所以，网站的内容被放置在“aspnet”这个目录里。该网站对应一个作用于 Jexus 的配置文件，配置文件的名字为 aspnetconf。首先，我们将“aspnetconf”这个配置文件移动到了“usr/jexus/siteconf/”目录下，这是 Jexus 指定的配置路径，即<strong>每一个站点都有一个配置文件，且该配置文件被放置在“usr/jexus/siteconf/”目录下</strong>。然后，我们将“aspnet”这个文件夹移动到了“/var/www”目录下，这是 Jexus 指定的网站目录，即<strong>每一个站点都有一个文件夹，文件夹的名字可以理解为网站的名字</strong>。默认情况下，Jexus 会在 www 目录里创建一个名为 default 的文件夹，即默认有一个名为 default 的站点，不过经过博主核实，最新版(v5.8.3)中是没有 default 站点。同理，Jexus 会 siteconf 目录里创建一个名为 default 的配置文件。我们通常以这个配置文件为参照来编写我们自己的配置文件，例如下面是 aspnetconf 中的内容：</p><pre tabindex=0><code class=language-conf data-lang=conf>port=4000                  
+<!DOCTYPE html>
+<html lang="en-us">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name="referrer" content="no-referrer"/>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+
+<meta http-equiv='content-language' content='zh-CN'>
+
+
+<link rel="apple-touch-icon" href="/imgs/avatar.jpg">
+
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+
+<link rel="icon" type="image/x-icon" href="/imgs/favicon.ico">
+
+
+<link rel="icon" type="image/png" href="/imgs/favicon.png"><meta name='description' content='Payne在他的博客中讨论了在Linux平台上部署ASP.NET项目的问题。他介绍了选择使用Jexus来实现ASP.NET在Linux平台的部署的背景和原因，以及Jexus的特点和配置方法。此外，Payne还讨论了如何将工作转移到Docker容器中，并提供了通过Dockerfile构建网站镜像的步骤。最后，他总结了文章的主要内容，并提及了技术选型的复杂性和对Jexus性能等方面的考量，强调了技术决策的多方面影响。'><meta name='keywords' content='Jexus, Docker, Linux'>
+
+<meta name="author" content="飞鸿踏雪"><title>使用 Jexus 实现 ASP.NET 在 Linux 平台下的部署 - 元视角</title>
+
+<link rel='canonical' href='http://localhost:1313/posts/815861661/'>
+
+
+
+<link rel="stylesheet" href="/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css">
+<meta property='og:title' content='使用 Jexus 实现 ASP.NET 在 Linux 平台下的部署 - 元视角'>
+<meta property='og:description' content='Payne在他的博客中讨论了在Linux平台上部署ASP.NET项目的问题。他介绍了选择使用Jexus来实现ASP.NET在Linux平台的部署的背景和原因，以及Jexus的特点和配置方法。此外，Payne还讨论了如何将工作转移到Docker容器中，并提供了通过Dockerfile构建网站镜像的步骤。最后，他总结了文章的主要内容，并提及了技术选型的复杂性和对Jexus性能等方面的考量，强调了技术决策的多方面影响。'>
+<meta property='og:url' content='http://localhost:1313/posts/815861661/'>
+<meta property='og:site_name' content='元视角'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='Jexus' /><meta property='article:tag' content='Docker' /><meta property='article:tag' content='Linux' /><meta property='article:published_time' content='2018-05-20T14:00:03&#43;00:00'/><meta property='article:modified_time' content='2024-02-19T17:31:36&#43;08:00'/><meta property='og:image' content='http://localhost:1313/' />
+<meta name="twitter:title" content="使用 Jexus 实现 ASP.NET 在 Linux 平台下的部署 - 元视角">
+<meta name="twitter:description" content="Payne在他的博客中讨论了在Linux平台上部署ASP.NET项目的问题。他介绍了选择使用Jexus来实现ASP.NET在Linux平台的部署的背景和原因，以及Jexus的特点和配置方法。此外，Payne还讨论了如何将工作转移到Docker容器中，并提供了通过Dockerfile构建网站镜像的步骤。最后，他总结了文章的主要内容，并提及了技术选型的复杂性和对Jexus性能等方面的考量，强调了技术决策的多方面影响。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='http://localhost:1313/' />
+
+    
+        
+            <meta name="msvalidate.01" content="713A48A3FE17D4841C292A6B3942EB4C" />
+        
+    
+        
+            <meta name="baidu-site-verification" content="c50FGqYOSh" />
+        
+    
+        
+            <meta name="google-site-verification" content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s" />
+        
+    
+
+  
+
+<script src="//instant.page/5.1.0" type="module" integrity="sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css"
+/>
+    </head>
+    <body class="
+    article-page
+">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex 
+    on-phone--column extended
+">
+    <div id="article-toolbar">
+        <a href="/" class="back-home">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="15 6 9 12 15 18" />
+</svg>
+
+
+
+            <span>返回</span>
+        </a>
+    </div>
+    <aside class="sidebar left-sidebar sticky">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header class="site-info">
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">👌</span>
+                
+            </figure>
+            
+        
+        
+        <h1 class="site-name"><a href="/">元视角</a></h1>
+        <h2 class="site-description">起风了，唯有努力生存</h2><ol class="social-menu">
+                
+                    
+                    
+                    
+                    
+                    <li>
+                        <a 
+                            href='mailto:qinyuanpei@163.com'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Mail"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
+  <path d="M3 7l9 6l9 -6" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://github.com/qinyuanpei'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="GitHub"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://www.zhihu.com/people/qinyuanpei'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Zhihu"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M14 6h6v12h-2l-2 2l-1 -2h-1z" />
+  <path d="M4 12h6.5" />
+  <path d="M10.5 6h-5" />
+  <path d="M6 4c-.5 2.5 -1.5 3.5 -2.5 4.5" />
+  <path d="M8 6v7c0 4.5 -2 5.5 -4 7" />
+  <path d="M11 18l-3 -5" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://www.douban.com/people/60029335'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Douban"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 20h16" />
+  <path d="M5 4h14" />
+  <path d="M8 8h8a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2v-2a2 2 0 0 1 2 -2z" />
+  <path d="M16 14l-2 6" />
+  <path d="M8 17l1 3" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://weibo.com/1278609231/profile'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Weibo"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M19 14.127c0 3.073 -3.502 5.873 -8 5.873c-4.126 0 -8 -2.224 -8 -5.565c0 -1.78 .984 -3.737 2.7 -5.567c2.362 -2.51 5.193 -3.687 6.551 -2.238c.415 .44 .752 1.39 .749 2.062c2 -1.615 4.308 .387 3.5 2.693c1.26 .557 2.5 .538 2.5 2.742z" />
+  <path d="M15 4h1a5 5 0 0 1 5 5v1" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='/index.xml'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="RSS"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="5" cy="19" r="1" />
+  <path d="M4 4a16 16 0 0 1 16 16" />
+  <path d="M4 11a9 9 0 0 1 9 9" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+            </ol></header>
+
+    <ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>首页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/works' >
+                
+                
+                
+                    <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style type="text/css"></style></defs><path d="M843.093333 815.36l-189.44-294.826667a85.333333 85.333333 0 0 1-13.653333-46.08V170.666667h21.333333a21.333333 21.333333 0 0 0 21.333334-21.333334v-42.666666a21.333333 21.333333 0 0 0-21.333334-21.333334h-298.666666a21.333333 21.333333 0 0 0-21.333334 21.333334v42.666666a21.333333 21.333333 0 0 0 21.333334 21.333334H384v304.213333a85.333333 85.333333 0 0 1-13.653333 46.08l-189.44 294.826667a64.426667 64.426667 0 0 0 0 66.56l13.653333 24.32a64.853333 64.853333 0 0 0 55.466667 32h525.226666a64.853333 64.853333 0 0 0 55.466667-32l14.08-24.746667a63.573333 63.573333 0 0 0-1.706667-66.56z m-400.64-248.32a173.226667 173.226667 0 0 0 26.88-92.16V170.666667h85.333334v303.786666a167.68 167.68 0 0 0 27.306666 92.16L656.213333 682.666667H367.786667z" p-id="1250" fill="#8a8a8a"></path></svg>
+                
+                <span>作品</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+  <path d="M12 6l-3.293 3.293a1 1 0 0 0 0 1.414l.543 .543c.69 .69 1.81 .69 2.5 0l1 -1a3.182 3.182 0 0 1 4.5 0l2.25 2.25" />
+  <path d="M12.5 15.5l2 2" />
+  <path d="M15 13l2 2" />
+</svg>
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+
+        <li  class='current' >
+            <a href='/about' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+
+        
+            <li id="dark-mode-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" />
+  <path d="M6.343 17.657l-1.414 1.414" />
+  <path d="M6.343 6.343l-1.414 -1.414" />
+  <path d="M17.657 6.343l1.414 -1.414" />
+  <path d="M17.657 17.657l1.414 1.414" />
+  <path d="M4 12h-2" />
+  <path d="M12 4v-2" />
+  <path d="M20 12h2" />
+  <path d="M12 20v2" />
+</svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+  <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" />
+  <path d="M19 11h2m-1 -1v2" />
+</svg>
+                <span id="dark-mode-text">夜间模式</span>
+            </li>
+        
+    </ol>
+</aside>
+
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/" >
+                开发工具
+            </a>
+        
+    </header>
+    
+
+    <h2 class="article-title">
+        <a href="/posts/815861661/">使用 Jexus 实现 ASP.NET 在 Linux 平台下的部署</a>
+    </h2>
+    
+    
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2018-05-20</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 10 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+</div>
+</header>
+
+    
+        
+
+
+<div class="post-ai">
+    <div class="ai-title">
+        <i class="ai-title-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2z" />
+  <path d="M9 16c1 .667 2 1 3 1s2 -.333 3 -1" />
+  <path d="M9 7l-1 -4" />
+  <path d="M15 7l1 -4" />
+  <path d="M9 12v-1" />
+  <path d="M15 12v-1" />
+</svg></i>
+        <div class="ai-title-text">AI 摘要</div>
+    </div>
+    <div id="ai-explanation" class="ai-explanation"></div>
+    <div class="ai-explanation ai-explanation-content">Payne在他的博客中讨论了在Linux平台上部署ASP.NET项目的问题。他介绍了选择使用Jexus来实现ASP.NET在Linux平台的部署的背景和原因，以及Jexus的特点和配置方法。此外，Payne还讨论了如何将工作转移到Docker容器中，并提供了通过Dockerfile构建网站镜像的步骤。最后，他总结了文章的主要内容，并提及了技术选型的复杂性和对Jexus性能等方面的考量，强调了技术决策的多方面影响。</div>
+</div>
+
+<script src="https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const matchingSummary = document.querySelector(".ai-explanation-content").textContent;
+
+    new TypeIt("#ai-explanation", {
+        strings: matchingSummary,
+        speed: 10,
+        lifeLike: true,
+        waitUntilVisible: true,
+    }).go();
+});
+</script>
+
+    
+
+    <section class="article-content">
+    
+    
+    <p>Hello，大家好，我是 Payne，欢迎大家关注我的博客，我的博客地址是：<a class="link" href="https://qinyuanpei.github.io"  target="_blank" rel="noopener"
+    >https://qinyuanpei.github.io</a>。今天想写一点关于 Linux 部署 ASP.NET 相关的话题，为什么突然想写这个话题呢？因为就在几天前，我被我所认识的一位前辈深深地鄙视了一番，原因是我依然在使用一个落后的 IoC 框架——Unity，在如今已然是公元 2018 年的今天。我突然想到，距离.NET Core 2.0 发布已经有一段时间，而.NET Core 3.0 的 roadmap 已经开始提上日程，可我好像还没来得及认真地去对待这个现状。我一直在关注跨平台和跨语言的技术，就像我在大学里的时候就开始接触 Linux 一样，未来我们要面对的是种类繁多的终端平台，从 PC 时代到移动互联网，再到 VR、AR、IoT 和 AI，有太多太多的事情在悄然发生着变化。偶尔我的内心会泛起焦虑和迷茫，可在时光蹉跎直至褪色以前，我或许只是变回了曾经的自己。既然要如同涅槃一般重新开始，为什么不首先重新拾起曾经关注的领域呢？所以，在这今天这篇文章里，你将看到：<strong>如何使用 Jexus 实现 ASP.NET 在 Linux 平台下的部署</strong>。</p>
+<h1 id="故事背景">故事背景</h1>
+<p>我们项目组在开发这样一种服务，它可以通过收集招聘网站的简历来提取相关信息，而这些信息将作为训练集供 AI 算法使用。考虑到 Python 在 AI 领域的优势，我们决定采用 Python 来开发自然语言处理相关的业务，而简历的收集则是通过.NET 中的 Web Service 暴露给前端。整个开发相对顺利，可是在部署环节出现了问题。因为项目组以往的的项目都是部署在 Linux Server 上，所以在部署 Web Service 的问题上产生了分歧，负责运维的同事不愿意为这一个项目而单独配置一台 Windows Server。这里需要说明的是，采用.NET 来开发 Web Service 的一个重要原因是，这些简历中存在大量 Word 文档(.doc/.docx)，因此不得不采用 Office 提供的 COM 组件来支持文档的解析，虽然后来证明的确是这些 COM 组件拖了跨平台的后腿。所以，在这个时候，我们面临着两种选择，第一种方案是采用 Windows Server 来部署，我们的运维同事表示不开心；第二种方案是采用 Linux Server 来部署。我们知道.NET 跨平台的一个关键技术是 Mono，可 Mono 的问题是它的基础类库不大健全，相信微软收购 Mono 以后这个问题能够得到解决。目前官方主推的跨平台技术是.NET Core，考虑到迁移到.NET Core 版本的成本，我们最终没有选择这个方案。事实上，即使采用.NET Core 进行开发，最终我们的部署依然需要依赖<a class="link" href="https://www.jexus.org/"  target="_blank" rel="noopener"
+    >Jexus</a>。综合考虑这些因素，我们决定采用<a class="link" href="https://www.jexus.org/"  target="_blank" rel="noopener"
+    >Jexus</a>来将 ASP.NET 项目部署到 Linux 平台。</p>
+<h1 id="关于-jexus">关于 Jexus</h1>
+<p>Jexus 是由<a class="link" href="http://www.cnblogs.com/yunei"  target="_blank" rel="noopener"
+    >宇内流云</a>开发的一款 Linux 平台上的高性能 Web 服务器，它是一个可以免费使用、不开源的项目，最大的特色是可以支持 ASP.NET、ASP.NET Core、PHP。通俗地来讲，我们可以认为它是 Linux 平台上的 IIS，这并不为过，因为你可以注意到<a class="link" href="https://www.jexusmanager.com/en/latest/"  target="_blank" rel="noopener"
+    >Jexus Manager</a>这个项目，它可以同时支持 Jexus，IIS 和 IIS Express 三种服务器的管理，并提供了各个平台下一致的使用体验，而 Linux 平台则主要是针对 Jexus。Jexus 提供了不亚于商用服务器的众多特性，比如多站点支持、使用应用程序池来调度管理工作进程、具有良好的稳定性和容错能力、支持 HTTPS 和 WebSockets、支持 FastCGI 协议和 OWIN 标准。除此以外，它同时支持 URL 重写、反向代理、压缩传输、入侵检测等重要功能。Jexus 底层采用 Linux 中的 epoll 机制来处理网站请求，所以会比通常使用 libuv 实现的技术拥有更高的性能。作为一款跨平台软件，Jexus 支持主流的 Linux 发行版本。目前，国内外已经有大量的网站采用 Jexus 作为它的服务器，我们可以在 Jexus 的官网上找到这些<a class="link" href="https://www.jexus.org/Examples.htm"  target="_blank" rel="noopener"
+    >案例</a>。虽然微软官方正在全力推广.NET Core，但对于那些需要维护的旧项目而言，迁移到全新的.NET Core 平台着实是个不小的挑战，而且目前支持.NET Core 版本的类库并不丰富，虽然最终的趋势一定是.NET Core 替代 Mono，但对于 Mono 而言，在.NET 宣布开源以后，从.NET Framework 中吸收的基础类库，极大的改善了 Mono 基础类库不完善的状况，而 Mono 针对 CLR 的实现、C#编译器的实现、AOT 环境等等特性，或许可以为.NET 跨平台提供借鉴，这是一个相互促进的过程。在新时代到来以前，我们暂时需要使用 Jexus 来过渡。</p>
+<h1 id="hello-linux">Hello Linux</h1>
+<p>OK，下面我们来体验一下 Jexus 在 Linux 平台上的效果，这里我们以 ASP.NET MVC4 为例，我们直接通过 Visual Studio 创建一个项目即可，这里我们需要的是这个项目发布以后的所有文件。总之，这些文件需要通过某种方式放到 Linux 平台上，大家自己去想办法就好啦，这个不再说多余的话。</p>
+<h2 id="安装-jexus">安装 Jexus</h2>
+<p>Jexus 安装起来是非常简单的，这里博主使用的是 Elementary OS，基于 Ubuntu14.0 的衍生版本。在终端下执行如下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl https://jexus.org/release/x64/install.sh<span class="p">|</span>sudo sh
+</span></span></code></pre></div><p>你没有看错，真的只需要一行命令。事实上，Jexus 分为两个版本，即通用版和独立版。其差别是通用版不含 Mono 运行时，独立版含有 Mono 运行时。官方建议使用独立版，如果有朋友想尝试安装通用版，请在终端下执行如下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl https://jexus.org/release/install<span class="p">|</span>sudo sh
+</span></span></code></pre></div><p>无论采用哪一种方式安装，当你看到终端中显示：Jexus 已经被成功安装到系统，就表示 Jexus 安装成功了。</p>
+<h2 id="配置-jexus">配置 Jexus</h2>
+<p>Jexus 部署到网站，需要两个东西，一个是网站内容(废话)，一个是网站配置。假定我们这里将这两个东西打包在一起，压缩包的名字为 app.tar。为什么这里选择了.tar 格式的压缩文件呢？因为在 Linux 平台下这个格式更好用些，我们熟悉的.zip 格式，可能会需要我们安装相应的扩展。此时，我们可以使用如下脚本来部署网站：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">tar -xf app.tar
+</span></span><span class="line"><span class="cl">sudo mv  -f .aspnetconf usr/jexus/siteconf/aspnetconf
+</span></span><span class="line"><span class="cl">sudo mv ./aspnet /var/www
+</span></span></code></pre></div><p>OK，现在来解释下这个脚本，这里我们需要部署一个名为“aspnet”的网站，所以，网站的内容被放置在“aspnet”这个目录里。该网站对应一个作用于 Jexus 的配置文件，配置文件的名字为 aspnetconf。首先，我们将“aspnetconf”这个配置文件移动到了“usr/jexus/siteconf/”目录下，这是 Jexus 指定的配置路径，即<strong>每一个站点都有一个配置文件，且该配置文件被放置在“usr/jexus/siteconf/”目录下</strong>。然后，我们将“aspnet”这个文件夹移动到了“/var/www”目录下，这是 Jexus 指定的网站目录，即<strong>每一个站点都有一个文件夹，文件夹的名字可以理解为网站的名字</strong>。默认情况下，Jexus 会在 www 目录里创建一个名为 default 的文件夹，即默认有一个名为 default 的站点，不过经过博主核实，最新版(v5.8.3)中是没有 default 站点。同理，Jexus 会 siteconf 目录里创建一个名为 default 的配置文件。我们通常以这个配置文件为参照来编写我们自己的配置文件，例如下面是 aspnetconf 中的内容：</p>
+<pre tabindex="0"><code class="language-conf" data-lang="conf">port=4000                  
 root=/ /var/www/aspnet          
 hosts=  
 indexs= 
 aspnet_exts=
-</code></pre><p>其中，</p><ul><li>port 表示 Jexus Web 服务器监听的端口(必填）</li><li>root 表示网站虚拟目录与其对应的物理目录，中间使用空格分开(必填）</li><li>hosts 表示网站域名(建议填写)，可以使用泛域名如*.yourdomain.com 或者填写*表示默认网站，一个端口有且只有一个默认网站，选填</li><li>indexs 表示网站首页文件名，如 index.html、index.aspx 等，多个文件名使用英文逗号分开，选填</li><li>aspnet_exts 表示 ASP.NET 扩展名，不建议填写。如要填写，多个扩展名(不含.)使用英文逗号分开。</li></ul><p>最简单的配置只需要 port 和 root 即可，更多的配置项可以参考官方文档。</p><h2 id=基本使用>基本使用</h2><p>Jexus 的常用命令简单到只有 3 个，start、restart、stop。命令的基本格式为：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo /usr/jexus/jws start <span class=o>[</span>站点名<span class=o>(</span>可选，不指定时表示所有<span class=o>)]</span>
-</span></span><span class=line><span class=cl>sudo /usr/jexus/jws restart <span class=o>[</span>站点名<span class=o>(</span>可选，不指定时表示所有<span class=o>)]</span>
-</span></span><span class=line><span class=cl>sudo /usr/jexus/jws stop <span class=o>[</span>站点名<span class=o>(</span>可选，不指定时表示所有<span class=o>)]</span>
-</span></span></code></pre></div><p>在这个例子里，我们执行如下命令来启动 aspnet 这个站点：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo /usr/jexus/jws start aspnet
-</span></span></code></pre></div><p>当终端中返回 OK 时，就表示启动成功啦，此时，我们打开浏览器，输入<code>http://localhost:4000</code> 就可以看到如下画面(这里的端口号为 4000)：<figure><a href=https://ww1.sinaimg.cn/large/4c36074fly1fz05dq1tcmj20m80aqjsf.jpg><img src=https://ww1.sinaimg.cn/large/4c36074fly1fz05dq1tcmj20m80aqjsf.jpg data-src=https://ww1.sinaimg.cn/large/4c36074fly1fz05dq1tcmj20m80aqjsf.jpg alt=运行在Linux上的ASP.NET></a><figcaption>运行在Linux上的ASP.NET</figcaption></figure>你就说，这算不算惊喜。我们还可以输入<code>http://localhost:4000/info</code>来验证 Jexus 是否配置正确，当 Jexus 被正确配置以后，你就会看到一个显示着“Welcome to Jexus”的页面。嗯嗯，好像是和 Nginx 挺像的哈！</p><h1 id=docker>Docker+</h1><p>接下来，让我们考虑将这些 Linux 上的工作转移到 Docker 中来做，因为借助 Docker 的容器技术，它可以为我们提供一个足以自给自足的环境。通过这个环境编译测试通过的镜像可以批量地部署到生产环境中。如果你不想在每一台 Linux Server 上都覆盖本文的流程，那么 Docker 将是提高你部署效率的不二选择，而且从认知完整性的角度来看待 Docker，你就会发现它和 Jekins、TravisCI、VSTS 工具一样，都可以非常完美地被接入到持续集成(CI)的流程里去，譬如我们项目组采用的是 Jekins + Gitlib + Docker 的方案，所以，如果你想要选择一个最适合你的持续集成(CI)方案，无论如何，Docker 都是需要去了解的一个知识。关于 Docker 的背景知识大家可以自己去了解，这里我们通过编写 Dockerfile 来完成网站镜像的构建：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-dockerfile data-lang=dockerfile><span class=line><span class=cl><span class=k>FROM</span><span class=s> ubuntu:14.04</span><span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>LABEL</span> <span class=nv>vendor</span><span class=o>=</span><span class=s2>&#34;qinyuanpei@163.com&#34;</span><span class=err>
-</span></span></span><span class=line><span class=cl><span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># Prepare Environment</span><span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> sudo apt-get update <span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> sudo apt-get install -y<span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> sudo apt-get install -y curl<span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> sudo apt-get install -y wget<span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> sudo curl -sSL https://jexus.org/release/x64/install.sh<span class=p>|</span>sudo sh<span class=err>
-</span></span></span><span class=line><span class=cl><span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># Deploy Website</span><span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>ADD</span> dest/ /<span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> sudo mv -f aspnetconf /usr/jexus/siteconf/aspnetconf<span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> sudo mkdir -p /var/www<span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> sudo mv ./aspnet /var/www<span class=err>
-</span></span></span><span class=line><span class=cl><span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># Start Jexus</span><span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>EXPOSE</span><span class=s> 4000</span><span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>WORKDIR</span><span class=s> /usr/jexus</span><span class=err>
-</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>CMD</span> sudo ./jws start aspnet<span class=err>
-</span></span></span></code></pre></div><p>如果你熟悉 Linux 下的命令的话，你就会知道 apt-get、curl、wget 这些命令的含义，真正需要的解释的是 ADD，它表示的是，将 Dockerfile 同级目录下的 dest 目录添加到 Docker 环境中，接下来的命令我们同样非常熟悉，因为这和 Linux 下操作是完全一样的。不过，这里的确有些坑需要踩，在博主构建镜像的过程中，发现容器环境和虚拟机环境还是有本质不同的，这里的 mv 命令在 Docker 下有时候会引发“hard link”的问题，从 Stackoverflow 上好像并没有找到太有价值的答案，总之，这个问题非常的玄学。接下来，我们会将 Docker 容器的 4000 端口暴露出来，为什么是 4000 端口呢？因为这个网站的配置中指向了 4000 端口，这一点在上文中我们已经提及。而入口处的命令，显然是启动 Jexus 服务，这个不再解释。</p><p>这里，我们通过如下命令来构建一个镜像版本：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>docker build -t jexus-aspnet:v1.0 .
-</span></span></code></pre></div><p>假如这个镜像被成功构建出来，我们就可以使用这个镜像来启动网站啦。如下图所示：<figure><a href=https://ww1.sinaimg.cn/large/4c36074fly1fz01zbucjvj20m80d5jsm.jpg><img src=https://ww1.sinaimg.cn/large/4c36074fly1fz01zbucjvj20m80d5jsm.jpg data-src=https://ww1.sinaimg.cn/large/4c36074fly1fz01zbucjvj20m80d5jsm.jpg alt=使用Docker创建网站镜像></a><figcaption>使用Docker创建网站镜像</figcaption></figure>具体地，我们可以使用 docke image 命令来管理所有的 docker 镜像。这里我们启动网站：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>docker run -p 4050:4000 -t jexus-aspnet:v1.0
-</span></span></code></pre></div><p>这里，我们将 Docker 容器的 4000 端口映射到主机的 4050 端口，当我们在浏览器中输入：<code>http://localhost:4050</code>，就可以得到和 Linux 下一样的结果。不过，在写作这篇博客时，博主使用的是 Windows 下的 Docker，如果大家遇到相关问题，欢迎在博客评论区留言。</p><h1 id=本文小结>本文小结</h1><p>本文从一个实际工作的场景切入，分析和阐述了如何使用 Jexus 实现 ASP.NET 项目在 Linux 下的部署。为了简化这篇文章的写作，我们使用了一个 ASP.NET MVC4 的示例项目，真实的项目通常会有数据库，所以情况会比本文所介绍的流程更为复杂，可这让我们看到了一种可能性不是吗？通过查阅相关资料，博主发现 ASP.NET Core 的部署不需要 Jexus，它只需要一个 dotnet run 命令即可。然后，作为一次体验 Docker 的过程，我们通过编写 Dockerfile 的方式让 Jexus 和 Docker 发生了某种奇妙的关联。作为本文的一个延伸，我们需要考虑网站服务停止后可以自动重启，这就是所谓的守护进程机制啦，感兴趣的朋友可以继续深入研究，Jexus 提供了大量的优秀特性，这篇文章中所看到的不过是冰山一角。最终，我们的项目还是没有使用 Jexus，这其中有对 Jexus 性能的不信任，有因为 COM 组件而做出的妥协，有对 Mono 非官方方案的鄙夷……可以说，技术选型是一个受到多种因素制约的问题，谁拥有了话语权，就可以左右技术选型的走向，这是否又印证了，人类并非如自己所标榜的那般理性和正义？好了，以上就是这篇文章的全部内容啦，今天是 5 月 20 日，如果没有人对你说“我爱你”，请记得对自己说“我爱你”，谢谢大家！</p></section><footer class=article-footer><div style="padding:10px 0;margin:20px auto;width:100%;font-size:16px;text-align:center"><button id=rewardButton disable=enable onclick='var qr=document.getElementById("QR");qr.style.display==="none"?qr.style.display="block":qr.style.display="none"'>
-<span>打赏</span></button><div id=QR style=display:none><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=wechat_qr src=/imgs/reward/wechat.jpg alt=wechat></a><p>微信打赏</p></div><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=alipay_qr src=/imgs/reward/alipay.jpg alt=alipay></a><p>支付宝打赏</p></div></div></div><section class=article-tags><a href=/tags/jexus/>Jexus</a>
-<a href=/tags/docker/>Docker</a>
-<a href=/tags/linux/>Linux</a></section><div class=social-share></div><section class=article-footer-notes><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>BY-NC-SA 4.0
-</span><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<span>最后更新 2024-02-19</span></section></footer><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css integrity=sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn crossorigin=anonymous><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js integrity=sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8 crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js integrity=sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl crossorigin=anonymous defer></script><script>window.addEventListener("DOMContentLoaded",()=>{renderMathInElement(document.querySelector(`.article-content`),{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}]})})</script></article><aside class=related-contents--wrapper><h2 class=section-title>相关文章</h2><div class=related-contents><div class="flex article-list--tile"><article class=has-image><a href=/posts/3972610476/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3972610476" loading=lazy data-key=3972610476 data-hash></div><div class=article-details><h2 class=article-title>在 WSL 中使用 Linux 桌面环境的尝试与总结</h2></div></a></article><article class=has-image><a href=/posts/3995512051/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3995512051" loading=lazy data-key=3995512051 data-hash></div><div class=article-details><h2 class=article-title>基于 Docker 构建 .NET 持续集成环境</h2></div></a></article><article class=has-image><a href=/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/><div class=article-image><img src=/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/russian-gd53d0982f_1280.jpg loading=lazy data-key=Integrate-Crontab-Scheduled-Tasks-Inside-Docker-Containers data-hash=/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/russian-gd53d0982f_1280.jpg></div><div class=article-details><h2 class=article-title>在 Docker 容器内集成 Crontab 定时任务</h2></div></a></article><article class=has-image><a href=/posts/686567367/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=686567367" loading=lazy data-key=686567367 data-hash></div><div class=article-details><h2 class=article-title>记一次从已损坏的 Git 仓库中找回代码的经历</h2></div></a></article><article class=has-image><a href=/posts/4159187524/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=4159187524" loading=lazy data-key=4159187524 data-hash></div><div class=article-details><h2 class=article-title>WSL 下 Docker 使用踩坑小记</h2></div></a></article></div></div></aside><script src=//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js></script><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}</style><script>var waline=new Waline({el:"#waline",serverURL:"https://waline.yuanpei.me/",lang:"zh",dark:"auto",path:window.location.href,requiredMeta:["nick","mail"]})</script><footer class=site-footer><section class=copyright>&copy;
-2014 -
-2024 元视角</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> v0.126.1<br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.7.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a><br>已创作 274 篇文章，共计 1038468 字<br></section><section class=written-by><img src=/imgs/Written-By-Human-Not-By-AI-Badge-white.svg></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-<button class="pswp__button pswp__button--share" title=Share></button>
-<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-</button>
-<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous></main><aside class="sidebar right-sidebar sticky"><form action=/search/ class="search-form widget"><p><label>搜索</label>
-<input name=keyword required placeholder=请输入关键词>
-<button title=搜索><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></button></p></form><section class="widget archives"><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#故事背景>故事背景</a></li><li><a href=#关于-jexus>关于 Jexus</a></li><li><a href=#hello-linux>Hello Linux</a><ol><li><a href=#安装-jexus>安装 Jexus</a></li><li><a href=#配置-jexus>配置 Jexus</a></li><li><a href=#基本使用>基本使用</a></li></ol></li><li><a href=#docker>Docker+</a></li><li><a href=#本文小结>本文小结</a></li></ol></nav></div></section><section class="widget archives"><h2 class="widget-title section-title">归档</h2><div class=widget-archive--list><div class=archives-year><a href=/archives/#2024><span class=year>2024</span>
-<span class=count>14</span></a></div><div class=archives-year><a href=/archives/#2023><span class=year>2023</span>
-<span class=count>11</span></a></div><div class=archives-year><a href=/archives/#2022><span class=year>2022</span>
-<span class=count>27</span></a></div><div class=archives-year><a href=/archives/#2021><span class=year>2021</span>
-<span class=count>42</span></a></div><div class=archives-year><a href=/archives/#2020><span class=year>2020</span>
-<span class=count>26</span></a></div><div class=archives-year><a href=/archives/#2019><span class=year>更多</span></a></div></div></section><section class="widget archives"><h2 class="widget-title section-title">日历</h2><div class=widget--toc style="background-color:#fff;border-radius:15px;padding:10px;margin:20px auto;width:300px;height:480px;display:flex;justify-content:center;align-items:center;overflow:hidden"><img id=calendar-cover src style=object-fit:cover;width:100%;height:100%></div></section><script>const getImageUrl=e=>{const t=e.getFullYear(),n=String(e.getMonth()+1).padStart(2,"0"),s=String(e.getDate()).padStart(2,"0");return`https://img.owspace.com/Public/uploads/Download/${t}/${n}${s}.jpg`};document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector("#calendar-cover");if(document.location.pathname.startsWith("/posts")){let t=document.querySelector('meta[property="article:published_time"]').content;t=t.substring(0,10),e.src=getImageUrl(new Date(t))}else e.src=getImageUrl(new Date)})</script><section class="widget tagCloud"><h2 class="widget-title section-title">标签云</h2><div class=tagCloud-tags><a href=/tags/csharp/ class=font_size_2>CSharp
-</a><a href=/tags/%E5%9B%9E%E5%BF%86/ class=font_size_1>回忆
-</a><a href=/tags/%E6%B5%AA%E5%AE%A2%E5%89%91%E5%BF%83/ class=font_size_1>浪客剑心
-</a><a href=/tags/%E5%A7%94%E6%89%98/ class=font_size_1>委托
-</a><a href=/tags/%E9%85%8D%E8%BD%BD/ class=font_size_1>配载
-</a><a href=/tags/cdn/ class=font_size_1>CDN
-</a><a href=/tags/hexo/ class=font_size_8>Hexo
-</a><a href=/tags/html5/ class=font_size_2>HTML5
-</a><a href=/tags/%E5%B7%A5%E4%BD%9C/ class=font_size_3>工作
-</a><a href=/tags/mono/ class=font_size_4>Mono
-</a><a href=/tags/usb/ class=font_size_1>USB
-</a><a href=/tags/%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E/ class=font_size_2>模板引擎
-</a><a href=/tags/%E5%90%91%E9%87%8F/ class=font_size_2>向量
-</a><a href=/tags/windows/ class=font_size_1>Windows
-</a><a href=/tags/webassembly/ class=font_size_1>WebAssembly
-</a><a href=/tags/mock/ class=font_size_2>Mock
-</a><a href=/tags/%E9%9D%92%E6%98%A5/ class=font_size_1>青春
-</a><a href=/tags/%E5%8D%95%E6%9C%BA%E6%B8%B8%E6%88%8F/ class=font_size_1>单机游戏
-</a><a href=/tags/%E5%9B%9E%E5%AE%B6/ class=font_size_1>回家
-</a><a href=/tags/github/ class=font_size_2>Github
-</a><a href=/tags/%E8%B7%AF%E7%94%B1/ class=font_size_1>路由
-</a><a href=/tags/visual-studio/ class=font_size_1>Visual Studio
-</a><a href=/tags/apache/ class=font_size_1>Apache
-</a><a href=/tags/openai/ class=font_size_1>OpenAI
-</a><a href=/tags/%E5%85%AC%E4%BC%97%E5%8F%B7/ class=font_size_1>公众号
-</a><a href=/tags class=font_size_9999>更多</a></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous></script><script type=text/javascript src=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/ts/main.js defer></script><script type=text/javascript src=/ts/badge.js></script><script type=text/javascript>let createBadge=window.createBadge;createBadge("Git","7f1e7a2","#35495e","#ffc107"),createBadge("Hugo","v0.126.1","#35495e","#41b883")</script><script type=text/javascript src=/ts/chat-widget.js defer></script></body></html>
+</code></pre><p>其中，</p>
+<ul>
+<li>port 表示 Jexus Web 服务器监听的端口(必填）</li>
+<li>root 表示网站虚拟目录与其对应的物理目录，中间使用空格分开(必填）</li>
+<li>hosts 表示网站域名(建议填写)，可以使用泛域名如*.yourdomain.com 或者填写*表示默认网站，一个端口有且只有一个默认网站，选填</li>
+<li>indexs 表示网站首页文件名，如 index.html、index.aspx 等，多个文件名使用英文逗号分开，选填</li>
+<li>aspnet_exts 表示 ASP.NET 扩展名，不建议填写。如要填写，多个扩展名(不含.)使用英文逗号分开。</li>
+</ul>
+<p>最简单的配置只需要 port 和 root 即可，更多的配置项可以参考官方文档。</p>
+<h2 id="基本使用">基本使用</h2>
+<p>Jexus 的常用命令简单到只有 3 个，start、restart、stop。命令的基本格式为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo /usr/jexus/jws start <span class="o">[</span>站点名<span class="o">(</span>可选，不指定时表示所有<span class="o">)]</span>
+</span></span><span class="line"><span class="cl">sudo /usr/jexus/jws restart <span class="o">[</span>站点名<span class="o">(</span>可选，不指定时表示所有<span class="o">)]</span>
+</span></span><span class="line"><span class="cl">sudo /usr/jexus/jws stop <span class="o">[</span>站点名<span class="o">(</span>可选，不指定时表示所有<span class="o">)]</span>
+</span></span></code></pre></div><p>在这个例子里，我们执行如下命令来启动 aspnet 这个站点：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo /usr/jexus/jws start aspnet
+</span></span></code></pre></div><p>当终端中返回 OK 时，就表示启动成功啦，此时，我们打开浏览器，输入<code>http://localhost:4000</code> 就可以看到如下画面(这里的端口号为 4000)：
+<figure 
+	>
+	<a href="https://ww1.sinaimg.cn/large/4c36074fly1fz05dq1tcmj20m80aqjsf.jpg" >
+		<img src="https://ww1.sinaimg.cn/large/4c36074fly1fz05dq1tcmj20m80aqjsf.jpg"
+			
+			
+			
+            data-src="https://ww1.sinaimg.cn/large/4c36074fly1fz05dq1tcmj20m80aqjsf.jpg"
+			alt="运行在Linux上的ASP.NET">
+	</a>
+	
+	<figcaption>运行在Linux上的ASP.NET</figcaption>
+	
+</figure>
+你就说，这算不算惊喜。我们还可以输入<code>http://localhost:4000/info</code>来验证 Jexus 是否配置正确，当 Jexus 被正确配置以后，你就会看到一个显示着“Welcome to Jexus”的页面。嗯嗯，好像是和 Nginx 挺像的哈！</p>
+<h1 id="docker">Docker+</h1>
+<p>接下来，让我们考虑将这些 Linux 上的工作转移到 Docker 中来做，因为借助 Docker 的容器技术，它可以为我们提供一个足以自给自足的环境。通过这个环境编译测试通过的镜像可以批量地部署到生产环境中。如果你不想在每一台 Linux Server 上都覆盖本文的流程，那么 Docker 将是提高你部署效率的不二选择，而且从认知完整性的角度来看待 Docker，你就会发现它和 Jekins、TravisCI、VSTS 工具一样，都可以非常完美地被接入到持续集成(CI)的流程里去，譬如我们项目组采用的是 Jekins + Gitlib + Docker 的方案，所以，如果你想要选择一个最适合你的持续集成(CI)方案，无论如何，Docker 都是需要去了解的一个知识。关于 Docker 的背景知识大家可以自己去了解，这里我们通过编写 Dockerfile 来完成网站镜像的构建：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="cl"><span class="k">FROM</span><span class="s"> ubuntu:14.04</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">LABEL</span> <span class="nv">vendor</span><span class="o">=</span><span class="s2">&#34;qinyuanpei@163.com&#34;</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="c"># Prepare Environment</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> sudo apt-get update <span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> sudo apt-get install -y<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> sudo apt-get install -y curl<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> sudo apt-get install -y wget<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> sudo curl -sSL https://jexus.org/release/x64/install.sh<span class="p">|</span>sudo sh<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="c"># Deploy Website</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">ADD</span> dest/ /<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> sudo mv -f aspnetconf /usr/jexus/siteconf/aspnetconf<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> sudo mkdir -p /var/www<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> sudo mv ./aspnet /var/www<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="c"># Start Jexus</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">EXPOSE</span><span class="s"> 4000</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /usr/jexus</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">CMD</span> sudo ./jws start aspnet<span class="err">
+</span></span></span></code></pre></div><p>如果你熟悉 Linux 下的命令的话，你就会知道 apt-get、curl、wget 这些命令的含义，真正需要的解释的是 ADD，它表示的是，将 Dockerfile 同级目录下的 dest 目录添加到 Docker 环境中，接下来的命令我们同样非常熟悉，因为这和 Linux 下操作是完全一样的。不过，这里的确有些坑需要踩，在博主构建镜像的过程中，发现容器环境和虚拟机环境还是有本质不同的，这里的 mv 命令在 Docker 下有时候会引发“hard link”的问题，从 Stackoverflow 上好像并没有找到太有价值的答案，总之，这个问题非常的玄学。接下来，我们会将 Docker 容器的 4000 端口暴露出来，为什么是 4000 端口呢？因为这个网站的配置中指向了 4000 端口，这一点在上文中我们已经提及。而入口处的命令，显然是启动 Jexus 服务，这个不再解释。</p>
+<p>这里，我们通过如下命令来构建一个镜像版本：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker build -t jexus-aspnet:v1.0 .
+</span></span></code></pre></div><p>假如这个镜像被成功构建出来，我们就可以使用这个镜像来启动网站啦。如下图所示：
+<figure 
+	>
+	<a href="https://ww1.sinaimg.cn/large/4c36074fly1fz01zbucjvj20m80d5jsm.jpg" >
+		<img src="https://ww1.sinaimg.cn/large/4c36074fly1fz01zbucjvj20m80d5jsm.jpg"
+			
+			
+			
+            data-src="https://ww1.sinaimg.cn/large/4c36074fly1fz01zbucjvj20m80d5jsm.jpg"
+			alt="使用Docker创建网站镜像">
+	</a>
+	
+	<figcaption>使用Docker创建网站镜像</figcaption>
+	
+</figure>
+具体地，我们可以使用 docke image 命令来管理所有的 docker 镜像。这里我们启动网站：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run -p 4050:4000 -t jexus-aspnet:v1.0
+</span></span></code></pre></div><p>这里，我们将 Docker 容器的 4000 端口映射到主机的 4050 端口，当我们在浏览器中输入：<code>http://localhost:4050</code>，就可以得到和 Linux 下一样的结果。不过，在写作这篇博客时，博主使用的是 Windows 下的 Docker，如果大家遇到相关问题，欢迎在博客评论区留言。</p>
+<h1 id="本文小结">本文小结</h1>
+<p>本文从一个实际工作的场景切入，分析和阐述了如何使用 Jexus 实现 ASP.NET 项目在 Linux 下的部署。为了简化这篇文章的写作，我们使用了一个 ASP.NET MVC4 的示例项目，真实的项目通常会有数据库，所以情况会比本文所介绍的流程更为复杂，可这让我们看到了一种可能性不是吗？通过查阅相关资料，博主发现 ASP.NET Core 的部署不需要 Jexus，它只需要一个 dotnet run 命令即可。然后，作为一次体验 Docker 的过程，我们通过编写 Dockerfile 的方式让 Jexus 和 Docker 发生了某种奇妙的关联。作为本文的一个延伸，我们需要考虑网站服务停止后可以自动重启，这就是所谓的守护进程机制啦，感兴趣的朋友可以继续深入研究，Jexus 提供了大量的优秀特性，这篇文章中所看到的不过是冰山一角。最终，我们的项目还是没有使用 Jexus，这其中有对 Jexus 性能的不信任，有因为 COM 组件而做出的妥协，有对 Mono 非官方方案的鄙夷……可以说，技术选型是一个受到多种因素制约的问题，谁拥有了话语权，就可以左右技术选型的走向，这是否又印证了，人类并非如自己所标榜的那般理性和正义？好了，以上就是这篇文章的全部内容啦，今天是 5 月 20 日，如果没有人对你说“我爱你”，请记得对自己说“我爱你”，谢谢大家！</p>
+
+</section>
+
+
+    <footer class="article-footer">
+
+    
+
+<div style="padding: 10px 0; margin: 20px auto; width: 100%; font-size:16px; text-align: center;">
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+        <span>打赏</span></button>
+    <div id="QR" style="display: none;">
+        
+        <div id="wechat" style="display: inline-block">
+            <a class="fancybox" rel="group">
+                <img id="wechat_qr" src="/imgs/reward/wechat.jpg" alt="wechat"></a>
+            <p>微信打赏</p>
+        </div>
+        
+        <div id="wechat" style="display: inline-block">
+            <a class="fancybox" rel="group">
+                <img id="alipay_qr" src="/imgs/reward/alipay.jpg" alt="alipay"></a>
+            <p>支付宝打赏</p>
+        </div>
+        
+    </div>
+</div>
+
+
+    
+    <section class="article-tags">
+        
+            <a href="/tags/jexus/">Jexus</a>
+        
+            <a href="/tags/docker/">Docker</a>
+        
+            <a href="/tags/linux/">Linux</a>
+        
+    </section>
+
+
+    <div class="social-share"></div>
+    
+    <section class="article-footer-notes">
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>
+            BY-NC-SA 4.0
+        </span>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+        <span>
+            最后更新 2024-02-19
+        </span>
+        
+    </section>
+</footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
+    
+</article>
+
+    
+
+    <aside class="related-contents--wrapper">
+    
+    
+    
+        <h2 class="section-title">相关文章</h2>
+        <div class="related-contents">
+            <div class="flex article-list--tile">
+                
+                    
+<article class="has-image">
+    <a href="/posts/3972610476/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3972610476" loading="lazy" data-key="3972610476" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">在 WSL 中使用 Linux 桌面环境的尝试与总结</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/3995512051/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3995512051" loading="lazy" data-key="3995512051" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">基于 Docker 构建 .NET 持续集成环境</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/">
+        
+        
+            <div class="article-image">
+                
+                    <img src="/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/russian-gd53d0982f_1280.jpg" loading="lazy" data-key="Integrate-Crontab-Scheduled-Tasks-Inside-Docker-Containers" data-hash="/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/russian-gd53d0982f_1280.jpg"/>
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">在 Docker 容器内集成 Crontab 定时任务</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/686567367/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=686567367" loading="lazy" data-key="686567367" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">记一次从已损坏的 Git 仓库中找回代码的经历</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/4159187524/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=4159187524" loading="lazy" data-key="4159187524" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">WSL 下 Docker 使用踩坑小记</h2>
+        </div>
+    </a>
+</article>
+                
+            </div>
+        </div>
+    
+</aside>
+
+     
+    
+        
+    <script src='//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js'></script>
+<div id="waline" class="waline-container"></div>
+<style>
+    .waline-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+    .waline-container .vcount {
+        color: var(--card-text-color-main);
+    }
+</style>
+
+
+    <script>
+        
+        var waline = new Waline({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+        });
+    </script>
+
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2014 - 
+        
+        2024 元视角
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> v0.126.1 <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.7.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> <br />
+        已创作 274 篇文章，共计 1038468 字 <br />
+        
+    </section>
+    <section class="written-by">
+        <img src="/imgs/Written-By-Human-Not-By-AI-Badge-white.svg" />
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    
+    
+    <aside class="sidebar right-sidebar sticky">
+        
+            <form action="/search/" class="search-form widget" >
+        <p>
+            <label>搜索</label>
+            <input name="keyword" required placeholder="请输入关键词" />
+        
+            <button title="搜索">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+            </button>
+        </p>
+    </form>
+        
+            
+    <section class="widget archives">
+        
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#故事背景">故事背景</a></li>
+    <li><a href="#关于-jexus">关于 Jexus</a></li>
+    <li><a href="#hello-linux">Hello Linux</a>
+      <ol>
+        <li><a href="#安装-jexus">安装 Jexus</a></li>
+        <li><a href="#配置-jexus">配置 Jexus</a></li>
+        <li><a href="#基本使用">基本使用</a></li>
+      </ol>
+    </li>
+    <li><a href="#docker">Docker+</a></li>
+    <li><a href="#本文小结">本文小结</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+        
+            <section class="widget archives">
+        
+        <h2 class="widget-title section-title">归档</h2>
+
+        
+        
+        
+        
+        
+        <div class="widget-archive--list">
+            <div class="archives-year">
+                    <a href="/archives/#2024">
+                        
+                            <span class="year">2024</span>
+                            <span class="count">14</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2023">
+                        
+                            <span class="year">2023</span>
+                            <span class="count">11</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2022">
+                        
+                            <span class="year">2022</span>
+                            <span class="count">27</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2021">
+                        
+                            <span class="year">2021</span>
+                            <span class="count">42</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2020">
+                        
+                            <span class="year">2020</span>
+                            <span class="count">26</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2019">
+                        
+                            <span class="year">更多</span>
+                        
+                    </a> 
+                </div>
+            
+        </div>
+    </section>
+        
+            <section class="widget archives">
+    
+    <h2 class="widget-title section-title">日历</h2>
+    <div class="widget--toc" style="background-color: white; border-radius: 15px; padding: 10px; margin: 20px auto; width: 300px; height: 480px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+        <img id="calendar-cover" src="" style="object-fit: cover; width: 100%; height: 100%;" />
+    </div>
+</section>
+<script>
+    const getImageUrl = (date) => {
+        const currentYear = date.getFullYear();
+        const currentMonth = String(date.getMonth() + 1).padStart(2, '0');
+        const currentDate = String(date.getDate()).padStart(2, '0');
+        return `https://img.owspace.com/Public/uploads/Download/${currentYear}/${currentMonth}${currentDate}.jpg`
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const eleImg = document.querySelector("#calendar-cover");
+        if (document.location.pathname.startsWith('/posts')) {
+            let publishedTime = document.querySelector('meta[property="article:published_time"]').content;
+            publishedTime = publishedTime.substring(0, 10);
+            eleImg.src = getImageUrl(new Date(publishedTime))
+        } else {
+            eleImg.src = getImageUrl(new Date())
+        }
+    });
+    </script>
+        
+            <section class="widget tagCloud">
+    
+    <h2 class="widget-title section-title">标签云</h2>
+
+    <div class="tagCloud-tags">
+        
+            <a href="/tags/eventbus/" class="font_size_1">
+                EventBus
+            </a>
+        
+            <a href="/tags/%E7%A8%8B%E5%BA%8F%E5%91%98/" class="font_size_4">
+                程序员
+            </a>
+        
+            <a href="/tags/%E6%80%A7%E8%83%BD/" class="font_size_1">
+                性能
+            </a>
+        
+            <a href="/tags/linq/" class="font_size_1">
+                Linq
+            </a>
+        
+            <a href="/tags/%E9%AA%8C%E8%AF%81/" class="font_size_1">
+                验证
+            </a>
+        
+            <a href="/tags/%E5%88%AB%E7%A6%BB/" class="font_size_1">
+                别离
+            </a>
+        
+            <a href="/tags/referrer/" class="font_size_1">
+                Referrer
+            </a>
+        
+            <a href="/tags/cts/" class="font_size_1">
+                CTS
+            </a>
+        
+            <a href="/tags/%E7%89%88%E6%9C%AC%E6%8E%A7%E5%88%B6/" class="font_size_1">
+                版本控制
+            </a>
+        
+            <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" class="font_size_1">
+                大数据
+            </a>
+        
+            <a href="/tags/fp/" class="font_size_1">
+                FP
+            </a>
+        
+            <a href="/tags/%E8%9B%8B%E7%82%92%E9%A5%AD/" class="font_size_1">
+                蛋炒饭
+            </a>
+        
+            <a href="/tags/%E5%AE%B9%E5%99%A8/" class="font_size_5">
+                容器
+            </a>
+        
+            <a href="/tags/matplotlib/" class="font_size_1">
+                Matplotlib
+            </a>
+        
+            <a href="/tags/rag/" class="font_size_2">
+                RAG
+            </a>
+        
+            <a href="/tags/%E6%97%A5%E5%89%A7/" class="font_size_1">
+                日剧
+            </a>
+        
+            <a href="/tags/%E7%88%B1%E6%83%85/" class="font_size_2">
+                爱情
+            </a>
+        
+            <a href="/tags/%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A0%91/" class="font_size_1">
+                表达式树
+            </a>
+        
+            <a href="/tags/%E7%A7%91%E5%B9%BB%E5%B0%8F%E8%AF%B4/" class="font_size_1">
+                科幻小说
+            </a>
+        
+            <a href="/tags/rtmp/" class="font_size_1">
+                RTMP
+            </a>
+        
+            <a href="/tags/abp/" class="font_size_2">
+                ABP
+            </a>
+        
+            <a href="/tags/%E5%BE%AE%E5%8D%9A/" class="font_size_3">
+                微博
+            </a>
+        
+            <a href="/tags/%E8%AE%AD%E7%BB%83/" class="font_size_1">
+                训练
+            </a>
+        
+            <a href="/tags/keycloak/" class="font_size_1">
+                Keycloak
+            </a>
+        
+            <a href="/tags/%E8%AE%BE%E8%AE%A1/" class="font_size_2">
+                设计
+            </a>
+        
+
+        <a href="/tags" class="font_size_9999">
+            更多
+        </a>
+    </div>
+</section>
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script>
+<script type="text/javascript" src="/ts/main.js" defer></script>
+<script type="text/javascript" src="/ts/badge.js"></script>
+    <script type="text/javascript">
+        let createBadge = window.createBadge;
+        createBadge('Git', '7f1e7a2', '#35495e', '#ffc107');
+        createBadge('Hugo', 'v0.126.1', '#35495e', '#41b883');
+        
+    </script><script type="text/javascript" src="/ts/chat-widget.js" defer></script>
+
+
+
+    </body>
+</html>

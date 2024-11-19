@@ -1,1 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>时区 on 元视角</title><link>https://blog.yuanpei.me/tags/%E6%97%B6%E5%8C%BA/</link><description>Recent content in 时区 on 元视角</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 19 Feb 2024 16:35:53 +0800</lastBuildDate><atom:link href="https://blog.yuanpei.me/tags/%E6%97%B6%E5%8C%BA/index.xml" rel="self" type="application/rss+xml"/><item><title>一个由服务器时区引发的 Bug</title><link>https://blog.yuanpei.me/posts/172426938/</link><pubDate>Tue, 05 Jun 2018 11:03:57 +0000</pubDate><guid>https://blog.yuanpei.me/posts/172426938/</guid><description>太阳照常升起，在每个需要挤公交车上班的日子里，即使窗外早已大雨如注。想来只有在周末，太阳会陪着我一起起床，所谓睡觉睡到自然醒，在雨天里保持晴天的心情，相当大的程度上，是因为今天不必上班。因此，一周里的心情晴雨表，简直就是活生生的天气预报，可</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>时区 on 元视角</title>
+    <link>http://localhost:1313/tags/%E6%97%B6%E5%8C%BA/</link>
+    <description>Recent content in 时区 on 元视角</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 19 Feb 2024 16:35:53 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/%E6%97%B6%E5%8C%BA/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>一个由服务器时区引发的 Bug</title>
+      <link>http://localhost:1313/posts/172426938/</link>
+      <pubDate>Tue, 05 Jun 2018 11:03:57 +0000</pubDate>
+      <guid>http://localhost:1313/posts/172426938/</guid>
+      <description>太阳照常升起，在每个需要挤公交车上班的日子里，即使窗外早已大雨如注。想来只有在周末，太阳会陪着我一起起床，所谓睡觉睡到自然醒，在雨天里保持晴天的心情，相当大的程度上，是因为今天不必上班。因此，一周里的心情晴雨表，简直就是活生生的天气预报，可</description>
+    </item>
+  </channel>
+</rss>

@@ -1,279 +1,1377 @@
-<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=referrer content="no-referrer"><meta name=viewport content='width=device-width,initial-scale=1'><meta http-equiv=content-language content='zh-CN'><link rel=apple-touch-icon href=/imgs/avatar.jpg><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="black"><link rel=icon type=image/x-icon href=/imgs/favicon.ico><link rel=icon type=image/png href=/imgs/favicon.png><meta name=description content='本文讨论了数据库审计的重要性和实现方式。审计是一种记录数据表中数据变更的机制，有助于追溯数据变更历史、通知相关人员以及排查错误数据。文章首先介绍了 EF 和 EF Core 中的实体跟踪功能，通过重写 DbContext 的 SaveChanges() 方法，利用 ChangeTracker 来捕获实体字段的变化，实现审计日志记录。然后，针对 Dapper 这类轻量级 ORM，提出了使用 Castle 动态代理库实现接口拦截，记录审计日志的方案。此外，文中还探讨了领域事件在数据同步中的应用，强调通过事件驱动来处理数据变更，可提高效率并减少代码耦合。最后，文章总结了 EF Core 和 Dapper 实现审计功能的方法，并提出了基于领域事件的同步策略，以优化数据同步过程。'><meta name=keywords content='EF,Dapper,审计'><meta name=author content="飞鸿踏雪"><title>通过 EF/Dapper 扩展实现数据库审计功能 - 元视角</title>
-<link rel=canonical href=https://blog.yuanpei.me/posts/1289244227/><link rel=stylesheet href=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css><meta property='og:title' content='通过 EF/Dapper 扩展实现数据库审计功能 - 元视角'><meta property='og:description' content='本文讨论了数据库审计的重要性和实现方式。审计是一种记录数据表中数据变更的机制，有助于追溯数据变更历史、通知相关人员以及排查错误数据。文章首先介绍了 EF 和 EF Core 中的实体跟踪功能，通过重写 DbContext 的 SaveChanges() 方法，利用 ChangeTracker 来捕获实体字段的变化，实现审计日志记录。然后，针对 Dapper 这类轻量级 ORM，提出了使用 Castle 动态代理库实现接口拦截，记录审计日志的方案。此外，文中还探讨了领域事件在数据同步中的应用，强调通过事件驱动来处理数据变更，可提高效率并减少代码耦合。最后，文章总结了 EF Core 和 Dapper 实现审计功能的方法，并提出了基于领域事件的同步策略，以优化数据同步过程。'><meta property='og:url' content='https://blog.yuanpei.me/posts/1289244227/'><meta property='og:site_name' content='元视角'><meta property='og:type' content='article'><meta property='article:section' content='Posts'><meta property='article:tag' content='EF'><meta property='article:tag' content='Dapper'><meta property='article:tag' content='审计'><meta property='article:published_time' content='2020-04-24T08:20:32+00:00'><meta property='article:modified_time' content='2024-05-27T11:06:18+08:00'><meta property='og:image' content='https://blog.yuanpei.me/'><meta name=twitter:title content="通过 EF/Dapper 扩展实现数据库审计功能 - 元视角"><meta name=twitter:description content="本文讨论了数据库审计的重要性和实现方式。审计是一种记录数据表中数据变更的机制，有助于追溯数据变更历史、通知相关人员以及排查错误数据。文章首先介绍了 EF 和 EF Core 中的实体跟踪功能，通过重写 DbContext 的 SaveChanges() 方法，利用 ChangeTracker 来捕获实体字段的变化，实现审计日志记录。然后，针对 Dapper 这类轻量级 ORM，提出了使用 Castle 动态代理库实现接口拦截，记录审计日志的方案。此外，文中还探讨了领域事件在数据同步中的应用，强调通过事件驱动来处理数据变更，可提高效率并减少代码耦合。最后，文章总结了 EF Core 和 Dapper 实现审计功能的方法，并提出了基于领域事件的同步策略，以优化数据同步过程。"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://blog.yuanpei.me/'><meta name=msvalidate.01 content="713A48A3FE17D4841C292A6B3942EB4C"><meta name=baidu-site-verification content="c50FGqYOSh"><meta name=google-site-verification content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s"><script src=//instant.page/5.1.0 type=module integrity=sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex
-on-phone--column extended"><div id=article-toolbar><a href=/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
-<span>返回</span></a></div><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
-<span class=hamburger-box><span class=hamburger-inner></span></span></button><header class=site-info><figure class=site-avatar><a href=/><img src=/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar>
-</a><span class=emoji>👌</span></figure><h1 class=site-name><a href=/>元视角</a></h1><h2 class=site-description>起风了，唯有努力生存</h2><ol class=social-menu><li><a href=mailto:qinyuanpei@163.com rel=noreferrer target=_blank title=Mail><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg></a></li><li><a href=https://github.com/qinyuanpei rel=noreferrer target=_blank title=GitHub><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://www.zhihu.com/people/qinyuanpei rel=noreferrer target=_blank title=Zhihu><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 6h6v12h-2l-2 2-1-2h-1z"/><path d="M4 12h6.5"/><path d="M10.5 6h-5"/><path d="M6 4c-.5 2.5-1.5 3.5-2.5 4.5"/><path d="M8 6v7c0 4.5-2 5.5-4 7"/><path d="M11 18l-3-5"/></svg></a></li><li><a href=https://www.douban.com/people/60029335 rel=noreferrer target=_blank title=Douban><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h16"/><path d="M5 4h14"/><path d="M8 8h8a2 2 0 012 2v2a2 2 0 01-2 2H8a2 2 0 01-2-2v-2a2 2 0 012-2z"/><path d="M16 14l-2 6"/><path d="M8 17l1 3"/></svg></a></li><li><a href=https://weibo.com/1278609231/profile rel=noreferrer target=_blank title=Weibo><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 14.127C19 17.2 15.498 20 11 20c-4.126.0-8-2.224-8-5.565.0-1.78.984-3.737 2.7-5.567 2.362-2.51 5.193-3.687 6.551-2.238.415.44.752 1.39.749 2.062 2-1.615 4.308.387 3.5 2.693 1.26.557 2.5.538 2.5 2.742z"/><path d="M15 4h1a5 5 0 015 5v1"/></svg></a></li><li><a href=/index.xml rel=noreferrer target=_blank title=RSS><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="5" cy="19" r="1"/><path d="M4 4a16 16 0 0116 16"/><path d="M4 11a9 9 0 019 9"/></svg></a></li></ol></header><ol class=menu id=main-menu><li><a href=/><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
-<span>首页</span></a></li><li><a href=/archives><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-<span>归档</span></a></li><li><a href=/works><!doctype html><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style/></defs><path d="M843.093333 815.36l-189.44-294.826667A85.333333 85.333333.0 01640 474.453333V170.666667h21.333333a21.333333 21.333333.0 0021.333334-21.333334v-42.666666a21.333333 21.333333.0 00-21.333334-21.333334H362.666667a21.333333 21.333333.0 00-21.333334 21.333334v42.666666a21.333333 21.333333.0 0021.333334 21.333334H384V474.88a85.333333 85.333333.0 01-13.653333 46.08l-189.44 294.826667a64.426667 64.426667.0 000 66.56l13.653333 24.32a64.853333 64.853333.0 0055.466667 32h525.226666a64.853333 64.853333.0 0055.466667-32L844.8 881.92a63.573333 63.573333.0 00-1.706667-66.56zm-400.64-248.32a173.226667 173.226667.0 0026.88-92.16V170.666667h85.333334v303.786666a167.68 167.68.0 0027.306666 92.16l74.24 116.053334H367.786667z" p-id="1250" fill="#8a8a8a"/></svg>
-<span>作品</span></a></li><li><a href=/search><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
-<span>搜索</span></a></li><li><a href=/links><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572 12 20l-7.5-7.428A5 5 0 1112 6.006a5 5 0 117.5 6.572"/><path d="M12 6 8.707 9.293a1 1 0 000 1.414l.543.543c.69.69 1.81.69 2.5.0l1-1a3.182 3.182.0 014.5.0l2.25 2.25"/><path d="M12.5 15.5l2 2"/><path d="M15 13l2 2"/></svg>
-<span>友链</span></a></li><li class=current><a href=/about><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
-<span>关于</span></a></li><li id=dark-mode-toggle><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14.828 14.828A4 4 0 109.172 9.172a4 4 0 005.656 5.656z"/><path d="M6.343 17.657l-1.414 1.414"/><path d="M6.343 6.343 4.929 4.929"/><path d="M17.657 6.343l1.414-1.414"/><path d="M17.657 17.657l1.414 1.414"/><path d="M4 12H2"/><path d="M12 4V2"/><path d="M20 12h2"/><path d="M12 20v2"/></svg>
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3c.132.0.263.0.393.0a7.5 7.5.0 007.92 12.446A9 9 0 1112 2.992z"/><path d="M17 4a2 2 0 002 2 2 2 0 00-2 2 2 2 0 00-2-2 2 2 0 002-2"/><path d="M19 11h2m-1-1v2"/></svg>
-<span id=dark-mode-text>夜间模式</span></li></ol></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/>数据存储</a></header><h2 class=article-title><a href=/posts/1289244227/>通过 EF/Dapper 扩展实现数据库审计功能</a></h2><footer class=article-time><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published>2020-04-24</time></div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 8 分钟</time></div></footer></div></header><div class=post-ai><div class=ai-title><i class=ai-title-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/><path d="M9 16c1 .667 2 1 3 1s2-.333 3-1"/><path d="M9 7 8 3"/><path d="M15 7l1-4"/><path d="M9 12v-1"/><path d="M15 12v-1"/></svg></i><div class=ai-title-text>AI 摘要</div></div><div id=ai-explanation class=ai-explanation></div><div class="ai-explanation ai-explanation-content">本文讨论了数据库审计的重要性和实现方式。审计是一种记录数据表中数据变更的机制，有助于追溯数据变更历史、通知相关人员以及排查错误数据。文章首先介绍了 EF 和 EF Core 中的实体跟踪功能，通过重写 DbContext 的 SaveChanges() 方法，利用 ChangeTracker 来捕获实体字段的变化，实现审计日志记录。然后，针对 Dapper 这类轻量级 ORM，提出了使用 Castle 动态代理库实现接口拦截，记录审计日志的方案。此外，文中还探讨了领域事件在数据同步中的应用，强调通过事件驱动来处理数据变更，可提高效率并减少代码耦合。最后，文章总结了 EF Core 和 Dapper 实现审计功能的方法，并提出了基于领域事件的同步策略，以优化数据同步过程。</div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector(".ai-explanation-content").textContent;new TypeIt("#ai-explanation",{strings:e,speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><section class=article-content><p>相信大家都有过周末被电话“吵醒”的经历，这个时候，客服同事会火急火燎地告诉你，客户反馈生产环境上某某数据“异常”，然后你花费大量时间去排查这些错误数据，发现这是客户使用某一种“骚”操作搞出来的“人祸”。可更多的时候，你不会这么顺利，因为你缺乏有力的证据去支持你的结论。最终，你不情愿地去处理了这些错误数据。你开始反思，为什么没有一种流程去记录客户对数据的变更呢？为什么你总要花时间去和客户解释这些数据产生的原因呢？好了，这就要说到我们今天这篇博客的主题——审计。</p><h1 id=什么是审计>什么是审计</h1><p>结合本文引言中的描述的场景，当我们需要知道某条数据被什么人修改过的时候，或者是希望在数据变更的时候去通知某个人，亦或者是我们需要追溯一条数据的变更历史的时候，我们需要一种机制去记录数据表中的数据变更，这就是所谓的审计。而实际的业务中，可能会有类似，查询某一个员工一天内审批了多少单据的需求。你不要笑，人类常常如此无聊，就像我们有一个异常复杂的计费逻辑，虽然审计日志里记录了某个费用是怎么计算出来的，可花时间最多的地方，无一例外是需要开发去排查和解释的，对于这一点，我时常感觉疲于应对，这是我这篇文章里想要写审计的一个重要原因。</p><h1 id=efef-core-实体跟踪>EF/EF Core 实体跟踪</h1><p>EF 和 EF Core 里都提供了实体跟踪的功能，我的领导经常吐槽我，在操作数据库的时候，喜欢显式地调用<code>repository.Update()</code>方法，因为他觉得项目中的实体跟踪是默认打开的。可当你学习了<code>Vue</code>以后，你了解到<code>Vue</code>中是检测不到数组的某些变化的，所以，这个事情我持保留意见，显式调用就显式调用呗，万一哪天人家把实体跟踪给关闭了呢？不过，话说回来，实体跟踪确实可以帮我们做一点工作的，其中，就包括我们今天要说的审计功能。</p><p>EF 和 EF Core 中的实体追踪主要指 DbContext 类的 ChangeTracker，而通过 DetachChanges()方法，则可以获得那些变化了的实体的集合。所以，使用实体追踪来实现审计功能，本质上就是在 SaveChanges()方法调用前后，记录实体中每一个字段的变化情况。为此，我们考虑编写下面的类——AuditDbContextBase，顾名思义，这是一个审计相关的 DbContext 基类，所以，希望实现审计功能的 DbContext 都会继承这个类。这里，我们重写其 SaveChanges()方法，其基本定义如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-CSharp data-lang=CSharp><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>AuditDbContextBase</span> <span class=p>:</span> <span class=n>DbContext</span><span class=p>,</span> <span class=n>IAuditStorage</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=n>DbSet</span><span class=p>&lt;</span><span class=n>AuditLog</span><span class=p>&gt;</span> <span class=n>AuditLog</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=n>AuditDbContextBase</span><span class=p>(</span><span class=n>DbContextOptions</span> <span class=n>options</span><span class=p>,</span> <span class=n>AuditConfig</span> <span class=n>auditConfig</span><span class=p>)</span> <span class=p>:</span> <span class=k>base</span><span class=p>(</span><span class=n>options</span><span class=p>)</span> <span class=p>{</span> <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=k>virtual</span> <span class=n>Task</span> <span class=n>BeforeSaveChanges</span><span class=p>()</span> <span class=p>{</span> <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=k>virtual</span> <span class=n>Task</span> <span class=n>AfterSaveChanges</span><span class=p>()</span> <span class=p>{</span> <span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kd>override</span> <span class=kd>async</span> <span class=n>Task</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>&gt;</span> <span class=n>SaveChangesAsync</span><span class=p>(</span><span class=kt>bool</span> <span class=n>acceptAllChangesOnSuccess</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>         <span class=n>CancellationToken</span> <span class=n>cancellationToken</span> <span class=p>=</span> <span class=k>default</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=k>await</span> <span class=n>BeforeSaveChanges</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>result</span> <span class=p>=</span> <span class=k>await</span> <span class=k>base</span><span class=p>.</span><span class=n>SaveChangesAsync</span><span class=p>(</span><span class=n>acceptAllChangesOnSuccess</span><span class=p>,</span> <span class=n>cancellationToken</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=k>await</span> <span class=n>AfterSaveChanges</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>result</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=k>void</span> <span class=n>SaveAuditLogs</span><span class=p>(</span><span class=k>params</span> <span class=n>AuditLog</span><span class=p>[]</span> <span class=n>auditLogs</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=n>AuditLog</span><span class=p>.</span><span class=n>AddRange</span><span class=p>(</span><span class=n>auditLogs</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=k>base</span><span class=p>.</span><span class=n>SaveChangesAsync</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><p>接下来，就是去实现<code>BeforeSaveChanges()</code>和<code>AfterSaveChanges()</code>两个方法：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-CSharp data-lang=CSharp><span class=line><span class=cl><span class=c1>//BeforeSaveChanges</span>
-</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>virtual</span> <span class=n>Task</span> <span class=n>BeforeSaveChanges</span><span class=p>()</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=n>ChangeTracker</span><span class=p>.</span><span class=n>DetectChanges</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>    <span class=n>_auditEntries</span> <span class=p>=</span> <span class=k>new</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>AuditEntry</span><span class=p>&gt;();</span>
-</span></span><span class=line><span class=cl>    <span class=k>foreach</span> <span class=p>(</span><span class=kt>var</span> <span class=n>entityEntry</span> <span class=k>in</span> <span class=n>ChangeTracker</span><span class=p>.</span><span class=n>Entries</span><span class=p>())</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>entityEntry</span><span class=p>.</span><span class=n>State</span> <span class=p>==</span> <span class=n>EntityState</span><span class=p>.</span><span class=n>Detached</span> 
-</span></span><span class=line><span class=cl>            <span class=p>||</span> <span class=n>entityEntry</span><span class=p>.</span><span class=n>State</span> <span class=p>==</span> <span class=n>EntityState</span><span class=p>.</span><span class=n>Unchanged</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>            <span class=k>continue</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>entityEntry</span><span class=p>.</span><span class=n>Entity</span><span class=p>.</span><span class=n>GetType</span><span class=p>()</span> <span class=p>==</span> <span class=k>typeof</span><span class=p>(</span><span class=n>AuditLog</span><span class=p>))</span>
-</span></span><span class=line><span class=cl>            <span class=k>continue</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>_auditConfig</span><span class=p>.</span><span class=n>EntityFilters</span><span class=p>.</span><span class=n>Any</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>(</span><span class=n>entityEntry</span><span class=p>)))</span>
-</span></span><span class=line><span class=cl>            <span class=k>continue</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>auditEntry</span> <span class=p>=</span> <span class=k>new</span> <span class=n>AuditEntry</span><span class=p>(</span><span class=n>entityEntry</span><span class=p>,</span> <span class=n>_auditConfig</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=n>_auditEntries</span><span class=p>.</span><span class=n>Add</span><span class=p>(</span><span class=n>auditEntry</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>Task</span><span class=p>.</span><span class=n>CompletedTask</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1>//AfterSaveChanges</span>
-</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>virtual</span> <span class=n>Task</span> <span class=n>AfterSaveChanges</span><span class=p>()</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>_auditEntries</span> <span class=p>==</span> <span class=kc>null</span> <span class=p>||</span> <span class=p>!</span><span class=n>_auditEntries</span><span class=p>.</span><span class=n>Any</span><span class=p>())</span>
-</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>Task</span><span class=p>.</span><span class=n>CompletedTask</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=n>_auditEntries</span><span class=p>.</span><span class=n>ForEach</span><span class=p>(</span><span class=n>auditEntry</span> <span class=p>=&gt;</span> <span class=n>auditEntry</span><span class=p>.</span><span class=n>UpdateTemporaryProperties</span><span class=p>());</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>auditLogs</span> <span class=p>=</span> <span class=n>_auditEntries</span><span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>.</span><span class=n>AsAuditLog</span><span class=p>()).</span><span class=n>ToArray</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(!</span><span class=n>_auditConfig</span><span class=p>.</span><span class=n>AuditStorages</span><span class=p>.</span><span class=n>Any</span><span class=p>())</span>
-</span></span><span class=line><span class=cl>        <span class=n>_auditConfig</span><span class=p>.</span><span class=n>AuditStorages</span><span class=p>.</span><span class=n>Add</span><span class=p>(</span><span class=k>this</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=n>_auditConfig</span><span class=p>.</span><span class=n>AuditStorages</span><span class=p>.</span><span class=n>ForEach</span><span class=p>(</span>
-</span></span><span class=line><span class=cl>        <span class=n>auditStorage</span> <span class=p>=&gt;</span> <span class=n>auditStorage</span><span class=p>.</span><span class=n>SaveAuditLogs</span><span class=p>(</span><span class=n>auditLogs</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>    <span class=p>);</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>Task</span><span class=p>.</span><span class=n>CompletedTask</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><p>可以注意到，我们会在<code>SaveChanges()</code>方法执行前，通过<code>ChangeTracker.DetectChanges()</code>方法显式地捕获“变化"，这些“变化”会被存储到一个临时的列表中。而在<code>SaveChanges()</code>方法执行后，则会更新那些只有在数据提交后才可以获得的“临时”数据，最典型的例子是自增的 ID，在数据提交前，我们是无法获得真正的 ID 的。这个列表中的内容最终会通过<code>AsAuditLog()</code>方法进行转化。下面是<code>AuditEntry</code>中的部分代码片段：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-CSharp data-lang=CSharp><span class=line><span class=cl><span class=c1>//SetValuesCollection</span>
-</span></span><span class=line><span class=cl><span class=kd>private</span> <span class=k>void</span> <span class=n>SetValuesCollection</span><span class=p>(</span><span class=n>List</span><span class=p>&lt;</span><span class=n>PropertyEntry</span><span class=p>&gt;</span> <span class=n>properties</span><span class=p>)</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=k>foreach</span> <span class=p>(</span><span class=kt>var</span> <span class=n>property</span> <span class=k>in</span> <span class=n>properties</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>propertyName</span> <span class=p>=</span> <span class=n>property</span><span class=p>.</span><span class=n>Metadata</span><span class=p>.</span><span class=n>GetColumnName</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>_auditConfig</span><span class=p>.</span><span class=n>PropertyFilters</span><span class=p>.</span><span class=n>Any</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>(</span><span class=n>_entityEntry</span><span class=p>,</span> <span class=n>property</span><span class=p>)))</span>
-</span></span><span class=line><span class=cl>            <span class=k>continue</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>        <span class=k>switch</span> <span class=p>(</span><span class=n>OperationType</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>        <span class=p>{</span>
-</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=n>OperationType</span><span class=p>.</span><span class=n>Created</span><span class=p>:</span>
-</span></span><span class=line><span class=cl>                <span class=n>NewValues</span><span class=p>[</span><span class=n>propertyName</span><span class=p>]</span> <span class=p>=</span> <span class=n>property</span><span class=p>.</span><span class=n>CurrentValue</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>            <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=n>OperationType</span><span class=p>.</span><span class=n>Updated</span><span class=p>:</span>
-</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=p>(</span><span class=n>_auditConfig</span><span class=p>.</span><span class=n>IsIgnoreSameValue</span> 
-</span></span><span class=line><span class=cl>                    <span class=p>&amp;&amp;</span> <span class=n>property</span><span class=p>.</span><span class=n>OriginalValue</span><span class=p>.</span><span class=n>ToString</span><span class=p>()</span> <span class=p>==</span> <span class=n>property</span><span class=p>.</span><span class=n>CurrentValue</span><span class=p>.</span><span class=n>ToString</span><span class=p>())</span>
-</span></span><span class=line><span class=cl>                    <span class=k>continue</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>                <span class=n>OldValues</span><span class=p>[</span><span class=n>propertyName</span><span class=p>]</span> <span class=p>=</span> <span class=n>property</span><span class=p>.</span><span class=n>OriginalValue</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>                <span class=n>NewValues</span><span class=p>[</span><span class=n>propertyName</span><span class=p>]</span> <span class=p>=</span> <span class=n>property</span><span class=p>.</span><span class=n>CurrentValue</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>            <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=n>OperationType</span><span class=p>.</span><span class=n>Deleted</span><span class=p>:</span>
-</span></span><span class=line><span class=cl>                <span class=n>OldValues</span><span class=p>[</span><span class=n>propertyName</span><span class=p>]</span> <span class=p>=</span> <span class=n>property</span><span class=p>.</span><span class=n>OriginalValue</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>            <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>        <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=p>};</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1>//AsAuditLog</span>
-</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=n>AuditLog</span> <span class=n>AsAuditLog</span><span class=p>()</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=k>new</span> <span class=n>AuditLog</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=n>Id</span> <span class=p>=</span> <span class=n>Guid</span><span class=p>.</span><span class=n>NewGuid</span><span class=p>().</span><span class=n>ToString</span><span class=p>(</span><span class=s>&#34;N&#34;</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>        <span class=n>TableName</span> <span class=p>=</span> <span class=n>TableName</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>        <span class=n>CreatedBy</span> <span class=p>=</span> <span class=kt>string</span><span class=p>.</span><span class=n>Empty</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>        <span class=n>CreatedDate</span> <span class=p>=</span> <span class=n>DateTime</span><span class=p>.</span><span class=n>Now</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>        <span class=n>NewValues</span> <span class=p>=</span> <span class=n>NewValues</span><span class=p>.</span><span class=n>Any</span><span class=p>()</span> <span class=p>?</span> <span class=n>JsonConvert</span><span class=p>.</span><span class=n>SerializeObject</span><span class=p>(</span><span class=n>NewValues</span><span class=p>)</span> <span class=p>:</span> <span class=kc>null</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>        <span class=n>OldValues</span> <span class=p>=</span> <span class=n>OldValues</span><span class=p>.</span><span class=n>Any</span><span class=p>()</span> <span class=p>?</span> <span class=n>JsonConvert</span><span class=p>.</span><span class=n>SerializeObject</span><span class=p>(</span><span class=n>OldValues</span><span class=p>)</span> <span class=p>:</span> <span class=kc>null</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>        <span class=n>ExtraData</span> <span class=p>=</span> <span class=n>ExtraData</span><span class=p>.</span><span class=n>Any</span><span class=p>()</span> <span class=p>?</span> <span class=n>JsonConvert</span><span class=p>.</span><span class=n>SerializeObject</span><span class=p>(</span><span class=n>ExtraData</span><span class=p>)</span> <span class=p>:</span> <span class=kc>null</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>        <span class=n>OperationType</span> <span class=p>=</span> <span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>OperationType</span>
-</span></span><span class=line><span class=cl>    <span class=p>};</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><p>在此基础上，我们可以编写我们实际的 DbContext，这里以 CustomerContext 为例，当我们向其中添加、修改和删除 Customer 的时候，就会触发审计相关的逻辑，默认情况下，审计产生的数据 AuditLog 和 Customer 在同一个数据库上下文中，当然，我们可以通过注入 IAuditStore 来实现更精细的控制，例如，可以将审计日志输入到文本文件，甚至是 Mongodb 这样的非关系型数据库里，因为有依赖注入的存在，这些实现起来会非常的简单！</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-plain data-lang=plain><span class=line><span class=cl>//注入AuditLog配置
-</span></span><span class=line><span class=cl>services.AddAuditLog(config =&gt; 
-</span></span><span class=line><span class=cl>    config
-</span></span><span class=line><span class=cl>    .IgnoreTable&lt;AuditLog&gt;()
-</span></span><span class=line><span class=cl>    .IgnoreProperty&lt;AuditLog&gt;(x =&gt; x.CreatedDate)
-</span></span><span class=line><span class=cl>    .WithExtraData(&#34;Tags&#34;, &#34;.NET Core&#34;)
-</span></span><span class=line><span class=cl>    .WithStorage&lt;FileAuditStorage&gt;()
-</span></span><span class=line><span class=cl>    .WithStorage&lt;MongoAuditStorage&gt;()
-</span></span><span class=line><span class=cl>);
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>//注入DbContext
-</span></span><span class=line><span class=cl>services.AddDbContext&lt;CustomerContext&gt;(options =&gt;
-</span></span><span class=line><span class=cl>    options.UseSqlServer(Configuration.GetConnectionString(&#34;DefaultConnection&#34;)));
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>//像平时一样使用EF
-</span></span><span class=line><span class=cl>var entity = _context.Customer.Where(x =&gt; x.Id == customer.Id).FirstOrDefault();
-</span></span><span class=line><span class=cl>entity.Name = customer.Name;
-</span></span><span class=line><span class=cl>entity.Email = customer.Email;
-</span></span><span class=line><span class=cl>entity.Address = customer.Address;
-</span></span><span class=line><span class=cl>entity.Tel = customer.Tel;
-</span></span><span class=line><span class=cl>_context.Customer.Update(entity);
-</span></span><span class=line><span class=cl>await _context.SaveChangesAsync();
-</span></span></code></pre></div><p>下面是最终生成的审计日志信息：</p><p><figure><a href=https://i.loli.net/2020/04/26/yefcJ1749L5TiMD.png><img src=https://i.loli.net/2020/04/26/yefcJ1749L5TiMD.png data-src=https://i.loli.net/2020/04/26/yefcJ1749L5TiMD.png alt=审计日志表展示></a><figcaption>审计日志表展示</figcaption></figure></p><h1 id=castle-动态代理>Castle 动态代理</h1><p>而对于像 Dapper 这种轻量级的 ORM，它本身没有类似 EF/EF Core 的 ChangeTracker 的设计，如果我们在项目中使用 Dapper，并且希望实现审计的相关功能，直观上看就会有一点困难。其实，平时在混合使用 EF/Dapper 的过程中，经常遇到的问题就是，如何确保传统的 ADO.NET 和 EF 在一个数据库事务中，如何确保 Dapper 和 EF 在一个数据库事务中等等。此时，我们就需要一点抽象，首先去实现一个 Dapper 的仓储模式，然后再借助 Castle 这类动态代理库实现对接口的拦截。这里以 Dapper 的扩展库 Dapper.Contrib 为例。首先，我们定义一个仓储接口 IRepository:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-CSharp data-lang=CSharp><span class=line><span class=cl><span class=kd>public</span> <span class=k>interface</span>  <span class=nc>IRepository</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=n>TEntity</span> <span class=n>GetByID</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=kt>object</span> <span class=n>id</span><span class=p>)</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=n>TEntity</span> <span class=n>GetByKeys</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=kt>object</span> <span class=n>keys</span><span class=p>)</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=n>TEntity</span> <span class=n>QueryFirst</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=kt>string</span> <span class=n>sql</span><span class=p>,</span> <span class=kt>object</span> <span class=n>param</span><span class=p>)</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=n>TEntity</span> <span class=n>QuerySingle</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=kt>string</span> <span class=n>sql</span><span class=p>,</span> <span class=kt>object</span> <span class=n>param</span><span class=p>)</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=na>
-</span></span></span><span class=line><span class=cl><span class=na>    [AuditLog(OperationType.Created)]</span>
-</span></span><span class=line><span class=cl>    <span class=k>void</span> <span class=n>Insert</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=k>params</span> <span class=n>TEntity</span><span class=p>[]</span> <span class=n>entities</span><span class=p>)</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=na>
-</span></span></span><span class=line><span class=cl><span class=na>    [AuditLog(OperationType.Updated)]</span>
-</span></span><span class=line><span class=cl>    <span class=k>void</span> <span class=n>Update</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=k>params</span> <span class=n>TEntity</span><span class=p>[]</span> <span class=n>entities</span><span class=p>)</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=na>
-</span></span></span><span class=line><span class=cl><span class=na>    [AuditLog(OperationType.Deleted)]</span>
-</span></span><span class=line><span class=cl>    <span class=k>void</span> <span class=n>Delete</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=k>params</span> <span class=n>TEntity</span><span class=p>[]</span> <span class=n>entities</span><span class=p>)</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=k>void</span> <span class=n>Delete</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=k>params</span> <span class=kt>object</span><span class=p>[]</span> <span class=n>ids</span><span class=p>)</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=n>IEnumerable</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;</span> <span class=n>GetByQuery</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=n>Expression</span><span class=p>&lt;</span><span class=n>Func</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>,</span><span class=kt>bool</span><span class=p>&gt;&gt;</span> <span class=n>exps</span><span class=p>)</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=n>IEnumerable</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;</span> <span class=n>GetByQuery</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=kt>string</span> <span class=n>sql</span><span class=p>,</span> <span class=kt>object</span> <span class=n>param</span><span class=p>)</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=n>IEnumerable</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;</span> <span class=n>GetAll</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;()</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>class</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><p>接下来，我们就可以在拦截器中实现数据审计功能，因为 Dapper 本身没有 ChangeTracker，所以，我们必须要在先从数据库中查出来 OldValue，所以，实际效率应该并不会特别高，这里权当做为大家扩展思路吧！</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-CSharp data-lang=CSharp><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>AuditLogInterceptor</span> <span class=p>:</span> <span class=n>IInterceptor</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=k>void</span> <span class=n>Intercept</span><span class=p>(</span><span class=n>IInvocation</span> <span class=n>invocation</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>repository</span> <span class=p>=</span> <span class=n>invocation</span><span class=p>.</span><span class=n>Proxy</span> <span class=k>as</span> <span class=n>IRepository</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>entityType</span> <span class=p>=</span> <span class=n>GetEntityType</span><span class=p>(</span><span class=n>invocation</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>tableName</span> <span class=p>=</span> <span class=n>GetTableName</span><span class=p>(</span><span class=n>entityType</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>tableIdProperty</span> <span class=p>=</span> <span class=n>entityType</span><span class=p>.</span><span class=n>GetProperty</span><span class=p>(</span><span class=s>&#34;Id&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>auditLogAttrs</span> <span class=p>=</span> <span class=n>invocation</span><span class=p>.</span><span class=n>Method</span><span class=p>.</span><span class=n>GetCustomAttributes</span><span class=p>(</span><span class=k>typeof</span><span class=p>(</span><span class=n>AuditLogAttribute</span><span class=p>),</span> <span class=kc>false</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>auditLogAttrs</span> <span class=p>==</span> <span class=kc>null</span> <span class=p>||</span> <span class=n>auditLogAttrs</span><span class=p>.</span><span class=n>Length</span> <span class=p>==</span> <span class=m>0</span> <span class=p>||</span> <span class=n>entityType</span> <span class=p>==</span> <span class=k>typeof</span><span class=p>(</span><span class=n>AuditLog</span><span class=p>))</span>
-</span></span><span class=line><span class=cl>        <span class=p>{</span>
-</span></span><span class=line><span class=cl>            <span class=n>invocation</span><span class=p>.</span><span class=n>Proceed</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>            <span class=k>return</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>        <span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>auditLogAttr</span> <span class=p>=</span> <span class=p>(</span><span class=n>auditLogAttrs</span> <span class=k>as</span> <span class=n>AuditLogAttribute</span><span class=p>[])[</span><span class=m>0</span><span class=p>];</span>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>auditLogs</span> <span class=p>=</span> <span class=k>new</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>AuditLog</span><span class=p>&gt;();</span>
-</span></span><span class=line><span class=cl>        <span class=k>switch</span> <span class=p>(</span><span class=n>auditLogAttr</span><span class=p>.</span><span class=n>OperationType</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>        <span class=p>{</span>
-</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=n>Domain</span><span class=p>.</span><span class=n>OperationType</span><span class=p>.</span><span class=n>Created</span><span class=p>:</span>
-</span></span><span class=line><span class=cl>                <span class=n>auditLogs</span> <span class=p>=</span> <span class=n>GetAddedAuditLogs</span><span class=p>(</span><span class=n>invocation</span><span class=p>,</span> <span class=n>tableName</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>            <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=n>Domain</span><span class=p>.</span><span class=n>OperationType</span><span class=p>.</span><span class=n>Updated</span><span class=p>:</span>
-</span></span><span class=line><span class=cl>                <span class=n>auditLogs</span> <span class=p>=</span> <span class=n>GetUpdatedAuditLogs</span><span class=p>(</span><span class=n>invocation</span><span class=p>,</span> <span class=n>tableName</span><span class=p>,</span> <span class=n>entityType</span><span class=p>,</span> 
-</span></span><span class=line><span class=cl>                    <span class=n>tableIdProperty</span><span class=p>,</span> <span class=n>repository</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>            <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=n>Domain</span><span class=p>.</span><span class=n>OperationType</span><span class=p>.</span><span class=n>Deleted</span><span class=p>:</span>
-</span></span><span class=line><span class=cl>                <span class=n>auditLogs</span> <span class=p>=</span> <span class=n>GetDeletedAuditLogs</span><span class=p>(</span><span class=n>invocation</span><span class=p>,</span> <span class=n>tableName</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>            <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>        <span class=p>}</span>
-</span></span><span class=line><span class=cl>            
-</span></span><span class=line><span class=cl>        <span class=n>invocation</span><span class=p>.</span><span class=n>Proceed</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>        <span class=n>repository</span><span class=p>.</span><span class=n>Insert</span><span class=p>&lt;</span><span class=n>AuditLog</span><span class=p>&gt;(</span><span class=n>auditLogs</span><span class=p>.</span><span class=n>ToArray</span><span class=p>());</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><p>同样地，这里需要需要使用<code>Autofac</code>将其注册到 IoC 容器中：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-CSharp data-lang=CSharp><span class=line><span class=cl><span class=n>builder</span><span class=p>.</span><span class=n>RegisterType</span><span class=p>&lt;</span><span class=n>DapperRepository</span><span class=p>&gt;().</span><span class=n>As</span><span class=p>&lt;</span><span class=n>IRepository</span><span class=p>&gt;()</span>
-</span></span><span class=line><span class=cl>    <span class=p>.</span><span class=n>InterceptedBy</span><span class=p>(</span><span class=k>typeof</span><span class=p>(</span><span class=n>AuditLogInterceptor</span><span class=p>))</span>
-</span></span><span class=line><span class=cl>    <span class=p>.</span><span class=n>EnableInterfaceInterceptors</span><span class=p>();</span>
-</span></span><span class=line><span class=cl><span class=n>builder</span><span class=p>.</span><span class=n>RegisterType</span><span class=p>&lt;</span><span class=n>AuditLogInterceptor</span><span class=p>&gt;();</span>
-</span></span></code></pre></div><h1 id=思路延伸领域事件>思路延伸：领域事件</h1><p>最近这段时间，对于数据同步这类“需求”略有感触，譬如某种单据在两个互为上下游的系统里流转，譬如不同系统间实时地对基础资料进行同步等。这类需求可能会通过<code>ETL</code>、<code>DBLink</code>这类“数据库”手段实现，亦有可能是通过互相调用 API 的方式实现，再者无非是通过数据库实现类似消息队列的功能……而我个人，更推崇通过事件来处理，因为它更接近人类思考的本质，希望在适当的时机来“通知”对方，而论询实际上是一种相当低效的沟通方式。一个订单被创建，一条记录被修改，本质上都是一个特定事件，而在业务上对此感兴趣的任何第三方，都可以去订阅这个事件，这就是事件驱动的思想。</p><p><figure><a href=https://i.loli.net/2020/04/24/8sgUqxmF5n2CdYO.png><img src=https://i.loli.net/2020/04/24/8sgUqxmF5n2CdYO.png data-src=https://i.loli.net/2020/04/24/8sgUqxmF5n2CdYO.png alt=领域事件></a><figcaption>领域事件</figcaption></figure></p><p>我拜读了几篇关于“领域驱动设计(DDD)”文章，了解到 DDD 中有领域事件和集成事件的概念。最直接的体会就是，DDD 是主张“充血模型”的，它把事件附加到实体上，最大的好处就是，可以让“发送(Dispatch)”事件的代码，集中地放在一个地方。而我们现在的业务代码，基本是高度耦合的，每次去添加一个事件的时候，最担心地就是遗漏了某个地方。按照 DDD 的思想，实现领域事件，最常用的伎俩是重写 DbContext 的 SaveChanges()方法，或者在 EF 中去指定 DbContext 的 Complate 事件。这里同样借助了 ChangeTracker 来实现：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-CSharp data-lang=CSharp><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>OrderContext</span> <span class=p>:</span> <span class=n>DbContext</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kd>async</span> <span class=n>Task</span><span class=p>&lt;</span><span class=kt>bool</span><span class=p>&gt;</span> <span class=n>SaveChangesAsync</span><span class=p>(</span><span class=n>CancellationToken</span> <span class=n>cancellationToken</span> <span class=p>=</span> <span class=k>default</span><span class=p>(</span><span class=n>CancellationToken</span><span class=p>))</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>aggregateRoots</span> <span class=p>=</span> <span class=n>dbContext</span><span class=p>.</span><span class=n>ChangeTracker</span><span class=p>.</span><span class=n>Entries</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>        <span class=k>await</span> <span class=n>_eventDispatcher</span><span class=p>.</span><span class=n>DispatchAsync</span><span class=p>(</span><span class=n>aggregateRoots</span><span class=p>,</span><span class=n>cancellationToken</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>result</span> <span class=p>=</span> <span class=k>await</span> <span class=k>base</span><span class=p>.</span><span class=n>SaveChangesAsync</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><p>其中，<code>_eventDispatcher</code>作为事件分发器来分发事件，它实现了<code>IEventDispatcher</code>接口。相对应地，事件订阅者需要实现<code>IDomainEventHandler</code>接口。如果是最简单的进程内通信，那么你需要一个容器来管理<code>IDomainEvent</code>和<code>IDomainEventHandler</code>间的关系；而如果是不同微服务间的通信，那么你需要引入<code>RabbitMQ</code>或者<code>kafka</code>这类消息队列中间件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-CSharp data-lang=CSharp><span class=line><span class=cl><span class=kd>public</span> <span class=k>interface</span> <span class=nc>IDomainEvent</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>interface</span> <span class=nc>IDomainEventHandler</span><span class=p>&lt;</span><span class=k>in</span> <span class=n>TDomainEvent</span><span class=p>&gt;</span>
-</span></span><span class=line><span class=cl>        <span class=k>where</span> <span class=n>TDomainEvent</span> <span class=p>:</span> <span class=n>IDomainEvent</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=n>Task</span> <span class=n>HandleAysnc</span><span class=p>(</span><span class=n>TDomainEvent</span> <span class=n>@event</span><span class=p>,</span> <span class=n>CancellationToken</span> <span class=n>cancellationToken</span> <span class=p>=</span> <span class=k>default</span><span class=p>);</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>interface</span> <span class=nc>IEventDispatcher</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=n>Task</span> <span class=n>DispatchAsync</span><span class=p>&lt;</span><span class=n>TDomainEvent</span><span class=p>&gt;(</span>
-</span></span><span class=line><span class=cl>        <span class=n>TDomainEvent</span> <span class=n>@event</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>        <span class=n>CancellationToken</span> <span class=n>cancellationToken</span> <span class=p>=</span> <span class=k>default</span><span class=p>)</span> <span class=k>where</span> <span class=n>TDomainEvent</span> <span class=p>:</span><span class=n>IDomainEvent</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><p>所以，你现在问我怎么样做数据同步好，我一定会说，通过事件来处理。因为这样，每一条数据的新增、更新、删除，都可以事件的形式发布出去，而关心这些数据的下游系统，则只需要订阅这些事件，该干嘛好嘛，何乐而不为呢？搞什么中间表，打什么标记，用数据库一遍遍地实现消息队列有意思吗？同样地，你会意识到，仓储模式，哪怕 ORM 换成 Dapper，我们一样可以去发布这些事件，增量同步自然是要比全量同步优雅而且高效的。最重要的是，程序员再不需要到处找地方埋点了，你看我博客更新频率这么低，不就是因为这些事情浪费了时间吗(逃？因为，全量 + 实时同步就是一个非常愚蠢的决定。</p><h1 id=本文小结>本文小结</h1><p>本文分别针对<code>EF Core</code>和<code>Dapper</code>实现了数据库审计的功能。对于前者，主要是通过重写 DbContext 的<code>SaveChanges()</code>方法来实现，而<code>EF</code>及<code>EF Core</code>中的<code>ChangeTracker</code>则提供了一种获取数据库表记录变化前后值的能力。而对于后者，主要是实现了<code>Dapper</code>的仓储模式，在此基础上结合<code>Castle</code>的动态代理功能，对仓储接口进行拦截，以此实现审计日志的记录功能。整体来看，后者对代码的侵入性要更小一点，理论上我们可以实现<code>EF</code>或<code>EF Core</code>的仓储模式，这样两者在实现上会更接近一点，当然，更直接的方案是去拦截<code>SaveChanges()</code>方法，这和我们使用继承的目的是一样的，由于 Dapper 本身没有<code>ChangeTracker</code>，所以，在处理<code>Update()</code>相关的仓储接口时，都需要先查询一次数据库，这一点是这个方案里最大的短板。而顺着这个方案扩展下去，我们同样可以挖掘出一点<code>DDD</code>里<code>领域事件</code>的意味，这就变得很有意思了，不是吗？这篇博客就先写到这里吧……再见</p></section><footer class=article-footer><div style="padding:10px 0;margin:20px auto;width:100%;font-size:16px;text-align:center"><button id=rewardButton disable=enable onclick='var qr=document.getElementById("QR");qr.style.display==="none"?qr.style.display="block":qr.style.display="none"'>
-<span>打赏</span></button><div id=QR style=display:none><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=wechat_qr src=/imgs/reward/wechat.jpg alt=wechat></a><p>微信打赏</p></div><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=alipay_qr src=/imgs/reward/alipay.jpg alt=alipay></a><p>支付宝打赏</p></div></div></div><section class=article-tags><a href=/tags/ef/>EF</a>
-<a href=/tags/dapper/>Dapper</a>
-<a href=/tags/%E5%AE%A1%E8%AE%A1/>审计</a></section><div class=social-share></div><section class=article-footer-notes><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>BY-NC-SA 4.0
-</span><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<span>最后更新 2024-05-27</span></section></footer><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css integrity=sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn crossorigin=anonymous><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js integrity=sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8 crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js integrity=sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl crossorigin=anonymous defer></script><script>window.addEventListener("DOMContentLoaded",()=>{renderMathInElement(document.querySelector(`.article-content`),{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}]})})</script></article><aside class=related-contents--wrapper><h2 class=section-title>相关文章</h2><div class=related-contents><div class="flex article-list--tile"><article class=has-image><a href=/posts/3219639636/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3219639636" loading=lazy data-key=3219639636 data-hash></div><div class=article-details><h2 class=article-title>EFCore 实体命名约定库：EFCore.NamingConventions</h2></div></a></article><article class=has-image><a href=/posts/2151871792/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=2151871792" loading=lazy data-key=2151871792 data-hash></div><div class=article-details><h2 class=article-title>浅议 EF Core 分库分表及多租户架构的实现</h2></div></a></article><article class=has-image><a href=/posts/3086300103/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3086300103" loading=lazy data-key=3086300103 data-hash></div><div class=article-details><h2 class=article-title>Dapper.Contrib 在 Oracle 环境下引发 ORA-00928 异常问题的解决</h2></div></a></article><article class=has-image><a href=/posts/2418566449/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=2418566449" loading=lazy data-key=2418566449 data-hash></div><div class=article-details><h2 class=article-title>基于 EF 的数据库主从复制、读写分离实现</h2></div></a></article><article class=has-image><a href=/posts/integration-of-distributed-tracing-system-and-logging-system/><div class=article-image><img src=/posts/integration-of-distributed-tracing-system-and-logging-system/bridge.jpg loading=lazy data-key=Integration-Of-Distributed-Tracing-System-And-Logging-System data-hash=/posts/integration-of-distributed-tracing-system-and-logging-system/bridge.jpg></div><div class=article-details><h2 class=article-title>浅议分布式链路追踪与日志的整合</h2></div></a></article></div></div></aside><script src=//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js></script><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}</style><script>var waline=new Waline({el:"#waline",serverURL:"https://waline.yuanpei.me/",lang:"zh",dark:"auto",path:window.location.href,requiredMeta:["nick","mail"]})</script><footer class=site-footer><section class=copyright>&copy;
-2014 -
-2024 元视角</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> v0.126.1<br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.7.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a><br>已创作 274 篇文章，共计 1038468 字<br></section><section class=written-by><img src=/imgs/Written-By-Human-Not-By-AI-Badge-white.svg></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-<button class="pswp__button pswp__button--share" title=Share></button>
-<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-</button>
-<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous></main><aside class="sidebar right-sidebar sticky"><form action=/search/ class="search-form widget"><p><label>搜索</label>
-<input name=keyword required placeholder=请输入关键词>
-<button title=搜索><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></button></p></form><section class="widget archives"><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#什么是审计>什么是审计</a></li><li><a href=#efef-core-实体跟踪>EF/EF Core 实体跟踪</a></li><li><a href=#castle-动态代理>Castle 动态代理</a></li><li><a href=#思路延伸领域事件>思路延伸：领域事件</a></li><li><a href=#本文小结>本文小结</a></li></ol></nav></div></section><section class="widget archives"><h2 class="widget-title section-title">归档</h2><div class=widget-archive--list><div class=archives-year><a href=/archives/#2024><span class=year>2024</span>
-<span class=count>14</span></a></div><div class=archives-year><a href=/archives/#2023><span class=year>2023</span>
-<span class=count>11</span></a></div><div class=archives-year><a href=/archives/#2022><span class=year>2022</span>
-<span class=count>27</span></a></div><div class=archives-year><a href=/archives/#2021><span class=year>2021</span>
-<span class=count>42</span></a></div><div class=archives-year><a href=/archives/#2020><span class=year>2020</span>
-<span class=count>26</span></a></div><div class=archives-year><a href=/archives/#2019><span class=year>更多</span></a></div></div></section><section class="widget archives"><h2 class="widget-title section-title">日历</h2><div class=widget--toc style="background-color:#fff;border-radius:15px;padding:10px;margin:20px auto;width:300px;height:480px;display:flex;justify-content:center;align-items:center;overflow:hidden"><img id=calendar-cover src style=object-fit:cover;width:100%;height:100%></div></section><script>const getImageUrl=e=>{const t=e.getFullYear(),n=String(e.getMonth()+1).padStart(2,"0"),s=String(e.getDate()).padStart(2,"0");return`https://img.owspace.com/Public/uploads/Download/${t}/${n}${s}.jpg`};document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector("#calendar-cover");if(document.location.pathname.startsWith("/posts")){let t=document.querySelector('meta[property="article:published_time"]').content;t=t.substring(0,10),e.src=getImageUrl(new Date(t))}else e.src=getImageUrl(new Date)})</script><section class="widget tagCloud"><h2 class="widget-title section-title">标签云</h2><div class=tagCloud-tags><a href=/tags/%E6%95%B0%E5%AD%97/ class=font_size_1>数字
-</a><a href=/tags/json/ class=font_size_1>JSON
-</a><a href=/tags/%E9%9D%99%E6%80%81%E7%BC%96%E7%BB%87/ class=font_size_1>静态编织
-</a><a href=/tags/%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A0%91/ class=font_size_1>表达式树
-</a><a href=/tags/%E5%8D%83%E5%AF%BB%E5%B0%8F%E5%A7%90/ class=font_size_1>千寻小姐
-</a><a href=/tags/ai/ class=font_size_1>AI
-</a><a href=/tags/%E8%B0%83%E4%BC%98/ class=font_size_1>调优
-</a><a href=/tags/%E8%AF%97%E4%BA%BA/ class=font_size_1>诗人
-</a><a href=/tags/any/ class=font_size_1>Any
-</a><a href=/tags/%E7%8A%B6%E6%80%81/ class=font_size_1>状态
-</a><a href=/tags/referrer/ class=font_size_1>Referrer
-</a><a href=/tags/grpc/ class=font_size_10>GRPC
-</a><a href=/tags/%E6%8A%80%E6%9C%AF/ class=font_size_2>技术
-</a><a href=/tags/%E5%8A%A0%E5%AF%86/ class=font_size_2>加密
-</a><a href=/tags/%E7%BC%96%E7%A8%8B/ class=font_size_6>编程
-</a><a href=/tags/gpts/ class=font_size_1>GPTs
-</a><a href=/tags/%E9%80%9A%E4%BF%A1/ class=font_size_2>通信
-</a><a href=/tags/webview2/ class=font_size_1>WebView2
-</a><a href=/tags/bash/ class=font_size_3>Bash
-</a><a href=/tags/2019/ class=font_size_1>2019
-</a><a href=/tags/%E8%AF%84%E8%AE%BA/ class=font_size_1>评论
-</a><a href=/tags/llama.cpp/ class=font_size_1>Llama.cpp
-</a><a href=/tags/envoy/ class=font_size_8>Envoy
-</a><a href=/tags/%E6%97%B6%E5%8C%BA/ class=font_size_1>时区
-</a><a href=/tags/%E5%A3%81%E7%BA%B8/ class=font_size_1>壁纸
-</a><a href=/tags class=font_size_9999>更多</a></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous></script><script type=text/javascript src=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/ts/main.js defer></script><script type=text/javascript src=/ts/badge.js></script><script type=text/javascript>let createBadge=window.createBadge;createBadge("Git","7f1e7a2","#35495e","#ffc107"),createBadge("Hugo","v0.126.1","#35495e","#41b883")</script><script type=text/javascript src=/ts/chat-widget.js defer></script></body></html>
+<!DOCTYPE html>
+<html lang="en-us">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name="referrer" content="no-referrer"/>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+
+<meta http-equiv='content-language' content='zh-CN'>
+
+
+<link rel="apple-touch-icon" href="/imgs/avatar.jpg">
+
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+
+<link rel="icon" type="image/x-icon" href="/imgs/favicon.ico">
+
+
+<link rel="icon" type="image/png" href="/imgs/favicon.png"><meta name='description' content='本文讨论了数据库审计的重要性和实现方式。审计是一种记录数据表中数据变更的机制，有助于追溯数据变更历史、通知相关人员以及排查错误数据。文章首先介绍了 EF 和 EF Core 中的实体跟踪功能，通过重写 DbContext 的 SaveChanges() 方法，利用 ChangeTracker 来捕获实体字段的变化，实现审计日志记录。然后，针对 Dapper 这类轻量级 ORM，提出了使用 Castle 动态代理库实现接口拦截，记录审计日志的方案。此外，文中还探讨了领域事件在数据同步中的应用，强调通过事件驱动来处理数据变更，可提高效率并减少代码耦合。最后，文章总结了 EF Core 和 Dapper 实现审计功能的方法，并提出了基于领域事件的同步策略，以优化数据同步过程。'><meta name='keywords' content='EF, Dapper, 审计'>
+
+<meta name="author" content="飞鸿踏雪"><title>通过 EF/Dapper 扩展实现数据库审计功能 - 元视角</title>
+
+<link rel='canonical' href='http://localhost:1313/posts/1289244227/'>
+
+
+
+<link rel="stylesheet" href="/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css">
+<meta property='og:title' content='通过 EF/Dapper 扩展实现数据库审计功能 - 元视角'>
+<meta property='og:description' content='本文讨论了数据库审计的重要性和实现方式。审计是一种记录数据表中数据变更的机制，有助于追溯数据变更历史、通知相关人员以及排查错误数据。文章首先介绍了 EF 和 EF Core 中的实体跟踪功能，通过重写 DbContext 的 SaveChanges() 方法，利用 ChangeTracker 来捕获实体字段的变化，实现审计日志记录。然后，针对 Dapper 这类轻量级 ORM，提出了使用 Castle 动态代理库实现接口拦截，记录审计日志的方案。此外，文中还探讨了领域事件在数据同步中的应用，强调通过事件驱动来处理数据变更，可提高效率并减少代码耦合。最后，文章总结了 EF Core 和 Dapper 实现审计功能的方法，并提出了基于领域事件的同步策略，以优化数据同步过程。'>
+<meta property='og:url' content='http://localhost:1313/posts/1289244227/'>
+<meta property='og:site_name' content='元视角'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='EF' /><meta property='article:tag' content='Dapper' /><meta property='article:tag' content='审计' /><meta property='article:published_time' content='2020-04-24T08:20:32&#43;00:00'/><meta property='article:modified_time' content='2024-05-27T11:06:18&#43;08:00'/><meta property='og:image' content='http://localhost:1313/' />
+<meta name="twitter:title" content="通过 EF/Dapper 扩展实现数据库审计功能 - 元视角">
+<meta name="twitter:description" content="本文讨论了数据库审计的重要性和实现方式。审计是一种记录数据表中数据变更的机制，有助于追溯数据变更历史、通知相关人员以及排查错误数据。文章首先介绍了 EF 和 EF Core 中的实体跟踪功能，通过重写 DbContext 的 SaveChanges() 方法，利用 ChangeTracker 来捕获实体字段的变化，实现审计日志记录。然后，针对 Dapper 这类轻量级 ORM，提出了使用 Castle 动态代理库实现接口拦截，记录审计日志的方案。此外，文中还探讨了领域事件在数据同步中的应用，强调通过事件驱动来处理数据变更，可提高效率并减少代码耦合。最后，文章总结了 EF Core 和 Dapper 实现审计功能的方法，并提出了基于领域事件的同步策略，以优化数据同步过程。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='http://localhost:1313/' />
+
+    
+        
+            <meta name="msvalidate.01" content="713A48A3FE17D4841C292A6B3942EB4C" />
+        
+    
+        
+            <meta name="baidu-site-verification" content="c50FGqYOSh" />
+        
+    
+        
+            <meta name="google-site-verification" content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s" />
+        
+    
+
+  
+
+<script src="//instant.page/5.1.0" type="module" integrity="sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css"
+/>
+    </head>
+    <body class="
+    article-page
+">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex 
+    on-phone--column extended
+">
+    <div id="article-toolbar">
+        <a href="/" class="back-home">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="15 6 9 12 15 18" />
+</svg>
+
+
+
+            <span>返回</span>
+        </a>
+    </div>
+    <aside class="sidebar left-sidebar sticky">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header class="site-info">
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">👌</span>
+                
+            </figure>
+            
+        
+        
+        <h1 class="site-name"><a href="/">元视角</a></h1>
+        <h2 class="site-description">起风了，唯有努力生存</h2><ol class="social-menu">
+                
+                    
+                    
+                    
+                    
+                    <li>
+                        <a 
+                            href='mailto:qinyuanpei@163.com'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Mail"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
+  <path d="M3 7l9 6l9 -6" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://github.com/qinyuanpei'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="GitHub"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://www.zhihu.com/people/qinyuanpei'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Zhihu"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M14 6h6v12h-2l-2 2l-1 -2h-1z" />
+  <path d="M4 12h6.5" />
+  <path d="M10.5 6h-5" />
+  <path d="M6 4c-.5 2.5 -1.5 3.5 -2.5 4.5" />
+  <path d="M8 6v7c0 4.5 -2 5.5 -4 7" />
+  <path d="M11 18l-3 -5" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://www.douban.com/people/60029335'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Douban"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 20h16" />
+  <path d="M5 4h14" />
+  <path d="M8 8h8a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2v-2a2 2 0 0 1 2 -2z" />
+  <path d="M16 14l-2 6" />
+  <path d="M8 17l1 3" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://weibo.com/1278609231/profile'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Weibo"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M19 14.127c0 3.073 -3.502 5.873 -8 5.873c-4.126 0 -8 -2.224 -8 -5.565c0 -1.78 .984 -3.737 2.7 -5.567c2.362 -2.51 5.193 -3.687 6.551 -2.238c.415 .44 .752 1.39 .749 2.062c2 -1.615 4.308 .387 3.5 2.693c1.26 .557 2.5 .538 2.5 2.742z" />
+  <path d="M15 4h1a5 5 0 0 1 5 5v1" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='/index.xml'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="RSS"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="5" cy="19" r="1" />
+  <path d="M4 4a16 16 0 0 1 16 16" />
+  <path d="M4 11a9 9 0 0 1 9 9" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+            </ol></header>
+
+    <ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>首页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/works' >
+                
+                
+                
+                    <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style type="text/css"></style></defs><path d="M843.093333 815.36l-189.44-294.826667a85.333333 85.333333 0 0 1-13.653333-46.08V170.666667h21.333333a21.333333 21.333333 0 0 0 21.333334-21.333334v-42.666666a21.333333 21.333333 0 0 0-21.333334-21.333334h-298.666666a21.333333 21.333333 0 0 0-21.333334 21.333334v42.666666a21.333333 21.333333 0 0 0 21.333334 21.333334H384v304.213333a85.333333 85.333333 0 0 1-13.653333 46.08l-189.44 294.826667a64.426667 64.426667 0 0 0 0 66.56l13.653333 24.32a64.853333 64.853333 0 0 0 55.466667 32h525.226666a64.853333 64.853333 0 0 0 55.466667-32l14.08-24.746667a63.573333 63.573333 0 0 0-1.706667-66.56z m-400.64-248.32a173.226667 173.226667 0 0 0 26.88-92.16V170.666667h85.333334v303.786666a167.68 167.68 0 0 0 27.306666 92.16L656.213333 682.666667H367.786667z" p-id="1250" fill="#8a8a8a"></path></svg>
+                
+                <span>作品</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+  <path d="M12 6l-3.293 3.293a1 1 0 0 0 0 1.414l.543 .543c.69 .69 1.81 .69 2.5 0l1 -1a3.182 3.182 0 0 1 4.5 0l2.25 2.25" />
+  <path d="M12.5 15.5l2 2" />
+  <path d="M15 13l2 2" />
+</svg>
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+
+        <li  class='current' >
+            <a href='/about' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+
+        
+            <li id="dark-mode-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" />
+  <path d="M6.343 17.657l-1.414 1.414" />
+  <path d="M6.343 6.343l-1.414 -1.414" />
+  <path d="M17.657 6.343l1.414 -1.414" />
+  <path d="M17.657 17.657l1.414 1.414" />
+  <path d="M4 12h-2" />
+  <path d="M12 4v-2" />
+  <path d="M20 12h2" />
+  <path d="M12 20v2" />
+</svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+  <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" />
+  <path d="M19 11h2m-1 -1v2" />
+</svg>
+                <span id="dark-mode-text">夜间模式</span>
+            </li>
+        
+    </ol>
+</aside>
+
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/" >
+                数据存储
+            </a>
+        
+    </header>
+    
+
+    <h2 class="article-title">
+        <a href="/posts/1289244227/">通过 EF/Dapper 扩展实现数据库审计功能</a>
+    </h2>
+    
+    
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2020-04-24</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 8 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+</div>
+</header>
+
+    
+        
+
+
+<div class="post-ai">
+    <div class="ai-title">
+        <i class="ai-title-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2z" />
+  <path d="M9 16c1 .667 2 1 3 1s2 -.333 3 -1" />
+  <path d="M9 7l-1 -4" />
+  <path d="M15 7l1 -4" />
+  <path d="M9 12v-1" />
+  <path d="M15 12v-1" />
+</svg></i>
+        <div class="ai-title-text">AI 摘要</div>
+    </div>
+    <div id="ai-explanation" class="ai-explanation"></div>
+    <div class="ai-explanation ai-explanation-content">本文讨论了数据库审计的重要性和实现方式。审计是一种记录数据表中数据变更的机制，有助于追溯数据变更历史、通知相关人员以及排查错误数据。文章首先介绍了 EF 和 EF Core 中的实体跟踪功能，通过重写 DbContext 的 SaveChanges() 方法，利用 ChangeTracker 来捕获实体字段的变化，实现审计日志记录。然后，针对 Dapper 这类轻量级 ORM，提出了使用 Castle 动态代理库实现接口拦截，记录审计日志的方案。此外，文中还探讨了领域事件在数据同步中的应用，强调通过事件驱动来处理数据变更，可提高效率并减少代码耦合。最后，文章总结了 EF Core 和 Dapper 实现审计功能的方法，并提出了基于领域事件的同步策略，以优化数据同步过程。</div>
+</div>
+
+<script src="https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const matchingSummary = document.querySelector(".ai-explanation-content").textContent;
+
+    new TypeIt("#ai-explanation", {
+        strings: matchingSummary,
+        speed: 10,
+        lifeLike: true,
+        waitUntilVisible: true,
+    }).go();
+});
+</script>
+
+    
+
+    <section class="article-content">
+    
+    
+    <p>相信大家都有过周末被电话“吵醒”的经历，这个时候，客服同事会火急火燎地告诉你，客户反馈生产环境上某某数据“异常”，然后你花费大量时间去排查这些错误数据，发现这是客户使用某一种“骚”操作搞出来的“人祸”。可更多的时候，你不会这么顺利，因为你缺乏有力的证据去支持你的结论。最终，你不情愿地去处理了这些错误数据。你开始反思，为什么没有一种流程去记录客户对数据的变更呢？为什么你总要花时间去和客户解释这些数据产生的原因呢？好了，这就要说到我们今天这篇博客的主题——审计。</p>
+<h1 id="什么是审计">什么是审计</h1>
+<p>结合本文引言中的描述的场景，当我们需要知道某条数据被什么人修改过的时候，或者是希望在数据变更的时候去通知某个人，亦或者是我们需要追溯一条数据的变更历史的时候，我们需要一种机制去记录数据表中的数据变更，这就是所谓的审计。而实际的业务中，可能会有类似，查询某一个员工一天内审批了多少单据的需求。你不要笑，人类常常如此无聊，就像我们有一个异常复杂的计费逻辑，虽然审计日志里记录了某个费用是怎么计算出来的，可花时间最多的地方，无一例外是需要开发去排查和解释的，对于这一点，我时常感觉疲于应对，这是我这篇文章里想要写审计的一个重要原因。</p>
+<h1 id="efef-core-实体跟踪">EF/EF Core 实体跟踪</h1>
+<p>EF 和 EF Core 里都提供了实体跟踪的功能，我的领导经常吐槽我，在操作数据库的时候，喜欢显式地调用<code>repository.Update()</code>方法，因为他觉得项目中的实体跟踪是默认打开的。可当你学习了<code>Vue</code>以后，你了解到<code>Vue</code>中是检测不到数组的某些变化的，所以，这个事情我持保留意见，显式调用就显式调用呗，万一哪天人家把实体跟踪给关闭了呢？不过，话说回来，实体跟踪确实可以帮我们做一点工作的，其中，就包括我们今天要说的审计功能。</p>
+<p>EF 和 EF Core 中的实体追踪主要指 DbContext 类的 ChangeTracker，而通过 DetachChanges()方法，则可以获得那些变化了的实体的集合。所以，使用实体追踪来实现审计功能，本质上就是在 SaveChanges()方法调用前后，记录实体中每一个字段的变化情况。为此，我们考虑编写下面的类——AuditDbContextBase，顾名思义，这是一个审计相关的 DbContext 基类，所以，希望实现审计功能的 DbContext 都会继承这个类。这里，我们重写其 SaveChanges()方法，其基本定义如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-CSharp" data-lang="CSharp"><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">class</span> <span class="nc">AuditDbContextBase</span> <span class="p">:</span> <span class="n">DbContext</span><span class="p">,</span> <span class="n">IAuditStorage</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">DbSet</span><span class="p">&lt;</span><span class="n">AuditLog</span><span class="p">&gt;</span> <span class="n">AuditLog</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">AuditDbContextBase</span><span class="p">(</span><span class="n">DbContextOptions</span> <span class="n">options</span><span class="p">,</span> <span class="n">AuditConfig</span> <span class="n">auditConfig</span><span class="p">)</span> <span class="p">:</span> <span class="k">base</span><span class="p">(</span><span class="n">options</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="k">virtual</span> <span class="n">Task</span> <span class="n">BeforeSaveChanges</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="k">virtual</span> <span class="n">Task</span> <span class="n">AfterSaveChanges</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">override</span> <span class="kd">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="n">SaveChangesAsync</span><span class="p">(</span><span class="kt">bool</span> <span class="n">acceptAllChangesOnSuccess</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">         <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">BeforeSaveChanges</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="k">await</span> <span class="k">base</span><span class="p">.</span><span class="n">SaveChangesAsync</span><span class="p">(</span><span class="n">acceptAllChangesOnSuccess</span><span class="p">,</span> <span class="n">cancellationToken</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">AfterSaveChanges</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="k">void</span> <span class="n">SaveAuditLogs</span><span class="p">(</span><span class="k">params</span> <span class="n">AuditLog</span><span class="p">[]</span> <span class="n">auditLogs</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">AuditLog</span><span class="p">.</span><span class="n">AddRange</span><span class="p">(</span><span class="n">auditLogs</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">base</span><span class="p">.</span><span class="n">SaveChangesAsync</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>接下来，就是去实现<code>BeforeSaveChanges()</code>和<code>AfterSaveChanges()</code>两个方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-CSharp" data-lang="CSharp"><span class="line"><span class="cl"><span class="c1">//BeforeSaveChanges</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">virtual</span> <span class="n">Task</span> <span class="n">BeforeSaveChanges</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ChangeTracker</span><span class="p">.</span><span class="n">DetectChanges</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">_auditEntries</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">AuditEntry</span><span class="p">&gt;();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">entityEntry</span> <span class="k">in</span> <span class="n">ChangeTracker</span><span class="p">.</span><span class="n">Entries</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">entityEntry</span><span class="p">.</span><span class="n">State</span> <span class="p">==</span> <span class="n">EntityState</span><span class="p">.</span><span class="n">Detached</span> 
+</span></span><span class="line"><span class="cl">            <span class="p">||</span> <span class="n">entityEntry</span><span class="p">.</span><span class="n">State</span> <span class="p">==</span> <span class="n">EntityState</span><span class="p">.</span><span class="n">Unchanged</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">continue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">entityEntry</span><span class="p">.</span><span class="n">Entity</span><span class="p">.</span><span class="n">GetType</span><span class="p">()</span> <span class="p">==</span> <span class="k">typeof</span><span class="p">(</span><span class="n">AuditLog</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">            <span class="k">continue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">_auditConfig</span><span class="p">.</span><span class="n">EntityFilters</span><span class="p">.</span><span class="n">Any</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">(</span><span class="n">entityEntry</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">            <span class="k">continue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">auditEntry</span> <span class="p">=</span> <span class="k">new</span> <span class="n">AuditEntry</span><span class="p">(</span><span class="n">entityEntry</span><span class="p">,</span> <span class="n">_auditConfig</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">_auditEntries</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">auditEntry</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">Task</span><span class="p">.</span><span class="n">CompletedTask</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//AfterSaveChanges</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">virtual</span> <span class="n">Task</span> <span class="n">AfterSaveChanges</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">_auditEntries</span> <span class="p">==</span> <span class="kc">null</span> <span class="p">||</span> <span class="p">!</span><span class="n">_auditEntries</span><span class="p">.</span><span class="n">Any</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">Task</span><span class="p">.</span><span class="n">CompletedTask</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">_auditEntries</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">auditEntry</span> <span class="p">=&gt;</span> <span class="n">auditEntry</span><span class="p">.</span><span class="n">UpdateTemporaryProperties</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">var</span> <span class="n">auditLogs</span> <span class="p">=</span> <span class="n">_auditEntries</span><span class="p">.</span><span class="n">Select</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">AsAuditLog</span><span class="p">()).</span><span class="n">ToArray</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(!</span><span class="n">_auditConfig</span><span class="p">.</span><span class="n">AuditStorages</span><span class="p">.</span><span class="n">Any</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">        <span class="n">_auditConfig</span><span class="p">.</span><span class="n">AuditStorages</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">_auditConfig</span><span class="p">.</span><span class="n">AuditStorages</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">auditStorage</span> <span class="p">=&gt;</span> <span class="n">auditStorage</span><span class="p">.</span><span class="n">SaveAuditLogs</span><span class="p">(</span><span class="n">auditLogs</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">Task</span><span class="p">.</span><span class="n">CompletedTask</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>可以注意到，我们会在<code>SaveChanges()</code>方法执行前，通过<code>ChangeTracker.DetectChanges()</code>方法显式地捕获“变化&quot;，这些“变化”会被存储到一个临时的列表中。而在<code>SaveChanges()</code>方法执行后，则会更新那些只有在数据提交后才可以获得的“临时”数据，最典型的例子是自增的 ID，在数据提交前，我们是无法获得真正的 ID 的。这个列表中的内容最终会通过<code>AsAuditLog()</code>方法进行转化。下面是<code>AuditEntry</code>中的部分代码片段：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-CSharp" data-lang="CSharp"><span class="line"><span class="cl"><span class="c1">//SetValuesCollection</span>
+</span></span><span class="line"><span class="cl"><span class="kd">private</span> <span class="k">void</span> <span class="n">SetValuesCollection</span><span class="p">(</span><span class="n">List</span><span class="p">&lt;</span><span class="n">PropertyEntry</span><span class="p">&gt;</span> <span class="n">properties</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">property</span> <span class="k">in</span> <span class="n">properties</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">propertyName</span> <span class="p">=</span> <span class="n">property</span><span class="p">.</span><span class="n">Metadata</span><span class="p">.</span><span class="n">GetColumnName</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">_auditConfig</span><span class="p">.</span><span class="n">PropertyFilters</span><span class="p">.</span><span class="n">Any</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">(</span><span class="n">_entityEntry</span><span class="p">,</span> <span class="n">property</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">            <span class="k">continue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">switch</span> <span class="p">(</span><span class="n">OperationType</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="n">OperationType</span><span class="p">.</span><span class="n">Created</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">NewValues</span><span class="p">[</span><span class="n">propertyName</span><span class="p">]</span> <span class="p">=</span> <span class="n">property</span><span class="p">.</span><span class="n">CurrentValue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="n">OperationType</span><span class="p">.</span><span class="n">Updated</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(</span><span class="n">_auditConfig</span><span class="p">.</span><span class="n">IsIgnoreSameValue</span> 
+</span></span><span class="line"><span class="cl">                    <span class="p">&amp;&amp;</span> <span class="n">property</span><span class="p">.</span><span class="n">OriginalValue</span><span class="p">.</span><span class="n">ToString</span><span class="p">()</span> <span class="p">==</span> <span class="n">property</span><span class="p">.</span><span class="n">CurrentValue</span><span class="p">.</span><span class="n">ToString</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">continue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">OldValues</span><span class="p">[</span><span class="n">propertyName</span><span class="p">]</span> <span class="p">=</span> <span class="n">property</span><span class="p">.</span><span class="n">OriginalValue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">NewValues</span><span class="p">[</span><span class="n">propertyName</span><span class="p">]</span> <span class="p">=</span> <span class="n">property</span><span class="p">.</span><span class="n">CurrentValue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="n">OperationType</span><span class="p">.</span><span class="n">Deleted</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">OldValues</span><span class="p">[</span><span class="n">propertyName</span><span class="p">]</span> <span class="p">=</span> <span class="n">property</span><span class="p">.</span><span class="n">OriginalValue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//AsAuditLog</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">AuditLog</span> <span class="n">AsAuditLog</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">new</span> <span class="n">AuditLog</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Id</span> <span class="p">=</span> <span class="n">Guid</span><span class="p">.</span><span class="n">NewGuid</span><span class="p">().</span><span class="n">ToString</span><span class="p">(</span><span class="s">&#34;N&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">TableName</span> <span class="p">=</span> <span class="n">TableName</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">CreatedBy</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">CreatedDate</span> <span class="p">=</span> <span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">NewValues</span> <span class="p">=</span> <span class="n">NewValues</span><span class="p">.</span><span class="n">Any</span><span class="p">()</span> <span class="p">?</span> <span class="n">JsonConvert</span><span class="p">.</span><span class="n">SerializeObject</span><span class="p">(</span><span class="n">NewValues</span><span class="p">)</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">OldValues</span> <span class="p">=</span> <span class="n">OldValues</span><span class="p">.</span><span class="n">Any</span><span class="p">()</span> <span class="p">?</span> <span class="n">JsonConvert</span><span class="p">.</span><span class="n">SerializeObject</span><span class="p">(</span><span class="n">OldValues</span><span class="p">)</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ExtraData</span> <span class="p">=</span> <span class="n">ExtraData</span><span class="p">.</span><span class="n">Any</span><span class="p">()</span> <span class="p">?</span> <span class="n">JsonConvert</span><span class="p">.</span><span class="n">SerializeObject</span><span class="p">(</span><span class="n">ExtraData</span><span class="p">)</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">OperationType</span> <span class="p">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">OperationType</span>
+</span></span><span class="line"><span class="cl">    <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>在此基础上，我们可以编写我们实际的 DbContext，这里以 CustomerContext 为例，当我们向其中添加、修改和删除 Customer 的时候，就会触发审计相关的逻辑，默认情况下，审计产生的数据 AuditLog 和 Customer 在同一个数据库上下文中，当然，我们可以通过注入 IAuditStore 来实现更精细的控制，例如，可以将审计日志输入到文本文件，甚至是 Mongodb 这样的非关系型数据库里，因为有依赖注入的存在，这些实现起来会非常的简单！</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">//注入AuditLog配置
+</span></span><span class="line"><span class="cl">services.AddAuditLog(config =&gt; 
+</span></span><span class="line"><span class="cl">    config
+</span></span><span class="line"><span class="cl">    .IgnoreTable&lt;AuditLog&gt;()
+</span></span><span class="line"><span class="cl">    .IgnoreProperty&lt;AuditLog&gt;(x =&gt; x.CreatedDate)
+</span></span><span class="line"><span class="cl">    .WithExtraData(&#34;Tags&#34;, &#34;.NET Core&#34;)
+</span></span><span class="line"><span class="cl">    .WithStorage&lt;FileAuditStorage&gt;()
+</span></span><span class="line"><span class="cl">    .WithStorage&lt;MongoAuditStorage&gt;()
+</span></span><span class="line"><span class="cl">);
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">//注入DbContext
+</span></span><span class="line"><span class="cl">services.AddDbContext&lt;CustomerContext&gt;(options =&gt;
+</span></span><span class="line"><span class="cl">    options.UseSqlServer(Configuration.GetConnectionString(&#34;DefaultConnection&#34;)));
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">//像平时一样使用EF
+</span></span><span class="line"><span class="cl">var entity = _context.Customer.Where(x =&gt; x.Id == customer.Id).FirstOrDefault();
+</span></span><span class="line"><span class="cl">entity.Name = customer.Name;
+</span></span><span class="line"><span class="cl">entity.Email = customer.Email;
+</span></span><span class="line"><span class="cl">entity.Address = customer.Address;
+</span></span><span class="line"><span class="cl">entity.Tel = customer.Tel;
+</span></span><span class="line"><span class="cl">_context.Customer.Update(entity);
+</span></span><span class="line"><span class="cl">await _context.SaveChangesAsync();
+</span></span></code></pre></div><p>下面是最终生成的审计日志信息：</p>
+<p><figure 
+	>
+	<a href="https://i.loli.net/2020/04/26/yefcJ1749L5TiMD.png" >
+		<img src="https://i.loli.net/2020/04/26/yefcJ1749L5TiMD.png"
+			
+			
+			
+            data-src="https://i.loli.net/2020/04/26/yefcJ1749L5TiMD.png"
+			alt="审计日志表展示">
+	</a>
+	
+	<figcaption>审计日志表展示</figcaption>
+	
+</figure></p>
+<h1 id="castle-动态代理">Castle 动态代理</h1>
+<p>而对于像 Dapper 这种轻量级的 ORM，它本身没有类似 EF/EF Core 的 ChangeTracker 的设计，如果我们在项目中使用 Dapper，并且希望实现审计的相关功能，直观上看就会有一点困难。其实，平时在混合使用 EF/Dapper 的过程中，经常遇到的问题就是，如何确保传统的 ADO.NET 和 EF 在一个数据库事务中，如何确保 Dapper 和 EF 在一个数据库事务中等等。此时，我们就需要一点抽象，首先去实现一个 Dapper 的仓储模式，然后再借助 Castle 这类动态代理库实现对接口的拦截。这里以 Dapper 的扩展库 Dapper.Contrib 为例。首先，我们定义一个仓储接口 IRepository:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-CSharp" data-lang="CSharp"><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">interface</span>  <span class="nc">IRepository</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TEntity</span> <span class="n">GetByID</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;(</span><span class="kt">object</span> <span class="n">id</span><span class="p">)</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">TEntity</span> <span class="n">GetByKeys</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;(</span><span class="kt">object</span> <span class="n">keys</span><span class="p">)</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">TEntity</span> <span class="n">QueryFirst</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;(</span><span class="kt">string</span> <span class="n">sql</span><span class="p">,</span> <span class="kt">object</span> <span class="n">param</span><span class="p">)</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">TEntity</span> <span class="n">QuerySingle</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;(</span><span class="kt">string</span> <span class="n">sql</span><span class="p">,</span> <span class="kt">object</span> <span class="n">param</span><span class="p">)</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="na">
+</span></span></span><span class="line"><span class="cl"><span class="na">    [AuditLog(OperationType.Created)]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">void</span> <span class="n">Insert</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;(</span><span class="k">params</span> <span class="n">TEntity</span><span class="p">[]</span> <span class="n">entities</span><span class="p">)</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="na">
+</span></span></span><span class="line"><span class="cl"><span class="na">    [AuditLog(OperationType.Updated)]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">void</span> <span class="n">Update</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;(</span><span class="k">params</span> <span class="n">TEntity</span><span class="p">[]</span> <span class="n">entities</span><span class="p">)</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="na">
+</span></span></span><span class="line"><span class="cl"><span class="na">    [AuditLog(OperationType.Deleted)]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">void</span> <span class="n">Delete</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;(</span><span class="k">params</span> <span class="n">TEntity</span><span class="p">[]</span> <span class="n">entities</span><span class="p">)</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">void</span> <span class="n">Delete</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;(</span><span class="k">params</span> <span class="kt">object</span><span class="p">[]</span> <span class="n">ids</span><span class="p">)</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;</span> <span class="n">GetByQuery</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;(</span><span class="n">Expression</span><span class="p">&lt;</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">,</span><span class="kt">bool</span><span class="p">&gt;&gt;</span> <span class="n">exps</span><span class="p">)</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;</span> <span class="n">GetByQuery</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;(</span><span class="kt">string</span> <span class="n">sql</span><span class="p">,</span> <span class="kt">object</span> <span class="n">param</span><span class="p">)</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;</span> <span class="n">GetAll</span><span class="p">&lt;</span><span class="n">TEntity</span><span class="p">&gt;()</span> <span class="k">where</span> <span class="n">TEntity</span> <span class="p">:</span> <span class="n">class</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>接下来，我们就可以在拦截器中实现数据审计功能，因为 Dapper 本身没有 ChangeTracker，所以，我们必须要在先从数据库中查出来 OldValue，所以，实际效率应该并不会特别高，这里权当做为大家扩展思路吧！</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-CSharp" data-lang="CSharp"><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">class</span> <span class="nc">AuditLogInterceptor</span> <span class="p">:</span> <span class="n">IInterceptor</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="k">void</span> <span class="n">Intercept</span><span class="p">(</span><span class="n">IInvocation</span> <span class="n">invocation</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">repository</span> <span class="p">=</span> <span class="n">invocation</span><span class="p">.</span><span class="n">Proxy</span> <span class="k">as</span> <span class="n">IRepository</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">entityType</span> <span class="p">=</span> <span class="n">GetEntityType</span><span class="p">(</span><span class="n">invocation</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">tableName</span> <span class="p">=</span> <span class="n">GetTableName</span><span class="p">(</span><span class="n">entityType</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">tableIdProperty</span> <span class="p">=</span> <span class="n">entityType</span><span class="p">.</span><span class="n">GetProperty</span><span class="p">(</span><span class="s">&#34;Id&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">auditLogAttrs</span> <span class="p">=</span> <span class="n">invocation</span><span class="p">.</span><span class="n">Method</span><span class="p">.</span><span class="n">GetCustomAttributes</span><span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="n">AuditLogAttribute</span><span class="p">),</span> <span class="kc">false</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">auditLogAttrs</span> <span class="p">==</span> <span class="kc">null</span> <span class="p">||</span> <span class="n">auditLogAttrs</span><span class="p">.</span><span class="n">Length</span> <span class="p">==</span> <span class="m">0</span> <span class="p">||</span> <span class="n">entityType</span> <span class="p">==</span> <span class="k">typeof</span><span class="p">(</span><span class="n">AuditLog</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">invocation</span><span class="p">.</span><span class="n">Proceed</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">auditLogAttr</span> <span class="p">=</span> <span class="p">(</span><span class="n">auditLogAttrs</span> <span class="k">as</span> <span class="n">AuditLogAttribute</span><span class="p">[])[</span><span class="m">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">auditLogs</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">AuditLog</span><span class="p">&gt;();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">switch</span> <span class="p">(</span><span class="n">auditLogAttr</span><span class="p">.</span><span class="n">OperationType</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="n">Domain</span><span class="p">.</span><span class="n">OperationType</span><span class="p">.</span><span class="n">Created</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">auditLogs</span> <span class="p">=</span> <span class="n">GetAddedAuditLogs</span><span class="p">(</span><span class="n">invocation</span><span class="p">,</span> <span class="n">tableName</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="n">Domain</span><span class="p">.</span><span class="n">OperationType</span><span class="p">.</span><span class="n">Updated</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">auditLogs</span> <span class="p">=</span> <span class="n">GetUpdatedAuditLogs</span><span class="p">(</span><span class="n">invocation</span><span class="p">,</span> <span class="n">tableName</span><span class="p">,</span> <span class="n">entityType</span><span class="p">,</span> 
+</span></span><span class="line"><span class="cl">                    <span class="n">tableIdProperty</span><span class="p">,</span> <span class="n">repository</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="n">Domain</span><span class="p">.</span><span class="n">OperationType</span><span class="p">.</span><span class="n">Deleted</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">auditLogs</span> <span class="p">=</span> <span class="n">GetDeletedAuditLogs</span><span class="p">(</span><span class="n">invocation</span><span class="p">,</span> <span class="n">tableName</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            
+</span></span><span class="line"><span class="cl">        <span class="n">invocation</span><span class="p">.</span><span class="n">Proceed</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">repository</span><span class="p">.</span><span class="n">Insert</span><span class="p">&lt;</span><span class="n">AuditLog</span><span class="p">&gt;(</span><span class="n">auditLogs</span><span class="p">.</span><span class="n">ToArray</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>同样地，这里需要需要使用<code>Autofac</code>将其注册到 IoC 容器中：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-CSharp" data-lang="CSharp"><span class="line"><span class="cl"><span class="n">builder</span><span class="p">.</span><span class="n">RegisterType</span><span class="p">&lt;</span><span class="n">DapperRepository</span><span class="p">&gt;().</span><span class="n">As</span><span class="p">&lt;</span><span class="n">IRepository</span><span class="p">&gt;()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">InterceptedBy</span><span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="n">AuditLogInterceptor</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">EnableInterfaceInterceptors</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="n">builder</span><span class="p">.</span><span class="n">RegisterType</span><span class="p">&lt;</span><span class="n">AuditLogInterceptor</span><span class="p">&gt;();</span>
+</span></span></code></pre></div><h1 id="思路延伸领域事件">思路延伸：领域事件</h1>
+<p>最近这段时间，对于数据同步这类“需求”略有感触，譬如某种单据在两个互为上下游的系统里流转，譬如不同系统间实时地对基础资料进行同步等。这类需求可能会通过<code>ETL</code>、<code>DBLink</code>这类“数据库”手段实现，亦有可能是通过互相调用 API 的方式实现，再者无非是通过数据库实现类似消息队列的功能……而我个人，更推崇通过事件来处理，因为它更接近人类思考的本质，希望在适当的时机来“通知”对方，而论询实际上是一种相当低效的沟通方式。一个订单被创建，一条记录被修改，本质上都是一个特定事件，而在业务上对此感兴趣的任何第三方，都可以去订阅这个事件，这就是事件驱动的思想。</p>
+<p><figure 
+	>
+	<a href="https://i.loli.net/2020/04/24/8sgUqxmF5n2CdYO.png" >
+		<img src="https://i.loli.net/2020/04/24/8sgUqxmF5n2CdYO.png"
+			
+			
+			
+            data-src="https://i.loli.net/2020/04/24/8sgUqxmF5n2CdYO.png"
+			alt="领域事件">
+	</a>
+	
+	<figcaption>领域事件</figcaption>
+	
+</figure></p>
+<p>我拜读了几篇关于“领域驱动设计(DDD)”文章，了解到 DDD 中有领域事件和集成事件的概念。最直接的体会就是，DDD 是主张“充血模型”的，它把事件附加到实体上，最大的好处就是，可以让“发送(Dispatch)”事件的代码，集中地放在一个地方。而我们现在的业务代码，基本是高度耦合的，每次去添加一个事件的时候，最担心地就是遗漏了某个地方。按照 DDD 的思想，实现领域事件，最常用的伎俩是重写 DbContext 的 SaveChanges()方法，或者在 EF 中去指定 DbContext 的 Complate 事件。这里同样借助了 ChangeTracker 来实现：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-CSharp" data-lang="CSharp"><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">class</span> <span class="nc">OrderContext</span> <span class="p">:</span> <span class="n">DbContext</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="kt">bool</span><span class="p">&gt;</span> <span class="n">SaveChangesAsync</span><span class="p">(</span><span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">(</span><span class="n">CancellationToken</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">aggregateRoots</span> <span class="p">=</span> <span class="n">dbContext</span><span class="p">.</span><span class="n">ChangeTracker</span><span class="p">.</span><span class="n">Entries</span><span class="p">().</span><span class="n">ToList</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">_eventDispatcher</span><span class="p">.</span><span class="n">DispatchAsync</span><span class="p">(</span><span class="n">aggregateRoots</span><span class="p">,</span><span class="n">cancellationToken</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="k">await</span> <span class="k">base</span><span class="p">.</span><span class="n">SaveChangesAsync</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>其中，<code>_eventDispatcher</code>作为事件分发器来分发事件，它实现了<code>IEventDispatcher</code>接口。相对应地，事件订阅者需要实现<code>IDomainEventHandler</code>接口。如果是最简单的进程内通信，那么你需要一个容器来管理<code>IDomainEvent</code>和<code>IDomainEventHandler</code>间的关系；而如果是不同微服务间的通信，那么你需要引入<code>RabbitMQ</code>或者<code>kafka</code>这类消息队列中间件。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-CSharp" data-lang="CSharp"><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">interface</span> <span class="nc">IDomainEvent</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">interface</span> <span class="nc">IDomainEventHandler</span><span class="p">&lt;</span><span class="k">in</span> <span class="n">TDomainEvent</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">where</span> <span class="n">TDomainEvent</span> <span class="p">:</span> <span class="n">IDomainEvent</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Task</span> <span class="n">HandleAysnc</span><span class="p">(</span><span class="n">TDomainEvent</span> <span class="n">@event</span><span class="p">,</span> <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">interface</span> <span class="nc">IEventDispatcher</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Task</span> <span class="n">DispatchAsync</span><span class="p">&lt;</span><span class="n">TDomainEvent</span><span class="p">&gt;(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">TDomainEvent</span> <span class="n">@event</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">)</span> <span class="k">where</span> <span class="n">TDomainEvent</span> <span class="p">:</span><span class="n">IDomainEvent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>所以，你现在问我怎么样做数据同步好，我一定会说，通过事件来处理。因为这样，每一条数据的新增、更新、删除，都可以事件的形式发布出去，而关心这些数据的下游系统，则只需要订阅这些事件，该干嘛好嘛，何乐而不为呢？搞什么中间表，打什么标记，用数据库一遍遍地实现消息队列有意思吗？同样地，你会意识到，仓储模式，哪怕 ORM 换成 Dapper，我们一样可以去发布这些事件，增量同步自然是要比全量同步优雅而且高效的。最重要的是，程序员再不需要到处找地方埋点了，你看我博客更新频率这么低，不就是因为这些事情浪费了时间吗(逃？因为，全量 + 实时同步就是一个非常愚蠢的决定。</p>
+<h1 id="本文小结">本文小结</h1>
+<p>本文分别针对<code>EF Core</code>和<code>Dapper</code>实现了数据库审计的功能。对于前者，主要是通过重写 DbContext 的<code>SaveChanges()</code>方法来实现，而<code>EF</code>及<code>EF Core</code>中的<code>ChangeTracker</code>则提供了一种获取数据库表记录变化前后值的能力。而对于后者，主要是实现了<code>Dapper</code>的仓储模式，在此基础上结合<code>Castle</code>的动态代理功能，对仓储接口进行拦截，以此实现审计日志的记录功能。整体来看，后者对代码的侵入性要更小一点，理论上我们可以实现<code>EF</code>或<code>EF Core</code>的仓储模式，这样两者在实现上会更接近一点，当然，更直接的方案是去拦截<code>SaveChanges()</code>方法，这和我们使用继承的目的是一样的，由于 Dapper 本身没有<code>ChangeTracker</code>，所以，在处理<code>Update()</code>相关的仓储接口时，都需要先查询一次数据库，这一点是这个方案里最大的短板。而顺着这个方案扩展下去，我们同样可以挖掘出一点<code>DDD</code>里<code>领域事件</code>的意味，这就变得很有意思了，不是吗？这篇博客就先写到这里吧……再见</p>
+
+</section>
+
+
+    <footer class="article-footer">
+
+    
+
+<div style="padding: 10px 0; margin: 20px auto; width: 100%; font-size:16px; text-align: center;">
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+        <span>打赏</span></button>
+    <div id="QR" style="display: none;">
+        
+        <div id="wechat" style="display: inline-block">
+            <a class="fancybox" rel="group">
+                <img id="wechat_qr" src="/imgs/reward/wechat.jpg" alt="wechat"></a>
+            <p>微信打赏</p>
+        </div>
+        
+        <div id="wechat" style="display: inline-block">
+            <a class="fancybox" rel="group">
+                <img id="alipay_qr" src="/imgs/reward/alipay.jpg" alt="alipay"></a>
+            <p>支付宝打赏</p>
+        </div>
+        
+    </div>
+</div>
+
+
+    
+    <section class="article-tags">
+        
+            <a href="/tags/ef/">EF</a>
+        
+            <a href="/tags/dapper/">Dapper</a>
+        
+            <a href="/tags/%E5%AE%A1%E8%AE%A1/">审计</a>
+        
+    </section>
+
+
+    <div class="social-share"></div>
+    
+    <section class="article-footer-notes">
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>
+            BY-NC-SA 4.0
+        </span>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+        <span>
+            最后更新 2024-05-27
+        </span>
+        
+    </section>
+</footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
+    
+</article>
+
+    
+
+    <aside class="related-contents--wrapper">
+    
+    
+    
+        <h2 class="section-title">相关文章</h2>
+        <div class="related-contents">
+            <div class="flex article-list--tile">
+                
+                    
+<article class="has-image">
+    <a href="/posts/3219639636/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3219639636" loading="lazy" data-key="3219639636" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">EFCore 实体命名约定库：EFCore.NamingConventions</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/2151871792/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=2151871792" loading="lazy" data-key="2151871792" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">浅议 EF Core 分库分表及多租户架构的实现</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/3086300103/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3086300103" loading="lazy" data-key="3086300103" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Dapper.Contrib 在 Oracle 环境下引发 ORA-00928 异常问题的解决</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/2418566449/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=2418566449" loading="lazy" data-key="2418566449" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">基于 EF 的数据库主从复制、读写分离实现</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/integration-of-distributed-tracing-system-and-logging-system/">
+        
+        
+            <div class="article-image">
+                
+                    <img src="/posts/integration-of-distributed-tracing-system-and-logging-system/bridge.jpg" loading="lazy" data-key="Integration-Of-Distributed-Tracing-System-And-Logging-System" data-hash="/posts/integration-of-distributed-tracing-system-and-logging-system/bridge.jpg"/>
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">浅议分布式链路追踪与日志的整合</h2>
+        </div>
+    </a>
+</article>
+                
+            </div>
+        </div>
+    
+</aside>
+
+     
+    
+        
+    <script src='//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js'></script>
+<div id="waline" class="waline-container"></div>
+<style>
+    .waline-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+    .waline-container .vcount {
+        color: var(--card-text-color-main);
+    }
+</style>
+
+
+    <script>
+        
+        var waline = new Waline({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+        });
+    </script>
+
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2014 - 
+        
+        2024 元视角
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> v0.126.1 <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.7.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> <br />
+        已创作 274 篇文章，共计 1038468 字 <br />
+        
+    </section>
+    <section class="written-by">
+        <img src="/imgs/Written-By-Human-Not-By-AI-Badge-white.svg" />
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    
+    
+    <aside class="sidebar right-sidebar sticky">
+        
+            <form action="/search/" class="search-form widget" >
+        <p>
+            <label>搜索</label>
+            <input name="keyword" required placeholder="请输入关键词" />
+        
+            <button title="搜索">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+            </button>
+        </p>
+    </form>
+        
+            
+    <section class="widget archives">
+        
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#什么是审计">什么是审计</a></li>
+    <li><a href="#efef-core-实体跟踪">EF/EF Core 实体跟踪</a></li>
+    <li><a href="#castle-动态代理">Castle 动态代理</a></li>
+    <li><a href="#思路延伸领域事件">思路延伸：领域事件</a></li>
+    <li><a href="#本文小结">本文小结</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+        
+            <section class="widget archives">
+        
+        <h2 class="widget-title section-title">归档</h2>
+
+        
+        
+        
+        
+        
+        <div class="widget-archive--list">
+            <div class="archives-year">
+                    <a href="/archives/#2024">
+                        
+                            <span class="year">2024</span>
+                            <span class="count">14</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2023">
+                        
+                            <span class="year">2023</span>
+                            <span class="count">11</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2022">
+                        
+                            <span class="year">2022</span>
+                            <span class="count">27</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2021">
+                        
+                            <span class="year">2021</span>
+                            <span class="count">42</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2020">
+                        
+                            <span class="year">2020</span>
+                            <span class="count">26</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2019">
+                        
+                            <span class="year">更多</span>
+                        
+                    </a> 
+                </div>
+            
+        </div>
+    </section>
+        
+            <section class="widget archives">
+    
+    <h2 class="widget-title section-title">日历</h2>
+    <div class="widget--toc" style="background-color: white; border-radius: 15px; padding: 10px; margin: 20px auto; width: 300px; height: 480px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+        <img id="calendar-cover" src="" style="object-fit: cover; width: 100%; height: 100%;" />
+    </div>
+</section>
+<script>
+    const getImageUrl = (date) => {
+        const currentYear = date.getFullYear();
+        const currentMonth = String(date.getMonth() + 1).padStart(2, '0');
+        const currentDate = String(date.getDate()).padStart(2, '0');
+        return `https://img.owspace.com/Public/uploads/Download/${currentYear}/${currentMonth}${currentDate}.jpg`
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const eleImg = document.querySelector("#calendar-cover");
+        if (document.location.pathname.startsWith('/posts')) {
+            let publishedTime = document.querySelector('meta[property="article:published_time"]').content;
+            publishedTime = publishedTime.substring(0, 10);
+            eleImg.src = getImageUrl(new Date(publishedTime))
+        } else {
+            eleImg.src = getImageUrl(new Date())
+        }
+    });
+    </script>
+        
+            <section class="widget tagCloud">
+    
+    <h2 class="widget-title section-title">标签云</h2>
+
+    <div class="tagCloud-tags">
+        
+            <a href="/tags/protobuf/" class="font_size_1">
+                Protobuf
+            </a>
+        
+            <a href="/tags/%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E/" class="font_size_2">
+                模板引擎
+            </a>
+        
+            <a href="/tags/%E7%94%BB%E5%AE%B6/" class="font_size_2">
+                画家
+            </a>
+        
+            <a href="/tags/markdown/" class="font_size_1">
+                Markdown
+            </a>
+        
+            <a href="/tags/script/" class="font_size_1">
+                Script
+            </a>
+        
+            <a href="/tags/grpc/" class="font_size_10">
+                GRPC
+            </a>
+        
+            <a href="/tags/%E6%96%87%E4%BB%B6/" class="font_size_1">
+                文件
+            </a>
+        
+            <a href="/tags/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/" class="font_size_2">
+                人脸识别
+            </a>
+        
+            <a href="/tags/http/" class="font_size_9">
+                HTTP
+            </a>
+        
+            <a href="/tags/referrer/" class="font_size_1">
+                Referrer
+            </a>
+        
+            <a href="/tags/%E7%A1%AC%E4%BB%B6/" class="font_size_1">
+                硬件
+            </a>
+        
+            <a href="/tags/%E5%8D%83%E5%AF%BB%E5%B0%8F%E5%A7%90/" class="font_size_1">
+                千寻小姐
+            </a>
+        
+            <a href="/tags/openai/" class="font_size_1">
+                OpenAI
+            </a>
+        
+            <a href="/tags/tracing/" class="font_size_2">
+                Tracing
+            </a>
+        
+            <a href="/tags/%E8%B4%BE%E7%BB%B4%E6%96%AF/" class="font_size_1">
+                贾维斯
+            </a>
+        
+            <a href="/tags/delayqueue/" class="font_size_1">
+                DelayQueue
+            </a>
+        
+            <a href="/tags/%E9%98%B2%E7%96%AB/" class="font_size_1">
+                防疫
+            </a>
+        
+            <a href="/tags/%E5%81%A5%E5%BA%B7%E7%A0%81/" class="font_size_1">
+                健康码
+            </a>
+        
+            <a href="/tags/%E9%AC%BC%E6%BB%85%E3%81%AE%E5%88%83/" class="font_size_1">
+                鬼滅の刃
+            </a>
+        
+            <a href="/tags/c%23/" class="font_size_7">
+                C#
+            </a>
+        
+            <a href="/tags/%E5%B0%8F%E7%88%B1%E5%90%8C%E5%AD%A6/" class="font_size_1">
+                小爱同学
+            </a>
+        
+            <a href="/tags/%E4%BA%92%E8%81%94%E7%BD%91/" class="font_size_2">
+                互联网
+            </a>
+        
+            <a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" class="font_size_3">
+                中间件
+            </a>
+        
+            <a href="/tags/hyperlog/" class="font_size_1">
+                Hyperlog
+            </a>
+        
+            <a href="/tags/%E8%AF%B7%E8%AE%B0%E4%BD%8F%E6%88%91/" class="font_size_1">
+                请记住我
+            </a>
+        
+
+        <a href="/tags" class="font_size_9999">
+            更多
+        </a>
+    </div>
+</section>
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script>
+<script type="text/javascript" src="/ts/main.js" defer></script>
+<script type="text/javascript" src="/ts/badge.js"></script>
+    <script type="text/javascript">
+        let createBadge = window.createBadge;
+        createBadge('Git', '7f1e7a2', '#35495e', '#ffc107');
+        createBadge('Hugo', 'v0.126.1', '#35495e', '#41b883');
+        
+    </script><script type="text/javascript" src="/ts/chat-widget.js" defer></script>
+
+
+
+    </body>
+</html>

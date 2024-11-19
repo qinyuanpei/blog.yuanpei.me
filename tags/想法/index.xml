@@ -1,1 +1,26 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>想法 on 元视角</title><link>https://blog.yuanpei.me/tags/%E6%83%B3%E6%B3%95/</link><description>Recent content in 想法 on 元视角</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 23 Sep 2024 09:49:21 +0800</lastBuildDate><atom:link href="https://blog.yuanpei.me/tags/%E6%83%B3%E6%B3%95/index.xml" rel="self" type="application/rss+xml"/><item><title>浅议 CancellationToken 在前后端协同取消场景中的应用</title><link>https://blog.yuanpei.me/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/</link><pubDate>Thu, 15 Aug 2024 12:52:10 +0000</pubDate><guid>https://blog.yuanpei.me/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/</guid><description>两个月前，我写过一篇题为为《关于 ChatGPT 的流式传输，你需要知道的一切》的文章。当时，我主要聚焦于 “流式传输” 这个概念。因此，Server-Sent Events、WebSocket 等技术，便顺理成章地成为了我的写作内容。然而，当我们将视野扩展到整个</description></item><item><title>漫谈应用程序重试策略及其实现</title><link>https://blog.yuanpei.me/posts/115524443/</link><pubDate>Sat, 31 Mar 2018 19:20:54 +0000</pubDate><guid>https://blog.yuanpei.me/posts/115524443/</guid><description>最近随项目组对整个项目进行联调，在联调过程中暴露出各种问题，让我不得不开始反思，怎么样更好地去做好一件事情，譬如说在开发过程中如何保证 Web 服务的稳定性，在敏捷开发中如何降低文档维护的成本，以及如何提高多环境服务部署的效率等等。我为什么会考虑这</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>想法 on 元视角</title>
+    <link>http://localhost:1313/tags/%E6%83%B3%E6%B3%95/</link>
+    <description>Recent content in 想法 on 元视角</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 23 Sep 2024 09:49:21 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/%E6%83%B3%E6%B3%95/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>浅议 CancellationToken 在前后端协同取消场景中的应用</title>
+      <link>http://localhost:1313/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/</link>
+      <pubDate>Thu, 15 Aug 2024 12:52:10 +0000</pubDate>
+      <guid>http://localhost:1313/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/</guid>
+      <description>两个月前，我写过一篇题为为《关于 ChatGPT 的流式传输，你需要知道的一切》的文章。当时，我主要聚焦于 “流式传输” 这个概念。因此，Server-Sent Events、WebSocket 等技术，便顺理成章地成为了我的写作内容。然而，当我们将视野扩展到整个</description>
+    </item>
+    <item>
+      <title>漫谈应用程序重试策略及其实现</title>
+      <link>http://localhost:1313/posts/115524443/</link>
+      <pubDate>Sat, 31 Mar 2018 19:20:54 +0000</pubDate>
+      <guid>http://localhost:1313/posts/115524443/</guid>
+      <description>最近随项目组对整个项目进行联调，在联调过程中暴露出各种问题，让我不得不开始反思，怎么样更好地去做好一件事情，譬如说在开发过程中如何保证 Web 服务的稳定性，在敏捷开发中如何降低文档维护的成本，以及如何提高多环境服务部署的效率等等。我为什么会考虑这</description>
+    </item>
+  </channel>
+</rss>

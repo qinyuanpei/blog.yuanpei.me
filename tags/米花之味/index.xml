@@ -1,1 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>米花之味 on 元视角</title><link>https://blog.yuanpei.me/tags/%E7%B1%B3%E8%8A%B1%E4%B9%8B%E5%91%B3/</link><description>Recent content in 米花之味 on 元视角</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate><atom:link href="https://blog.yuanpei.me/tags/%E7%B1%B3%E8%8A%B1%E4%B9%8B%E5%91%B3/index.xml" rel="self" type="application/rss+xml"/><item><title>米花之味：永远相信美好的事情</title><link>https://blog.yuanpei.me/posts/2941880815/</link><pubDate>Mon, 02 Jul 2018 09:50:17 +0000</pubDate><guid>https://blog.yuanpei.me/posts/2941880815/</guid><description>一如往常地坐公交回家，下过一场雨以后，天空被洗刷得干干净净，洗去了夏天的骄阳似火，洗去了归途的月明星稀。抬眼瞥见对面车窗，一个被夕阳裁剪得整齐的轮廓，就这样静静地映在玻璃上，一瞬间散发某种神圣的气息。突然间，我想到了被嘲笑不会撩妹的 X 君，想</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>米花之味 on 元视角</title>
+    <link>http://localhost:1313/tags/%E7%B1%B3%E8%8A%B1%E4%B9%8B%E5%91%B3/</link>
+    <description>Recent content in 米花之味 on 元视角</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/%E7%B1%B3%E8%8A%B1%E4%B9%8B%E5%91%B3/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>米花之味：永远相信美好的事情</title>
+      <link>http://localhost:1313/posts/2941880815/</link>
+      <pubDate>Mon, 02 Jul 2018 09:50:17 +0000</pubDate>
+      <guid>http://localhost:1313/posts/2941880815/</guid>
+      <description>一如往常地坐公交回家，下过一场雨以后，天空被洗刷得干干净净，洗去了夏天的骄阳似火，洗去了归途的月明星稀。抬眼瞥见对面车窗，一个被夕阳裁剪得整齐的轮廓，就这样静静地映在玻璃上，一瞬间散发某种神圣的气息。突然间，我想到了被嘲笑不会撩妹的 X 君，想</description>
+    </item>
+  </channel>
+</rss>

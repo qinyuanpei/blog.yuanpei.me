@@ -1,138 +1,1337 @@
-<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=referrer content="no-referrer"><meta name=viewport content='width=device-width,initial-scale=1'><meta http-equiv=content-language content='zh-CN'><link rel=apple-touch-icon href=/imgs/avatar.jpg><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="black"><link rel=icon type=image/x-icon href=/imgs/favicon.ico><link rel=icon type=image/png href=/imgs/favicon.png><meta name=description content='文章主要讨论了如何设计一个 PV/UV 统计系统，以应对互联网产品流量分析的需求。首先介绍了PV（页面浏览量）和 UV（独立访客数）的概念，并探讨了在不同情况下对 PV/UV 的理解，如 AJAX和单页面应用中 PV 的统计方式。接着，提出了在前端通过埋点收集数据的共识，并讨论了后端处理数据的三种方法：使用 Nginx 的 access_log、Redis 的 Hyperloglog 和 LeanCloud 的 Hooks。文章详细描述了这三种方法的实现过程，并通过实例代码展示了如何应用这些技术进行数据统计。最后，作者分享了在设计统计系统时遇到的问题和对使用 Linux 服务器的重要性的认识，并提供了相关项目的 GitHub 链接，供读者参考。'><meta name=keywords content='访问量,Nginx,Hyperlog'><meta name=author content="飞鸿踏雪"><title>浅析网站 PV/UV 统计系统的原理及其设计 - 元视角</title>
-<link rel=canonical href=https://blog.yuanpei.me/posts/3494408209/><link rel=stylesheet href=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css><meta property='og:title' content='浅析网站 PV/UV 统计系统的原理及其设计 - 元视角'><meta property='og:description' content='文章主要讨论了如何设计一个 PV/UV 统计系统，以应对互联网产品流量分析的需求。首先介绍了PV（页面浏览量）和 UV（独立访客数）的概念，并探讨了在不同情况下对 PV/UV 的理解，如 AJAX和单页面应用中 PV 的统计方式。接着，提出了在前端通过埋点收集数据的共识，并讨论了后端处理数据的三种方法：使用 Nginx 的 access_log、Redis 的 Hyperloglog 和 LeanCloud 的 Hooks。文章详细描述了这三种方法的实现过程，并通过实例代码展示了如何应用这些技术进行数据统计。最后，作者分享了在设计统计系统时遇到的问题和对使用 Linux 服务器的重要性的认识，并提供了相关项目的 GitHub 链接，供读者参考。'><meta property='og:url' content='https://blog.yuanpei.me/posts/3494408209/'><meta property='og:site_name' content='元视角'><meta property='og:type' content='article'><meta property='article:section' content='Posts'><meta property='article:tag' content='访问量'><meta property='article:tag' content='Nginx'><meta property='article:tag' content='Hyperlog'><meta property='article:published_time' content='2019-10-22T12:50:49+00:00'><meta property='article:modified_time' content='2024-05-27T11:06:18+08:00'><meta property='og:image' content='https://blog.yuanpei.me/'><meta name=twitter:title content="浅析网站 PV/UV 统计系统的原理及其设计 - 元视角"><meta name=twitter:description content="文章主要讨论了如何设计一个 PV/UV 统计系统，以应对互联网产品流量分析的需求。首先介绍了PV（页面浏览量）和 UV（独立访客数）的概念，并探讨了在不同情况下对 PV/UV 的理解，如 AJAX和单页面应用中 PV 的统计方式。接着，提出了在前端通过埋点收集数据的共识，并讨论了后端处理数据的三种方法：使用 Nginx 的 access_log、Redis 的 Hyperloglog 和 LeanCloud 的 Hooks。文章详细描述了这三种方法的实现过程，并通过实例代码展示了如何应用这些技术进行数据统计。最后，作者分享了在设计统计系统时遇到的问题和对使用 Linux 服务器的重要性的认识，并提供了相关项目的 GitHub 链接，供读者参考。"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://blog.yuanpei.me/'><meta name=msvalidate.01 content="713A48A3FE17D4841C292A6B3942EB4C"><meta name=baidu-site-verification content="c50FGqYOSh"><meta name=google-site-verification content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s"><script src=//instant.page/5.1.0 type=module integrity=sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex
-on-phone--column extended"><div id=article-toolbar><a href=/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
-<span>返回</span></a></div><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
-<span class=hamburger-box><span class=hamburger-inner></span></span></button><header class=site-info><figure class=site-avatar><a href=/><img src=/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar>
-</a><span class=emoji>👌</span></figure><h1 class=site-name><a href=/>元视角</a></h1><h2 class=site-description>起风了，唯有努力生存</h2><ol class=social-menu><li><a href=mailto:qinyuanpei@163.com rel=noreferrer target=_blank title=Mail><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg></a></li><li><a href=https://github.com/qinyuanpei rel=noreferrer target=_blank title=GitHub><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://www.zhihu.com/people/qinyuanpei rel=noreferrer target=_blank title=Zhihu><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 6h6v12h-2l-2 2-1-2h-1z"/><path d="M4 12h6.5"/><path d="M10.5 6h-5"/><path d="M6 4c-.5 2.5-1.5 3.5-2.5 4.5"/><path d="M8 6v7c0 4.5-2 5.5-4 7"/><path d="M11 18l-3-5"/></svg></a></li><li><a href=https://www.douban.com/people/60029335 rel=noreferrer target=_blank title=Douban><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h16"/><path d="M5 4h14"/><path d="M8 8h8a2 2 0 012 2v2a2 2 0 01-2 2H8a2 2 0 01-2-2v-2a2 2 0 012-2z"/><path d="M16 14l-2 6"/><path d="M8 17l1 3"/></svg></a></li><li><a href=https://weibo.com/1278609231/profile rel=noreferrer target=_blank title=Weibo><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 14.127C19 17.2 15.498 20 11 20c-4.126.0-8-2.224-8-5.565.0-1.78.984-3.737 2.7-5.567 2.362-2.51 5.193-3.687 6.551-2.238.415.44.752 1.39.749 2.062 2-1.615 4.308.387 3.5 2.693 1.26.557 2.5.538 2.5 2.742z"/><path d="M15 4h1a5 5 0 015 5v1"/></svg></a></li><li><a href=/index.xml rel=noreferrer target=_blank title=RSS><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="5" cy="19" r="1"/><path d="M4 4a16 16 0 0116 16"/><path d="M4 11a9 9 0 019 9"/></svg></a></li></ol></header><ol class=menu id=main-menu><li><a href=/><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
-<span>首页</span></a></li><li><a href=/archives><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-<span>归档</span></a></li><li><a href=/works><!doctype html><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style/></defs><path d="M843.093333 815.36l-189.44-294.826667A85.333333 85.333333.0 01640 474.453333V170.666667h21.333333a21.333333 21.333333.0 0021.333334-21.333334v-42.666666a21.333333 21.333333.0 00-21.333334-21.333334H362.666667a21.333333 21.333333.0 00-21.333334 21.333334v42.666666a21.333333 21.333333.0 0021.333334 21.333334H384V474.88a85.333333 85.333333.0 01-13.653333 46.08l-189.44 294.826667a64.426667 64.426667.0 000 66.56l13.653333 24.32a64.853333 64.853333.0 0055.466667 32h525.226666a64.853333 64.853333.0 0055.466667-32L844.8 881.92a63.573333 63.573333.0 00-1.706667-66.56zm-400.64-248.32a173.226667 173.226667.0 0026.88-92.16V170.666667h85.333334v303.786666a167.68 167.68.0 0027.306666 92.16l74.24 116.053334H367.786667z" p-id="1250" fill="#8a8a8a"/></svg>
-<span>作品</span></a></li><li><a href=/search><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
-<span>搜索</span></a></li><li><a href=/links><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572 12 20l-7.5-7.428A5 5 0 1112 6.006a5 5 0 117.5 6.572"/><path d="M12 6 8.707 9.293a1 1 0 000 1.414l.543.543c.69.69 1.81.69 2.5.0l1-1a3.182 3.182.0 014.5.0l2.25 2.25"/><path d="M12.5 15.5l2 2"/><path d="M15 13l2 2"/></svg>
-<span>友链</span></a></li><li class=current><a href=/about><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
-<span>关于</span></a></li><li id=dark-mode-toggle><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14.828 14.828A4 4 0 109.172 9.172a4 4 0 005.656 5.656z"/><path d="M6.343 17.657l-1.414 1.414"/><path d="M6.343 6.343 4.929 4.929"/><path d="M17.657 6.343l1.414-1.414"/><path d="M17.657 17.657l1.414 1.414"/><path d="M4 12H2"/><path d="M12 4V2"/><path d="M20 12h2"/><path d="M12 20v2"/></svg>
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3c.132.0.263.0.393.0a7.5 7.5.0 007.92 12.446A9 9 0 1112 2.992z"/><path d="M17 4a2 2 0 002 2 2 2 0 00-2 2 2 2 0 00-2-2 2 2 0 002-2"/><path d="M19 11h2m-1-1v2"/></svg>
-<span id=dark-mode-text>夜间模式</span></li></ol></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/>数据存储</a></header><h2 class=article-title><a href=/posts/3494408209/>浅析网站 PV/UV 统计系统的原理及其设计</a></h2><footer class=article-time><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published>2019-10-22</time></div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 14 分钟</time></div></footer></div></header><div class=post-ai><div class=ai-title><i class=ai-title-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/><path d="M9 16c1 .667 2 1 3 1s2-.333 3-1"/><path d="M9 7 8 3"/><path d="M15 7l1-4"/><path d="M9 12v-1"/><path d="M15 12v-1"/></svg></i><div class=ai-title-text>AI 摘要</div></div><div id=ai-explanation class=ai-explanation></div><div class="ai-explanation ai-explanation-content">文章主要讨论了如何设计一个 PV/UV 统计系统，以应对互联网产品流量分析的需求。首先介绍了PV（页面浏览量）和 UV（独立访客数）的概念，并探讨了在不同情况下对 PV/UV 的理解，如 AJAX和单页面应用中 PV 的统计方式。接着，提出了在前端通过埋点收集数据的共识，并讨论了后端处理数据的三种方法：使用 Nginx 的 access_log、Redis 的 Hyperloglog 和 LeanCloud 的 Hooks。文章详细描述了这三种方法的实现过程，并通过实例代码展示了如何应用这些技术进行数据统计。最后，作者分享了在设计统计系统时遇到的问题和对使用 Linux 服务器的重要性的认识，并提供了相关项目的 GitHub 链接，供读者参考。</div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector(".ai-explanation-content").textContent;new TypeIt("#ai-explanation",{strings:e,speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><section class=article-content><p>国庆节前有段时间，新浪的“图床”一直不大稳定，因为新浪开启了防盗链，果然免费的永远是最贵的啊。为了不影响使用，我非常粗暴地禁止了浏览器发送 Referer，然后我就发现了一件尴尬的事情，“不蒜子”统计服务无法使用了。这是一件用脚后跟想都能想明白的事情，我禁止了浏览器发送 Referer，而“不蒜子”正好使用 Referer 来识别每个页面，所以，这是一个再明显不过的因为需求变更而引入的 Bug。这个世界最离谱的事情，就是大家都认为程序员是一本“十万个为什么”，每次一出问题就找到程序员这里。其实，程序员是再普通不过的芸芸众生里的一员，人们喜欢听/看到自己愿意去听/看到的事物，而程序员同样喜欢解决自己想去解决的问题。所以，今天的话题是关于如何设计一个 PV/UV 统计系统。OK，Let&rsquo;s Hacking Begin。</p><h1 id=pvuv-的概念>PV/UV 的概念</h1><p>首先，我们从两个最基本的概念 PV 和 UV 开始说起。我们都知道，互联网产品的核心就是流量，前期通过免费的产品吸引目标客户的目的，在积累了一定用户流量以后，再通过广告等增值服务实现盈利，这可以说是互联网产品的典型商业模式啦。而在这个过程中，为了对一个产品的流量进行科学地分析，就产生了譬如访客数(<strong>UV</strong>)、浏览量(<strong>PV</strong>)、访问次数(<strong>VV</strong>)等等的概念，这些概念通常作为衡量流量多少的指标。除此以外，我们还有类似日活跃用户(<strong>DAU</strong>)、月活跃用户(<strong>MAU</strong>)等等这种衡量服务用户粘性的指标，以及平均访问深度、平均访问时间、跳出率等等这种衡量流量质量优劣的指标。如果各位和我一样都写博客的话，对这些概念应该都不会感到陌生，因为我们多多少少会使用到诸如<a class=link href=https://ziyuan.baidu.com/site/index target=_blank rel=noopener>百度站长</a>、<a class=link href=https://www.umeng.com/ target=_blank rel=noopener>站长统计</a>、<a class=link href=https://ta.qq.com/#/ target=_blank rel=noopener>腾讯统计</a>、<a class=link href="https://developers.google.cn/analytics/devguides/reporting/?hl=zh-cn" target=_blank rel=noopener>Google Analytics</a>这样的统计服务，这些统计服务可以让我们即时掌握博客的访问情况。博主目前使用了<a class=link href=https://ta.qq.com/#/ target=_blank rel=noopener>腾讯统计</a>来查看整个博客的流量情况，而每一篇博客的访问量则是通过**<a class=link href=http://busuanzi.ibruce.info/ target=_blank rel=noopener>“不蒜子”</a>**这个第三方服务，这里再次对作者表示感谢。</p><p><figure><a href=https://i.loli.net/2019/10/24/VN2ubT71aLK6eZp.png><img src=https://i.loli.net/2019/10/24/VN2ubT71aLK6eZp.png data-src=https://i.loli.net/2019/10/24/VN2ubT71aLK6eZp.png alt=使用腾讯统计来查看网站的流量情况></a><figcaption>使用腾讯统计来查看网站的流量情况</figcaption></figure></p><p>回到问题本身，PV，即<strong>Page View</strong>，<strong>表示页面浏览量或者点击量，每当一个页面被打开或者被刷新，都会产生一次 PV，只要这个请求从浏览器端发送到了服务器端</strong>。聪明的各位肯定会想到，如果我写一个爬虫不停地去请求一个页面，那么这个页面的 PV 不就会一直增长下去吗？理论上的确是这样，所以，我们有第二个指标 UV，来作为进一步的参考，所谓 UV，即<strong>Unique Visitor，表示独立访客数</strong>。在上面这个问题中，尽管这个页面的 PV 在不断增长，可是因为这些访客的 IP 都是相同的，所以，这个页面只会产生一次 UV，这就是 PV 和 UV 的区别。所以，我们结合这两个指标，可以非常容易得了解到，这个页面实际的访问情况是什么样的。这让我想起数据分析中的一个例子，虽然以统计学为背景的数学计算不会欺骗人类，可如果人类片面地相信某一个方面的分析结果，数据分析一样是带有欺骗性的。就像有人根据《战狼 2》和《前任 3》两部电影的观众购买冷/热饮的情况，得出下面的结论：<strong>看动作片的观众更喜欢喝冷饮来清凉紧绷着的神经，而看爱情片的观众更喜欢喝热饮来温暖各自的内心</strong>。其实想想就知道这里混淆了因果性和相关性，选择冷饮还是热饮无非是两部电影上映的季节不同而已。</p><h1 id=如何设计一个访问统计系统>如何设计一个访问统计系统</h1><p>OK，了解了 PV 和 UV 的概念后，我们来思考如何去设计一个访问统计系统，这是今天这篇博客的主题内容。我知道，如果问如何设计一个访问系统，大家可能都会不由自主地想到建两张表。的确，这是最简单的做法。可问题是，我们对于 PV 的认识，其实一直都在不断地变化着。比如 PV 的定义是是一个页面被打开或者被刷新时视为一次有效 PV，所以，我们通常的做法是在页面底部嵌入 JavaScript 脚本，这种方式一直工作得非常好。可在引入 AJAX 以后，用户几乎不会主动去刷新页面，那么，在这个过程中用户点击<strong>更多</strong>或者使用<strong>下拉刷新</strong>时，是否应该算作一次有效 PV 呢？甚至在 PC 端网页逐渐式微以后，越来越多的工作转移到手机等移动设备上来，越来越多的原生+Web 混合 App 或者是单页面应用(<strong>SPA</strong>)或者是渐进式应用(<strong>PWA</strong>)，此时我们又该如何认识 PV 呢？微信公众号里的 PV 甚至更为严格，必须通过微信内置的浏览器访问才能算作一次有效 PV。</p><p>可以发现，我们对 PV 的认识其实一直在不断的变化着，更多的时候，我们想追踪的并非页面被加载(<strong>Page Load</strong>)的次数，而是页面被浏览(<strong>Page View</strong>)的次数。这时候，我们可以 Page Visiblity 和 History API 结合的方式。前者在页面的 visibilityState 可见或者由隐藏变为可见时发送一次 Page View，而后者则是在浏览器地址发生变化的时候发送一次 Page View。这听起来非常像单页面应用(<strong>SPA</strong>)里前端路由的那套玩法，的确，当一个地址中的 pathname 或者 search 部分发生变化时，应该发送一次 Page View 请求，而 hash 部分的变化则应该忽略，因为它表示的是应用内部页面的跳转。对于页面的 visibilityState 由隐藏变为可见，不同的人有不同的看法，因为有时我们像合并多次 Page View，而有时候则想通过 Page View 了解所谓的”回头客“，所以，这里面还可以继续引入 Session 的概念，比如 Google Analytics 默认会在 30 分钟内无交互的情况下结束。所以，这个问题要考虑的东西实际上比想象中的要多。</p><p>现在，我们至少可以前端部分达成共识，即通过在前端页面上埋点的方式收集 PV 和 UV。就像我们设计一个 Page View 的表结构会非常简单，而一旦要开始考虑 Unique Visitor，可能我们就需要收集诸如 IP、省市、UA 等等的信息，这些信息的数量会非常大，而 Page View 的数据规模实际上取决于一个站点下有多少个页面。所以，这些数据在后端要怎么样处理，这是我们接下来要去考虑的问题。直接去写数据库是万不得已的做法，因为如果你处理不好并发的问题，这些统计数据的正确性就会让人产生怀疑，所以，接下来，我们介绍三种不同的方法来处理这类问题，它们分别是：通过 Nginx 的 access_log 实现统计、通过 Redis 的 Hyperlog 实现统计，以及通过 LeanCloud 的 Hook 实现统计。同大家一样，我是第一次考虑这类问题，如果有什么不周到的地方，希望大家可以谅解。</p><h2 id=通过-nginx-的-access_log-实现统计>通过 Nginx 的 access_log 实现统计</h2><p>我们首先来介绍 Nginx 的 access_log，顾名思义，这是 Nginx 的访问日志，由 ngx_http_log_module 模块提供相应功能。Nginx 会把每一个用户访问网站的日志信息记录到指定文件里，从而帮助网站提供者分析用户的浏览行为。而 PV/UV 则是分析用户的浏览行为的最基础指标，所以，通过 Nginx 的访问日志来统计 UV 和 PV 是再合适不过的啦！在 Nginx 里主要使用<code>log_format</code>和<code>access_log</code> 两条指令来完成相关的配置。这里以博主自己使用的配置为例来说明：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>    log_format main <span class=s1>&#39;$remote_addr - $remote_user [$time_iso8601] &#34;$request&#34; &#39;</span>
-</span></span><span class=line><span class=cl>                      <span class=s1>&#39;$status $body_bytes_sent &#34;$http_referer&#34; &#39;</span>
-</span></span><span class=line><span class=cl>                      <span class=s1>&#39;&#34;$http_user_agent&#34; &#34;$http_x_forwarded_for&#34;&#39;</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>                      
-</span></span><span class=line><span class=cl>    access_log logs/access.log main<span class=p>;</span>
-</span></span></code></pre></div><p>可以注意到，我们在这里首先通过<code>log_format</code>命令定义了一个日志格式，而这个日志格式则被定义为 main，这表示我们我们可以在 Nginx 的配置文件中定义多个日志格式。它其实就是一个日志模板，相信大家在使用 NLog、Log4Net 这类日志库的时候，都接触过 Layout 这个概念，这里就是 Nginx 中访问日志的 Layout。那么，在定义了这样一个日志格式以后，我们该怎么使用这个日志格式呢？这就要说到下面的<code>access_log</code>指令，它的基本用法就是一个路径 + 一个模板，在这里我们使用了定义好的 main 模板，然后指定了日志路径为：\logs\localhost.access_log.log。当然啦，大家使用 NLog 和 Log4Net 时，日志对应的 Layout 中都会有“变量”这样的概念，同样地，在 Nginx 中我们有一些常用的“变量”：</p><div class=table-wrapper><table><thead><tr><th>Nginx 日志变量</th><th style=text-align:left>说明</th></tr></thead><tbody><tr><td>$remote_addr</td><td style=text-align:left>记录访问网站的客户端地址</td></tr><tr><td>$http_x_forward_for</td><td style=text-align:left>当前端有代理服务器时，设置 Web 节点记录客户端地址的配置</td></tr><tr><td>$remote_user</td><td style=text-align:left>远程客户端用户名称</td></tr><tr><td>$time_local</td><td style=text-align:left>记录带时区的访问时间</td></tr><tr><td>$request</td><td style=text-align:left>记录用户 HTTP 请求起始行信息</td></tr><tr><td>$status</td><td style=text-align:left>记录用户 HTTP 请求状态码</td></tr><tr><td>$body_bytes_sents</td><td style=text-align:left>记录服务端返回给客户端响应 Body 字节数</td></tr><tr><td>$http_referer</td><td style=text-align:left>记录本次请求是从哪一个链接访问过来的</td></tr><tr><td>$http_user_agent</td><td style=text-align:left>记录客户端类型信息，比如 Chrome、微信等等</td></tr></tbody></table></div><p>为什么说这些时最常用的“变量”呢？因为通过这些，我们想要统计 PV 和 UV 的想法就能变成现实，关于更多的 Nginx 日志变量，大家可以从这里来了解：<a class=link href=http://nginx.org/en/docs/http/ngx_http_log_module.html target=_blank rel=noopener>http://nginx.org/en/docs/http/ngx_http_log_module.html</a>。现在，通过 Nginx 托管一个简单的静态页面，然后在浏览器中访问：localhost:9090，此时，我们应该可以在前面设置的日志路径里找到 Nginx 生成的日志文件，它大概长下面这个样子：</p><p><figure><a href=https://i.loli.net/2019/10/24/sGT7QYRWariKDHz.png><img src=https://i.loli.net/2019/10/24/sGT7QYRWariKDHz.png data-src=https://i.loli.net/2019/10/24/sGT7QYRWariKDHz.png alt=Nginx日志长什么样子></a><figcaption>Nginx日志长什么样子</figcaption></figure></p><p>OK，现在有日志文件啦，这 PV/UV 到底从哪里来呢？其实，到这里已经无所谓用什么方法啦，因为你可以用 ELK 全家桶把给它收集了去，或是选一门你喜欢的语言用正则给它匹配出来，这都完全没有问题，无非就是一个工具选择的问题。为了简单起见，我们直接用 Shell 命令：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1>#统计指定页面的PV</span>
-</span></span><span class=line><span class=cl>grep / localhost.access.log <span class=p>|</span> wc -l
-</span></span><span class=line><span class=cl>grep /favicon.ico localhost.access.log <span class=p>|</span> wc -l
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1>#统计站点PV</span>
-</span></span><span class=line><span class=cl>awk <span class=s1>&#39;{print $6}&#39;</span> localhost.access.log <span class=p>|</span> wc -l <span class=c1>#$6表示模板中的第6个变量，即Referer</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1>#统计访客IP</span>
-</span></span><span class=line><span class=cl>awk <span class=s1>&#39;{print $1}&#39;</span> localhost.access.log <span class=p>|</span> sort -r <span class=p>|</span>uniq -c <span class=p>|</span>wc -l <span class=c1>#$1表示模板中第一个变量，即客户端IP</span>
-</span></span></code></pre></div><p>至此，我们就达到了基于 Nginx 访问日志实现 PV/UV 统计的目的。我知道有同学要问啦，你不是说要在前端通过埋点的方式来收集访客的信息吗，你这说了半天，完全就是说 Nginx 的事情嘛！的确，我们现在可以统计出自己网站的 PV/UV 了，可如果我们想对外提供一个访问统计的服务，我们又该如何做呢？这里简单分享下博主的思路，因为开发环境一直不是很稳定，所以，一直没有时间动手去实践(逃。<figure><a href=https://i.loli.net/2019/11/25/DBj7SxOa8qf1FZH.png><img src=https://i.loli.net/2019/11/25/DBj7SxOa8qf1FZH.png data-src=https://i.loli.net/2019/11/25/DBj7SxOa8qf1FZH.png alt=一种PV/UV统计的思路></a><figcaption>一种PV/UV统计的思路</figcaption></figure>通过这张图片，我们可以大致梳理出整个流程，即前端页面中通过 JavaScript 来调用后端提供的 Analysis Service，此时这个请求会携带一个 Referer 信息，而这个 Referer 对应被访问的站点。注意到这个后端服务经过了一层 Nginx 转发，显然 Nginx 可以获得客户端的 IP 地址，这两个结合起来，表示的就是某个 IP 访问了某个站点，即 PV。像百度站长和腾讯统计会在页面中注入一个 token 或者 Id，主要用途就是确保请求的确是从当前站点中发出的，这就是这类访问统计产品统计的原理。也许在计算 PV/UV 的算法上存在差异，然而核心的原理应该没多大差别啦！</p><h2 id=通过-redis-的-hyperloglog-实现统计>通过 Redis 的 HyperLogLog 实现统计</h2><p>不知道大家有没有发现，统计 PV 其实蛮简单的，因为它只需要对访问量做更新即可。可统计 UV 就会有点麻烦啦，因为同一个人可以多次访问同一篇文章。有时候我们希望统计一天内的访客数，而有时候我们希望统计一周甚至一个月内的访客数，所以，UV 并不像 PV 那样简单，PV 更多的时候是作为一种“汇总”数据，而 UV 则有“实时”的属性。简而言之，我们需要一张表来记录访客数据，博主在设计这张表的时候，更是引入了地理位置、UserAgent 等等相关的字段设计，因为我们会有了解访客来源、访客设备等等一系列“行为”相关的数据记录。对应到数据库的概念，VisitorRecored 这张表实际上是在不停地写入记录的。那么，面对每一个查看实时访客数的请求，我们真的要每次都要去这张表里统计一遍吗？也许我们会想到使用数据库任务去做定时的汇总，或者是任意形式的定时任务譬如 CORN、Hangfire，在这里，我们有更好的选择——HyperLogLog。</p><p>什么是 HyperlLogLog 呢？我们提到的统计 UV 的这个场景，实际上是一个基数计数(Cardinality Counting)的问题，即统计一个集合中不重复的元素个数，例如集合{1,3,5,7,5,7,8}的基数为 5。所以，HyperLogLog 实际上就是一个在误差允许的范围内，快速统计元素数目的算法。为什么说是误差允许范围内呢？因为它来源于一个经典的概率分布——伯努利分布。高中时候，老师讲到这个知识，我们笑称它为“白努力”，因为有一段时间，排列组合属于我怎么学都学不会东西，可不就是白努力吗？HyperLogLog 是在 LogLog 的基础上优化的一种算法，它主要的改进是采用了桶算法作为每一轮伯努利实验的估计值，同时使用调和平均数代替平均数，进而求出最终的估算值。它可以在不存储整个集合的情况下，使用极小的内存统计出集合元素的个数。</p><p>对应到 Redis 里，主要体现在 PFADD、PFCOUNT、PFMERGE 三个命令上。</p><ul><li>PFADD：将多个值存入指定的 HyperLogLog。</li><li>PFCOUNT：获取指定 HyperLogLog 的基数。</li><li>PFMERGE：合并多个 HyperLogLog，合并前与合并后的基数一致(取并集)。</li></ul><p>博主在写这篇博客的时候，基于 LeanCloud 的访问统计<a class=link href=.>LeanCloud-Counter</a>已经再线上运行了一段时间。下面，我们就以这些数据为例来展示下 HyperLogLog 的用法。为了方便起见，我选择使用 Python 来读写 Redis：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-Python data-lang=Python><span class=line><span class=cl><span class=c1># 连接Redis</span>
-</span></span><span class=line><span class=cl><span class=n>r</span> <span class=o>=</span> <span class=n>redis</span><span class=o>.</span><span class=n>Redis</span><span class=p>(</span><span class=n>host</span><span class=o>=</span><span class=s1>&#39;localhost&#39;</span><span class=p>,</span> <span class=n>port</span><span class=o>=</span><span class=mi>6379</span><span class=p>,</span> <span class=n>db</span><span class=o>=</span><span class=mi>0</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 查询访客记录</span>
-</span></span><span class=line><span class=cl><span class=n>VisitorRecord</span> <span class=o>=</span> <span class=n>leancloud</span><span class=o>.</span><span class=n>Object</span><span class=o>.</span><span class=n>extend</span><span class=p>(</span><span class=s1>&#39;VisitorRecord&#39;</span><span class=p>)</span>
-</span></span><span class=line><span class=cl><span class=n>query</span> <span class=o>=</span> <span class=n>VisitorRecord</span><span class=o>.</span><span class=n>query</span>
-</span></span><span class=line><span class=cl><span class=n>query</span><span class=o>.</span><span class=n>limit</span><span class=p>(</span><span class=mi>1000</span><span class=p>)</span>
-</span></span><span class=line><span class=cl><span class=n>queryResults</span> <span class=o>=</span> <span class=n>query</span><span class=o>.</span><span class=n>find</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 对每个页面使用PFADD</span>
-</span></span><span class=line><span class=cl><span class=k>for</span> <span class=n>result</span> <span class=ow>in</span> <span class=n>queryResults</span><span class=p>:</span>
-</span></span><span class=line><span class=cl>    <span class=n>r</span><span class=o>.</span><span class=n>pfadd</span><span class=p>(</span><span class=n>result</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;page_url&#39;</span><span class=p>),</span><span class=n>result</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;visitor_ip&#39;</span><span class=p>))</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 使用PFCOUNT返回每个页面的基数</span>
-</span></span><span class=line><span class=cl><span class=n>pageUrls</span> <span class=o>=</span> <span class=nb>list</span><span class=p>(</span><span class=nb>set</span><span class=p>(</span><span class=nb>map</span><span class=p>(</span><span class=k>lambda</span> <span class=n>x</span><span class=p>:(</span><span class=n>x</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;page_url&#39;</span><span class=p>),</span><span class=n>x</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;page_title&#39;</span><span class=p>),</span><span class=n>r</span><span class=o>.</span><span class=n>pfcount</span><span class=p>(</span><span class=n>x</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;page_url&#39;</span><span class=p>))),</span> <span class=n>queryResults</span><span class=p>)))</span>
-</span></span><span class=line><span class=cl><span class=n>pageUrls</span> <span class=o>=</span> <span class=nb>sorted</span><span class=p>(</span><span class=n>pageUrls</span><span class=p>,</span><span class=n>key</span><span class=o>=</span><span class=k>lambda</span> <span class=n>x</span><span class=p>:</span><span class=n>x</span><span class=p>[</span><span class=mi>2</span><span class=p>],</span><span class=n>reverse</span><span class=o>=</span><span class=kc>True</span><span class=p>)</span>
-</span></span><span class=line><span class=cl><span class=nb>print</span><span class=p>(</span><span class=n>pageUrls</span><span class=p>[</span><span class=mi>0</span><span class=p>:</span><span class=mi>10</span><span class=p>])</span>
-</span></span></code></pre></div><p>运行完脚本，我们可以统计出访客数目：</p><p><figure><a href=https://i.loli.net/2019/11/26/JxUQ9s1EiOlVBCY.png><img src=https://i.loli.net/2019/11/26/JxUQ9s1EiOlVBCY.png data-src=https://i.loli.net/2019/11/26/JxUQ9s1EiOlVBCY.png alt=使用HyperLogLog统计访客数目></a><figcaption>使用HyperLogLog统计访客数目</figcaption></figure></p><h2 id=通过-leancloud-的-hooks-实现统计>通过 LeanCloud 的 Hooks 实现统计</h2><p>像 Hexo、Jekyll 这类静态博客，本质上是非常依赖 Valine、不蒜子等等的第三方服务，而使用 LeanCloud 作为访问量统计的服务提供商，更是早就在博客圈子里流行了。不过我注意到，这些设计都少都会有一点不足，那就是网上的各种设计都没有实现站点的 PV/UV 统计。当我被迫从”不蒜子“上迁移过来以后，我其实非常想实现一个和”不蒜子“一模一样的统计服务，因为这样子的话，我对博客的修改会非常非常小。所以， 我不得不在现有方案上扩展更多的功能，实现单篇文章的 UV、整个站点的 PV/UV、访客 IP/地理位置、客户端 UA 等的统计功能。</p><p>在这个过程中，我发现 LeanCloud 不支持传统关系型数据库里的 Sum()操作，而我更不想在客户端通过分页去对表记录做 Sum()操作。官方提供了离线分析和云函数，可这两个东西都是商业版里支持的东西。最终我找到了，通过 Hooks 来实现站点 PV/UV 统计的这样一种方法。所谓 Hooks，你可以理解为传统关系型数据库里的触发器，它可以在你更新或者插入某个对象的时候，去做一点额外的工作。所以，单篇文章会根据文章链接+访客 IP 生成一条 UV，而 PV 则是每次打开文章就视为一条 PV。所以，最终的方案是插入访客记录(<strong>VisitorRecord</strong>)时更新文章的对应的访问次数(<strong>VisitorCounter</strong>)，而单篇文章的更新则会触发站点 UV/PV 的更新。听起来有点绕人，我们直接来看下面的代码：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//新建访客记录时，更新对应的UV记录
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>AV</span><span class=p>.</span><span class=nx>Cloud</span><span class=p>.</span><span class=nx>afterSave</span><span class=p>(</span><span class=s1>&#39;VisitorRecord&#39;</span><span class=p>,</span> <span class=kr>async</span> <span class=kd>function</span><span class=p>(</span><span class=nx>request</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=kd>var</span> <span class=nx>query</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>AV</span><span class=p>.</span><span class=nx>Query</span><span class=p>(</span><span class=s1>&#39;VisitorCounter&#39;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=kd>var</span> <span class=nx>page_url</span> <span class=o>=</span> <span class=nx>request</span><span class=p>.</span><span class=nx>object</span><span class=p>.</span><span class=nx>get</span><span class=p>(</span><span class=s1>&#39;page_url&#39;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=nx>console</span><span class=p>.</span><span class=nx>log</span><span class=p>(</span><span class=s1>&#39;query page_url: &#39;</span> <span class=o>+</span> <span class=nx>page_url</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=nx>query</span><span class=p>.</span><span class=nx>equalTo</span><span class=p>(</span><span class=s1>&#39;page_url&#39;</span><span class=p>,</span> <span class=nx>page_url</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>query</span><span class=p>.</span><span class=nx>find</span><span class=p>().</span><span class=nx>then</span><span class=p>(</span><span class=kd>function</span> <span class=p>(</span><span class=nx>counters</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=nx>counters</span><span class=p>.</span><span class=nx>length</span> <span class=o>&gt;</span> <span class=mi>0</span><span class=p>){</span>
-</span></span><span class=line><span class=cl>            <span class=nx>counters</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=nx>increment</span><span class=p>(</span><span class=s1>&#39;page_uv&#39;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>            <span class=nx>console</span><span class=p>.</span><span class=nx>log</span><span class=p>(</span><span class=s1>&#39;increment UV of page_url: &#39;</span> <span class=o>+</span> <span class=nx>page_url</span> <span class=o>+</span> <span class=s2>&#34;, &#34;</span> <span class=o>+</span> <span class=nx>counters</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=nx>get</span><span class=p>(</span><span class=s1>&#39;page_pv&#39;</span><span class=p>));</span>
-</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=nx>counters</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=nx>save</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>        <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=p>});</span>
-</span></span><span class=line><span class=cl><span class=p>});</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1>//页面PV/UV更新时，更新站点PV/UV
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>AV</span><span class=p>.</span><span class=nx>Cloud</span><span class=p>.</span><span class=nx>afterUpdate</span><span class=p>(</span><span class=s1>&#39;VisitorCounter&#39;</span><span class=p>,</span> <span class=kr>async</span> <span class=kd>function</span><span class=p>(</span><span class=nx>request</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=kd>var</span> <span class=nx>page_url</span> <span class=o>=</span> <span class=nx>request</span><span class=p>.</span><span class=nx>object</span><span class=p>.</span><span class=nx>get</span><span class=p>(</span><span class=s1>&#39;page_url&#39;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=k>if</span><span class=p>(</span><span class=nx>page_url</span><span class=p>.</span><span class=nx>indexOf</span><span class=p>(</span><span class=s1>&#39;//&#39;</span><span class=p>)</span> <span class=o>==</span> <span class=o>-</span><span class=mi>1</span><span class=p>){</span>
-</span></span><span class=line><span class=cl>        <span class=k>return</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=kd>var</span> <span class=nx>site_url</span> <span class=o>=</span> <span class=nx>page_url</span><span class=p>.</span><span class=nx>split</span><span class=p>(</span><span class=s1>&#39;//&#39;</span><span class=p>)[</span><span class=mi>1</span><span class=p>];</span>
-</span></span><span class=line><span class=cl>    <span class=nx>site_url</span> <span class=o>=</span> <span class=nx>site_url</span><span class=p>.</span><span class=nx>substring</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span> <span class=nx>site_url</span><span class=p>.</span><span class=nx>indexOf</span><span class=p>(</span><span class=s1>&#39;/&#39;</span><span class=p>));</span>
-</span></span><span class=line><span class=cl>    <span class=nx>console</span><span class=p>.</span><span class=nx>log</span><span class=p>(</span><span class=s1>&#39;now to update site PV/UV with: &#39;</span> <span class=o>+</span> <span class=nx>site_url</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=nx>request</span><span class=p>.</span><span class=nx>object</span><span class=p>.</span><span class=nx>updatedKeys</span><span class=p>.</span><span class=nx>indexOf</span><span class=p>(</span><span class=s1>&#39;page_pv&#39;</span><span class=p>)</span> <span class=o>!=</span> <span class=o>-</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>query</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>AV</span><span class=p>.</span><span class=nx>Query</span><span class=p>(</span><span class=s1>&#39;VisitorCounter&#39;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=nx>query</span><span class=p>.</span><span class=nx>equalTo</span><span class=p>(</span><span class=s1>&#39;page_url&#39;</span><span class=p>,</span><span class=nx>site_url</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=nx>query</span><span class=p>.</span><span class=nx>find</span><span class=p>().</span><span class=nx>then</span><span class=p>(</span><span class=kd>function</span><span class=p>(</span><span class=nx>counters</span><span class=p>){</span>
-</span></span><span class=line><span class=cl>            <span class=k>if</span><span class=p>(</span><span class=nx>counters</span><span class=p>.</span><span class=nx>length</span><span class=o>&gt;</span><span class=mi>0</span><span class=p>){</span>
-</span></span><span class=line><span class=cl>                <span class=nx>counters</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=nx>increment</span><span class=p>(</span><span class=s1>&#39;page_pv&#39;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>                <span class=nx>console</span><span class=p>.</span><span class=nx>log</span><span class=p>(</span><span class=s1>&#39;update site PV of &#39;</span> <span class=o>+</span> <span class=nx>site_url</span> <span class=o>+</span> <span class=s2>&#34;, &#34;</span> <span class=o>+</span> <span class=nx>counters</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=nx>get</span><span class=p>(</span><span class=s1>&#39;page_pv&#39;</span><span class=p>));</span>
-</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>counters</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=nx>save</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>            <span class=p>}</span>
-</span></span><span class=line><span class=cl>        <span class=p>});</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=nx>request</span><span class=p>.</span><span class=nx>object</span><span class=p>.</span><span class=nx>updatedKeys</span><span class=p>.</span><span class=nx>indexOf</span><span class=p>(</span><span class=s1>&#39;page_uv&#39;</span><span class=p>)</span> <span class=o>!=</span> <span class=o>-</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>query</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>AV</span><span class=p>.</span><span class=nx>Query</span><span class=p>(</span><span class=s1>&#39;VisitorCounter&#39;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=nx>query</span><span class=p>.</span><span class=nx>equalTo</span><span class=p>(</span><span class=s1>&#39;page_url&#39;</span><span class=p>,</span><span class=nx>site_url</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=nx>query</span><span class=p>.</span><span class=nx>find</span><span class=p>().</span><span class=nx>then</span><span class=p>(</span><span class=kd>function</span><span class=p>(</span><span class=nx>counters</span><span class=p>){</span>
-</span></span><span class=line><span class=cl>            <span class=k>if</span><span class=p>(</span><span class=nx>counters</span><span class=p>.</span><span class=nx>length</span><span class=o>&gt;</span><span class=mi>0</span><span class=p>){</span>
-</span></span><span class=line><span class=cl>                <span class=nx>counters</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=nx>increment</span><span class=p>(</span><span class=s1>&#39;page_uv&#39;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>                <span class=nx>console</span><span class=p>.</span><span class=nx>log</span><span class=p>(</span><span class=s1>&#39;update site PV of &#39;</span> <span class=o>+</span> <span class=nx>site_url</span> <span class=o>+</span> <span class=s2>&#34;, &#34;</span> <span class=o>+</span> <span class=nx>counters</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=nx>get</span><span class=p>(</span><span class=s1>&#39;page_uv&#39;</span><span class=p>));</span>
-</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>counters</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=nx>save</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>            <span class=p>}</span>
-</span></span><span class=line><span class=cl>        <span class=p>});</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl><span class=p>});</span>
-</span></span></code></pre></div><p>实际上这里整个站点的 UV 统计是不严谨的，因为严格地来讲，同一个 IP 访问了同一个站点下的 N 篇文章，它的 UV 严格地来说应该算 1 次，可我们这个方案本身就是向 LeanCloud 妥协的一种做法，就像我这里直接使用了<code>location.href</code>和<code>document.title</code>，它带来的问题就是，一个网站的域名或者链接发生变化的时候，访问统计就会被重置从 0 开始。“不蒜子”本身就有这个问题。所以，博主这个博客从 15 年到现在，总访问量只有 3 万多，就是因为中间更换过两次域名。从我切换到自己写的统计服务以后，我发现每天来读我博客的人居然不少，我实在不忍心写下这种夸自己的句子啊！</p><p>想解决这个问题，并不是没有办法。像博主一开始设计的时候，是打算用每个页面唯一的 Id 来存储的，而这就要通过 HTML5 中的**data-**或者通过 JavaScript 来传参。可当你打算设计一个更通用的东西的时候，这些想法就显得有点多余，我和大部分人一样，喜欢开箱即用的东西，所以，最好它可以像大多数统计服务一样，只需要在页面里加入一行 JavaScript 脚本。所以，最终采用这样的设计是为了最大限度的开箱即用。考虑到“不蒜子”里因为更换域名而导致的访问统计重置的问题，我增加了一个初始化站点 UV/PV 的功能，满足了像博主这样虚荣心爆棚的人的需要。这一刻，我突然觉得，我和产品经理们一样“自信”啊。正如你所看到的这样，博客底部的访问统计已经从“不蒜子”切换到“LeanCloud-Counter”，为此我在博客上增加了<a class=link href=https://leancloud.cn target=_blank rel=noopener>LeanCloud</a>的链接，也许下一阶段会加上 Heroku，总之，我已经完成了访问统计的平滑切换。关于这个项目，如果大家感兴趣，可以参考这个地址：<a class=link href=https://github.com/qinyuanpei/leancloud-counter target=_blank rel=noopener>LeanCloud-Counter</a>。</p><h1 id=本文小结>本文小结</h1><p>这篇文章写下来，最大的感受或许是，有一台 Linux 环境的服务器是多么的重要。起初，是在 Windows10 下面的 WSL 里搭了 Docker 环境，再通过 Docker 镜像搭建 Nginx，因为之前的 Consul、ELK 几乎都是这样运作的，而且一直运行的相当稳定，唯一的缺点大概就是 Docker 太容易吃硬盘，有时候难免搞出个内存不足。Nginx 搭好以后，发现需要经常改配置文件，Docker 环境里改起来相当痛苦。直接在 WSL 里安装 Nginx 的话，因为和 Windows 共享端口，和 IIS 明显搞不到一起。想通过 Docker 挂载本机分区，突然想起来 WSL 里的 Docker 只是一个客户端，真正的主角是跑在 Windows 上的 Docker for Windows。最后被迫装了 Windows 版本的 Nginx，果然还是会和 IIS 冲突，我想说，心好累有木有啊_(:з」∠)_。好了，这篇博客总算写完了！</p></section><footer class=article-footer><div style="padding:10px 0;margin:20px auto;width:100%;font-size:16px;text-align:center"><button id=rewardButton disable=enable onclick='var qr=document.getElementById("QR");qr.style.display==="none"?qr.style.display="block":qr.style.display="none"'>
-<span>打赏</span></button><div id=QR style=display:none><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=wechat_qr src=/imgs/reward/wechat.jpg alt=wechat></a><p>微信打赏</p></div><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=alipay_qr src=/imgs/reward/alipay.jpg alt=alipay></a><p>支付宝打赏</p></div></div></div><section class=article-tags><a href=/tags/%E8%AE%BF%E9%97%AE%E9%87%8F/>访问量</a>
-<a href=/tags/nginx/>Nginx</a>
-<a href=/tags/hyperlog/>Hyperlog</a></section><div class=social-share></div><section class=article-footer-notes><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>BY-NC-SA 4.0
-</span><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<span>最后更新 2024-05-27</span></section></footer><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css integrity=sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn crossorigin=anonymous><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js integrity=sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8 crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js integrity=sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl crossorigin=anonymous defer></script><script>window.addEventListener("DOMContentLoaded",()=>{renderMathInElement(document.querySelector(`.article-content`),{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}]})})</script></article><aside class=related-contents--wrapper><h2 class=section-title>相关文章</h2><div class=related-contents><div class="flex article-list--tile"><article class=has-image><a href=/posts/integration-of-distributed-tracing-system-and-logging-system/><div class=article-image><img src=/posts/integration-of-distributed-tracing-system-and-logging-system/bridge.jpg loading=lazy data-key=Integration-Of-Distributed-Tracing-System-And-Logging-System data-hash=/posts/integration-of-distributed-tracing-system-and-logging-system/bridge.jpg></div><div class=article-details><h2 class=article-title>浅议分布式链路追踪与日志的整合</h2></div></a></article><article class=has-image><a href=/posts/a-story-of-git-large-file-storage/><div class=article-image><img src=/posts/a-story-of-git-large-file-storage/cover.jpg loading=lazy data-key=A-Story-Of-Git-Large-File-Storage data-hash=/posts/a-story-of-git-large-file-storage/cover.jpg></div><div class=article-details><h2 class=article-title>关于 Git 大文件上传这件小事</h2></div></a></article><article class=has-image><a href=/posts/3219639636/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3219639636" loading=lazy data-key=3219639636 data-hash></div><div class=article-details><h2 class=article-title>EFCore 实体命名约定库：EFCore.NamingConventions</h2></div></a></article><article class=has-image><a href=/posts/2151871792/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=2151871792" loading=lazy data-key=2151871792 data-hash></div><div class=article-details><h2 class=article-title>浅议 EF Core 分库分表及多租户架构的实现</h2></div></a></article><article class=has-image><a href=/posts/835719605/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=835719605" loading=lazy data-key=835719605 data-hash></div><div class=article-details><h2 class=article-title>基于选项模式实现.NET Core 的配置热更新</h2></div></a></article></div></div></aside><script src=//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js></script><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}</style><script>var waline=new Waline({el:"#waline",serverURL:"https://waline.yuanpei.me/",lang:"zh",dark:"auto",path:window.location.href,requiredMeta:["nick","mail"]})</script><footer class=site-footer><section class=copyright>&copy;
-2014 -
-2024 元视角</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> v0.126.1<br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.7.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a><br>已创作 274 篇文章，共计 1038468 字<br></section><section class=written-by><img src=/imgs/Written-By-Human-Not-By-AI-Badge-white.svg></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-<button class="pswp__button pswp__button--share" title=Share></button>
-<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-</button>
-<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous></main><aside class="sidebar right-sidebar sticky"><form action=/search/ class="search-form widget"><p><label>搜索</label>
-<input name=keyword required placeholder=请输入关键词>
-<button title=搜索><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></button></p></form><section class="widget archives"><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#pvuv-的概念>PV/UV 的概念</a></li><li><a href=#如何设计一个访问统计系统>如何设计一个访问统计系统</a><ol><li><a href=#通过-nginx-的-access_log-实现统计>通过 Nginx 的 access_log 实现统计</a></li><li><a href=#通过-redis-的-hyperloglog-实现统计>通过 Redis 的 HyperLogLog 实现统计</a></li><li><a href=#通过-leancloud-的-hooks-实现统计>通过 LeanCloud 的 Hooks 实现统计</a></li></ol></li><li><a href=#本文小结>本文小结</a></li></ol></nav></div></section><section class="widget archives"><h2 class="widget-title section-title">归档</h2><div class=widget-archive--list><div class=archives-year><a href=/archives/#2024><span class=year>2024</span>
-<span class=count>14</span></a></div><div class=archives-year><a href=/archives/#2023><span class=year>2023</span>
-<span class=count>11</span></a></div><div class=archives-year><a href=/archives/#2022><span class=year>2022</span>
-<span class=count>27</span></a></div><div class=archives-year><a href=/archives/#2021><span class=year>2021</span>
-<span class=count>42</span></a></div><div class=archives-year><a href=/archives/#2020><span class=year>2020</span>
-<span class=count>26</span></a></div><div class=archives-year><a href=/archives/#2019><span class=year>更多</span></a></div></div></section><section class="widget archives"><h2 class="widget-title section-title">日历</h2><div class=widget--toc style="background-color:#fff;border-radius:15px;padding:10px;margin:20px auto;width:300px;height:480px;display:flex;justify-content:center;align-items:center;overflow:hidden"><img id=calendar-cover src style=object-fit:cover;width:100%;height:100%></div></section><script>const getImageUrl=e=>{const t=e.getFullYear(),n=String(e.getMonth()+1).padStart(2,"0"),s=String(e.getDate()).padStart(2,"0");return`https://img.owspace.com/Public/uploads/Download/${t}/${n}${s}.jpg`};document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector("#calendar-cover");if(document.location.pathname.startsWith("/posts")){let t=document.querySelector('meta[property="article:published_time"]').content;t=t.substring(0,10),e.src=getImageUrl(new Date(t))}else e.src=getImageUrl(new Date)})</script><section class="widget tagCloud"><h2 class="widget-title section-title">标签云</h2><div class=tagCloud-tags><a href=/tags/rsetful/ class=font_size_1>RSETful
-</a><a href=/tags/%E5%B9%B6%E5%8F%91/ class=font_size_1>并发
-</a><a href=/tags/%E6%80%9D%E7%BB%B4/ class=font_size_1>思维
-</a><a href=/tags/%E8%BD%AF%E4%BB%B6/ class=font_size_1>软件
-</a><a href=/tags/%E6%9E%B6%E6%9E%84/ class=font_size_2>架构
-</a><a href=/tags/fody/ class=font_size_1>Fody
-</a><a href=/tags/%E5%90%8E%E7%AB%AF/ class=font_size_2>后端
-</a><a href=/tags/%E6%96%87%E6%9C%AC%E5%88%86%E7%B1%BB/ class=font_size_1>文本分类
-</a><a href=/tags/diagnostics/ class=font_size_1>Diagnostics
-</a><a href=/tags/%E5%81%A5%E5%BA%B7%E7%A0%81/ class=font_size_1>健康码
-</a><a href=/tags/%E5%8A%A8%E6%80%81%E5%AF%BC%E5%85%A5/ class=font_size_1>动态导入
-</a><a href=/tags/%E6%89%A9%E5%B1%95/ class=font_size_4>扩展
-</a><a href=/tags/%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/ class=font_size_1>读写分离
-</a><a href=/tags/%E6%9C%8D%E5%8A%A1/ class=font_size_1>服务
-</a><a href=/tags/hyperlog/ class=font_size_1>Hyperlog
-</a><a href=/tags/ldap/ class=font_size_1>LDAP
-</a><a href=/tags/%E5%A4%95%E9%9B%BE%E8%8A%B1%E5%9B%AD/ class=font_size_1>夕雾花园
-</a><a href=/tags/%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83/ class=font_size_1>配置中心
-</a><a href=/tags/nlog/ class=font_size_1>NLog
-</a><a href=/tags/rtmp/ class=font_size_1>RTMP
-</a><a href=/tags/kindle/ class=font_size_3>Kindle
-</a><a href=/tags/%E9%9F%A9%E5%AF%92/ class=font_size_1>韩寒
-</a><a href=/tags/linux/ class=font_size_6>Linux
-</a><a href=/tags/%E6%80%A7%E8%83%BD/ class=font_size_1>性能
-</a><a href=/tags/%E9%98%B2%E7%96%AB/ class=font_size_1>防疫
-</a><a href=/tags class=font_size_9999>更多</a></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous></script><script type=text/javascript src=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/ts/main.js defer></script><script type=text/javascript src=/ts/badge.js></script><script type=text/javascript>let createBadge=window.createBadge;createBadge("Git","7f1e7a2","#35495e","#ffc107"),createBadge("Hugo","v0.126.1","#35495e","#41b883")</script><script type=text/javascript src=/ts/chat-widget.js defer></script></body></html>
+<!DOCTYPE html>
+<html lang="en-us">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name="referrer" content="no-referrer"/>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+
+<meta http-equiv='content-language' content='zh-CN'>
+
+
+<link rel="apple-touch-icon" href="/imgs/avatar.jpg">
+
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+
+<link rel="icon" type="image/x-icon" href="/imgs/favicon.ico">
+
+
+<link rel="icon" type="image/png" href="/imgs/favicon.png"><meta name='description' content='文章主要讨论了如何设计一个 PV/UV 统计系统，以应对互联网产品流量分析的需求。首先介绍了PV（页面浏览量）和 UV（独立访客数）的概念，并探讨了在不同情况下对 PV/UV 的理解，如 AJAX和单页面应用中 PV 的统计方式。接着，提出了在前端通过埋点收集数据的共识，并讨论了后端处理数据的三种方法：使用 Nginx 的 access_log、Redis 的 Hyperloglog 和 LeanCloud 的 Hooks。文章详细描述了这三种方法的实现过程，并通过实例代码展示了如何应用这些技术进行数据统计。最后，作者分享了在设计统计系统时遇到的问题和对使用 Linux 服务器的重要性的认识，并提供了相关项目的 GitHub 链接，供读者参考。'><meta name='keywords' content='访问量, Nginx, Hyperlog'>
+
+<meta name="author" content="飞鸿踏雪"><title>浅析网站 PV/UV 统计系统的原理及其设计 - 元视角</title>
+
+<link rel='canonical' href='http://localhost:1313/posts/3494408209/'>
+
+
+
+<link rel="stylesheet" href="/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css">
+<meta property='og:title' content='浅析网站 PV/UV 统计系统的原理及其设计 - 元视角'>
+<meta property='og:description' content='文章主要讨论了如何设计一个 PV/UV 统计系统，以应对互联网产品流量分析的需求。首先介绍了PV（页面浏览量）和 UV（独立访客数）的概念，并探讨了在不同情况下对 PV/UV 的理解，如 AJAX和单页面应用中 PV 的统计方式。接着，提出了在前端通过埋点收集数据的共识，并讨论了后端处理数据的三种方法：使用 Nginx 的 access_log、Redis 的 Hyperloglog 和 LeanCloud 的 Hooks。文章详细描述了这三种方法的实现过程，并通过实例代码展示了如何应用这些技术进行数据统计。最后，作者分享了在设计统计系统时遇到的问题和对使用 Linux 服务器的重要性的认识，并提供了相关项目的 GitHub 链接，供读者参考。'>
+<meta property='og:url' content='http://localhost:1313/posts/3494408209/'>
+<meta property='og:site_name' content='元视角'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='访问量' /><meta property='article:tag' content='Nginx' /><meta property='article:tag' content='Hyperlog' /><meta property='article:published_time' content='2019-10-22T12:50:49&#43;00:00'/><meta property='article:modified_time' content='2024-05-27T11:06:18&#43;08:00'/><meta property='og:image' content='http://localhost:1313/' />
+<meta name="twitter:title" content="浅析网站 PV/UV 统计系统的原理及其设计 - 元视角">
+<meta name="twitter:description" content="文章主要讨论了如何设计一个 PV/UV 统计系统，以应对互联网产品流量分析的需求。首先介绍了PV（页面浏览量）和 UV（独立访客数）的概念，并探讨了在不同情况下对 PV/UV 的理解，如 AJAX和单页面应用中 PV 的统计方式。接着，提出了在前端通过埋点收集数据的共识，并讨论了后端处理数据的三种方法：使用 Nginx 的 access_log、Redis 的 Hyperloglog 和 LeanCloud 的 Hooks。文章详细描述了这三种方法的实现过程，并通过实例代码展示了如何应用这些技术进行数据统计。最后，作者分享了在设计统计系统时遇到的问题和对使用 Linux 服务器的重要性的认识，并提供了相关项目的 GitHub 链接，供读者参考。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='http://localhost:1313/' />
+
+    
+        
+            <meta name="msvalidate.01" content="713A48A3FE17D4841C292A6B3942EB4C" />
+        
+    
+        
+            <meta name="baidu-site-verification" content="c50FGqYOSh" />
+        
+    
+        
+            <meta name="google-site-verification" content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s" />
+        
+    
+
+  
+
+<script src="//instant.page/5.1.0" type="module" integrity="sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css"
+/>
+    </head>
+    <body class="
+    article-page
+">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex 
+    on-phone--column extended
+">
+    <div id="article-toolbar">
+        <a href="/" class="back-home">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="15 6 9 12 15 18" />
+</svg>
+
+
+
+            <span>返回</span>
+        </a>
+    </div>
+    <aside class="sidebar left-sidebar sticky">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header class="site-info">
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">👌</span>
+                
+            </figure>
+            
+        
+        
+        <h1 class="site-name"><a href="/">元视角</a></h1>
+        <h2 class="site-description">起风了，唯有努力生存</h2><ol class="social-menu">
+                
+                    
+                    
+                    
+                    
+                    <li>
+                        <a 
+                            href='mailto:qinyuanpei@163.com'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Mail"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
+  <path d="M3 7l9 6l9 -6" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://github.com/qinyuanpei'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="GitHub"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://www.zhihu.com/people/qinyuanpei'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Zhihu"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M14 6h6v12h-2l-2 2l-1 -2h-1z" />
+  <path d="M4 12h6.5" />
+  <path d="M10.5 6h-5" />
+  <path d="M6 4c-.5 2.5 -1.5 3.5 -2.5 4.5" />
+  <path d="M8 6v7c0 4.5 -2 5.5 -4 7" />
+  <path d="M11 18l-3 -5" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://www.douban.com/people/60029335'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Douban"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 20h16" />
+  <path d="M5 4h14" />
+  <path d="M8 8h8a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2v-2a2 2 0 0 1 2 -2z" />
+  <path d="M16 14l-2 6" />
+  <path d="M8 17l1 3" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://weibo.com/1278609231/profile'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Weibo"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M19 14.127c0 3.073 -3.502 5.873 -8 5.873c-4.126 0 -8 -2.224 -8 -5.565c0 -1.78 .984 -3.737 2.7 -5.567c2.362 -2.51 5.193 -3.687 6.551 -2.238c.415 .44 .752 1.39 .749 2.062c2 -1.615 4.308 .387 3.5 2.693c1.26 .557 2.5 .538 2.5 2.742z" />
+  <path d="M15 4h1a5 5 0 0 1 5 5v1" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='/index.xml'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="RSS"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="5" cy="19" r="1" />
+  <path d="M4 4a16 16 0 0 1 16 16" />
+  <path d="M4 11a9 9 0 0 1 9 9" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+            </ol></header>
+
+    <ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>首页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/works' >
+                
+                
+                
+                    <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style type="text/css"></style></defs><path d="M843.093333 815.36l-189.44-294.826667a85.333333 85.333333 0 0 1-13.653333-46.08V170.666667h21.333333a21.333333 21.333333 0 0 0 21.333334-21.333334v-42.666666a21.333333 21.333333 0 0 0-21.333334-21.333334h-298.666666a21.333333 21.333333 0 0 0-21.333334 21.333334v42.666666a21.333333 21.333333 0 0 0 21.333334 21.333334H384v304.213333a85.333333 85.333333 0 0 1-13.653333 46.08l-189.44 294.826667a64.426667 64.426667 0 0 0 0 66.56l13.653333 24.32a64.853333 64.853333 0 0 0 55.466667 32h525.226666a64.853333 64.853333 0 0 0 55.466667-32l14.08-24.746667a63.573333 63.573333 0 0 0-1.706667-66.56z m-400.64-248.32a173.226667 173.226667 0 0 0 26.88-92.16V170.666667h85.333334v303.786666a167.68 167.68 0 0 0 27.306666 92.16L656.213333 682.666667H367.786667z" p-id="1250" fill="#8a8a8a"></path></svg>
+                
+                <span>作品</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+  <path d="M12 6l-3.293 3.293a1 1 0 0 0 0 1.414l.543 .543c.69 .69 1.81 .69 2.5 0l1 -1a3.182 3.182 0 0 1 4.5 0l2.25 2.25" />
+  <path d="M12.5 15.5l2 2" />
+  <path d="M15 13l2 2" />
+</svg>
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+
+        <li  class='current' >
+            <a href='/about' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+
+        
+            <li id="dark-mode-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" />
+  <path d="M6.343 17.657l-1.414 1.414" />
+  <path d="M6.343 6.343l-1.414 -1.414" />
+  <path d="M17.657 6.343l1.414 -1.414" />
+  <path d="M17.657 17.657l1.414 1.414" />
+  <path d="M4 12h-2" />
+  <path d="M12 4v-2" />
+  <path d="M20 12h2" />
+  <path d="M12 20v2" />
+</svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+  <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" />
+  <path d="M19 11h2m-1 -1v2" />
+</svg>
+                <span id="dark-mode-text">夜间模式</span>
+            </li>
+        
+    </ol>
+</aside>
+
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/" >
+                数据存储
+            </a>
+        
+    </header>
+    
+
+    <h2 class="article-title">
+        <a href="/posts/3494408209/">浅析网站 PV/UV 统计系统的原理及其设计</a>
+    </h2>
+    
+    
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2019-10-22</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 14 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+</div>
+</header>
+
+    
+        
+
+
+<div class="post-ai">
+    <div class="ai-title">
+        <i class="ai-title-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2z" />
+  <path d="M9 16c1 .667 2 1 3 1s2 -.333 3 -1" />
+  <path d="M9 7l-1 -4" />
+  <path d="M15 7l1 -4" />
+  <path d="M9 12v-1" />
+  <path d="M15 12v-1" />
+</svg></i>
+        <div class="ai-title-text">AI 摘要</div>
+    </div>
+    <div id="ai-explanation" class="ai-explanation"></div>
+    <div class="ai-explanation ai-explanation-content">文章主要讨论了如何设计一个 PV/UV 统计系统，以应对互联网产品流量分析的需求。首先介绍了PV（页面浏览量）和 UV（独立访客数）的概念，并探讨了在不同情况下对 PV/UV 的理解，如 AJAX和单页面应用中 PV 的统计方式。接着，提出了在前端通过埋点收集数据的共识，并讨论了后端处理数据的三种方法：使用 Nginx 的 access_log、Redis 的 Hyperloglog 和 LeanCloud 的 Hooks。文章详细描述了这三种方法的实现过程，并通过实例代码展示了如何应用这些技术进行数据统计。最后，作者分享了在设计统计系统时遇到的问题和对使用 Linux 服务器的重要性的认识，并提供了相关项目的 GitHub 链接，供读者参考。</div>
+</div>
+
+<script src="https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const matchingSummary = document.querySelector(".ai-explanation-content").textContent;
+
+    new TypeIt("#ai-explanation", {
+        strings: matchingSummary,
+        speed: 10,
+        lifeLike: true,
+        waitUntilVisible: true,
+    }).go();
+});
+</script>
+
+    
+
+    <section class="article-content">
+    
+    
+    <p>国庆节前有段时间，新浪的“图床”一直不大稳定，因为新浪开启了防盗链，果然免费的永远是最贵的啊。为了不影响使用，我非常粗暴地禁止了浏览器发送 Referer，然后我就发现了一件尴尬的事情，“不蒜子”统计服务无法使用了。这是一件用脚后跟想都能想明白的事情，我禁止了浏览器发送 Referer，而“不蒜子”正好使用 Referer 来识别每个页面，所以，这是一个再明显不过的因为需求变更而引入的 Bug。这个世界最离谱的事情，就是大家都认为程序员是一本“十万个为什么”，每次一出问题就找到程序员这里。其实，程序员是再普通不过的芸芸众生里的一员，人们喜欢听/看到自己愿意去听/看到的事物，而程序员同样喜欢解决自己想去解决的问题。所以，今天的话题是关于如何设计一个 PV/UV 统计系统。OK，Let&rsquo;s Hacking Begin。</p>
+<h1 id="pvuv-的概念">PV/UV 的概念</h1>
+<p>首先，我们从两个最基本的概念 PV 和 UV 开始说起。我们都知道，互联网产品的核心就是流量，前期通过免费的产品吸引目标客户的目的，在积累了一定用户流量以后，再通过广告等增值服务实现盈利，这可以说是互联网产品的典型商业模式啦。而在这个过程中，为了对一个产品的流量进行科学地分析，就产生了譬如访客数(<strong>UV</strong>)、浏览量(<strong>PV</strong>)、访问次数(<strong>VV</strong>)等等的概念，这些概念通常作为衡量流量多少的指标。除此以外，我们还有类似日活跃用户(<strong>DAU</strong>)、月活跃用户(<strong>MAU</strong>)等等这种衡量服务用户粘性的指标，以及平均访问深度、平均访问时间、跳出率等等这种衡量流量质量优劣的指标。如果各位和我一样都写博客的话，对这些概念应该都不会感到陌生，因为我们多多少少会使用到诸如<a class="link" href="https://ziyuan.baidu.com/site/index"  target="_blank" rel="noopener"
+    >百度站长</a>、<a class="link" href="https://www.umeng.com/"  target="_blank" rel="noopener"
+    >站长统计</a>、<a class="link" href="https://ta.qq.com/#/"  target="_blank" rel="noopener"
+    >腾讯统计</a>、<a class="link" href="https://developers.google.cn/analytics/devguides/reporting/?hl=zh-cn"  target="_blank" rel="noopener"
+    >Google Analytics</a>这样的统计服务，这些统计服务可以让我们即时掌握博客的访问情况。博主目前使用了<a class="link" href="https://ta.qq.com/#/"  target="_blank" rel="noopener"
+    >腾讯统计</a>来查看整个博客的流量情况，而每一篇博客的访问量则是通过**<a class="link" href="http://busuanzi.ibruce.info/"  target="_blank" rel="noopener"
+    >“不蒜子”</a>**这个第三方服务，这里再次对作者表示感谢。</p>
+<p><figure 
+	>
+	<a href="https://i.loli.net/2019/10/24/VN2ubT71aLK6eZp.png" >
+		<img src="https://i.loli.net/2019/10/24/VN2ubT71aLK6eZp.png"
+			
+			
+			
+            data-src="https://i.loli.net/2019/10/24/VN2ubT71aLK6eZp.png"
+			alt="使用腾讯统计来查看网站的流量情况">
+	</a>
+	
+	<figcaption>使用腾讯统计来查看网站的流量情况</figcaption>
+	
+</figure></p>
+<p>回到问题本身，PV，即<strong>Page View</strong>，<strong>表示页面浏览量或者点击量，每当一个页面被打开或者被刷新，都会产生一次 PV，只要这个请求从浏览器端发送到了服务器端</strong>。聪明的各位肯定会想到，如果我写一个爬虫不停地去请求一个页面，那么这个页面的 PV 不就会一直增长下去吗？理论上的确是这样，所以，我们有第二个指标 UV，来作为进一步的参考，所谓 UV，即<strong>Unique Visitor，表示独立访客数</strong>。在上面这个问题中，尽管这个页面的 PV 在不断增长，可是因为这些访客的 IP 都是相同的，所以，这个页面只会产生一次 UV，这就是 PV 和 UV 的区别。所以，我们结合这两个指标，可以非常容易得了解到，这个页面实际的访问情况是什么样的。这让我想起数据分析中的一个例子，虽然以统计学为背景的数学计算不会欺骗人类，可如果人类片面地相信某一个方面的分析结果，数据分析一样是带有欺骗性的。就像有人根据《战狼 2》和《前任 3》两部电影的观众购买冷/热饮的情况，得出下面的结论：<strong>看动作片的观众更喜欢喝冷饮来清凉紧绷着的神经，而看爱情片的观众更喜欢喝热饮来温暖各自的内心</strong>。其实想想就知道这里混淆了因果性和相关性，选择冷饮还是热饮无非是两部电影上映的季节不同而已。</p>
+<h1 id="如何设计一个访问统计系统">如何设计一个访问统计系统</h1>
+<p>OK，了解了 PV 和 UV 的概念后，我们来思考如何去设计一个访问统计系统，这是今天这篇博客的主题内容。我知道，如果问如何设计一个访问系统，大家可能都会不由自主地想到建两张表。的确，这是最简单的做法。可问题是，我们对于 PV 的认识，其实一直都在不断地变化着。比如 PV 的定义是是一个页面被打开或者被刷新时视为一次有效 PV，所以，我们通常的做法是在页面底部嵌入 JavaScript 脚本，这种方式一直工作得非常好。可在引入 AJAX 以后，用户几乎不会主动去刷新页面，那么，在这个过程中用户点击<strong>更多</strong>或者使用<strong>下拉刷新</strong>时，是否应该算作一次有效 PV 呢？甚至在 PC 端网页逐渐式微以后，越来越多的工作转移到手机等移动设备上来，越来越多的原生+Web 混合 App 或者是单页面应用(<strong>SPA</strong>)或者是渐进式应用(<strong>PWA</strong>)，此时我们又该如何认识 PV 呢？微信公众号里的 PV 甚至更为严格，必须通过微信内置的浏览器访问才能算作一次有效 PV。</p>
+<p>可以发现，我们对 PV 的认识其实一直在不断的变化着，更多的时候，我们想追踪的并非页面被加载(<strong>Page Load</strong>)的次数，而是页面被浏览(<strong>Page View</strong>)的次数。这时候，我们可以 Page Visiblity 和 History API 结合的方式。前者在页面的 visibilityState 可见或者由隐藏变为可见时发送一次 Page View，而后者则是在浏览器地址发生变化的时候发送一次 Page View。这听起来非常像单页面应用(<strong>SPA</strong>)里前端路由的那套玩法，的确，当一个地址中的 pathname 或者 search 部分发生变化时，应该发送一次 Page View 请求，而 hash 部分的变化则应该忽略，因为它表示的是应用内部页面的跳转。对于页面的 visibilityState 由隐藏变为可见，不同的人有不同的看法，因为有时我们像合并多次 Page View，而有时候则想通过 Page View 了解所谓的”回头客“，所以，这里面还可以继续引入 Session 的概念，比如 Google Analytics 默认会在 30 分钟内无交互的情况下结束。所以，这个问题要考虑的东西实际上比想象中的要多。</p>
+<p>现在，我们至少可以前端部分达成共识，即通过在前端页面上埋点的方式收集 PV 和 UV。就像我们设计一个 Page View 的表结构会非常简单，而一旦要开始考虑 Unique Visitor，可能我们就需要收集诸如 IP、省市、UA 等等的信息，这些信息的数量会非常大，而 Page View 的数据规模实际上取决于一个站点下有多少个页面。所以，这些数据在后端要怎么样处理，这是我们接下来要去考虑的问题。直接去写数据库是万不得已的做法，因为如果你处理不好并发的问题，这些统计数据的正确性就会让人产生怀疑，所以，接下来，我们介绍三种不同的方法来处理这类问题，它们分别是：通过 Nginx 的 access_log 实现统计、通过 Redis 的 Hyperlog 实现统计，以及通过 LeanCloud 的 Hook 实现统计。同大家一样，我是第一次考虑这类问题，如果有什么不周到的地方，希望大家可以谅解。</p>
+<h2 id="通过-nginx-的-access_log-实现统计">通过 Nginx 的 access_log 实现统计</h2>
+<p>我们首先来介绍 Nginx 的 access_log，顾名思义，这是 Nginx 的访问日志，由 ngx_http_log_module 模块提供相应功能。Nginx 会把每一个用户访问网站的日志信息记录到指定文件里，从而帮助网站提供者分析用户的浏览行为。而 PV/UV 则是分析用户的浏览行为的最基础指标，所以，通过 Nginx 的访问日志来统计 UV 和 PV 是再合适不过的啦！在 Nginx 里主要使用<code>log_format</code>和<code>access_log</code> 两条指令来完成相关的配置。这里以博主自己使用的配置为例来说明：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">    log_format main <span class="s1">&#39;$remote_addr - $remote_user [$time_iso8601] &#34;$request&#34; &#39;</span>
+</span></span><span class="line"><span class="cl">                      <span class="s1">&#39;$status $body_bytes_sent &#34;$http_referer&#34; &#39;</span>
+</span></span><span class="line"><span class="cl">                      <span class="s1">&#39;&#34;$http_user_agent&#34; &#34;$http_x_forwarded_for&#34;&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                      
+</span></span><span class="line"><span class="cl">    access_log logs/access.log main<span class="p">;</span>
+</span></span></code></pre></div><p>可以注意到，我们在这里首先通过<code>log_format</code>命令定义了一个日志格式，而这个日志格式则被定义为 main，这表示我们我们可以在 Nginx 的配置文件中定义多个日志格式。它其实就是一个日志模板，相信大家在使用 NLog、Log4Net 这类日志库的时候，都接触过 Layout 这个概念，这里就是 Nginx 中访问日志的 Layout。那么，在定义了这样一个日志格式以后，我们该怎么使用这个日志格式呢？这就要说到下面的<code>access_log</code>指令，它的基本用法就是一个路径 + 一个模板，在这里我们使用了定义好的 main 模板，然后指定了日志路径为：\logs\localhost.access_log.log。当然啦，大家使用 NLog 和 Log4Net 时，日志对应的 Layout 中都会有“变量”这样的概念，同样地，在 Nginx 中我们有一些常用的“变量”：</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Nginx 日志变量</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$remote_addr</td>
+<td style="text-align:left">记录访问网站的客户端地址</td>
+</tr>
+<tr>
+<td>$http_x_forward_for</td>
+<td style="text-align:left">当前端有代理服务器时，设置 Web 节点记录客户端地址的配置</td>
+</tr>
+<tr>
+<td>$remote_user</td>
+<td style="text-align:left">远程客户端用户名称</td>
+</tr>
+<tr>
+<td>$time_local</td>
+<td style="text-align:left">记录带时区的访问时间</td>
+</tr>
+<tr>
+<td>$request</td>
+<td style="text-align:left">记录用户 HTTP 请求起始行信息</td>
+</tr>
+<tr>
+<td>$status</td>
+<td style="text-align:left">记录用户 HTTP 请求状态码</td>
+</tr>
+<tr>
+<td>$body_bytes_sents</td>
+<td style="text-align:left">记录服务端返回给客户端响应 Body 字节数</td>
+</tr>
+<tr>
+<td>$http_referer</td>
+<td style="text-align:left">记录本次请求是从哪一个链接访问过来的</td>
+</tr>
+<tr>
+<td>$http_user_agent</td>
+<td style="text-align:left">记录客户端类型信息，比如 Chrome、微信等等</td>
+</tr>
+</tbody>
+</table></div>
+<p>为什么说这些时最常用的“变量”呢？因为通过这些，我们想要统计 PV 和 UV 的想法就能变成现实，关于更多的 Nginx 日志变量，大家可以从这里来了解：<a class="link" href="http://nginx.org/en/docs/http/ngx_http_log_module.html"  target="_blank" rel="noopener"
+    >http://nginx.org/en/docs/http/ngx_http_log_module.html</a>。现在，通过 Nginx 托管一个简单的静态页面，然后在浏览器中访问：localhost:9090，此时，我们应该可以在前面设置的日志路径里找到 Nginx 生成的日志文件，它大概长下面这个样子：</p>
+<p><figure 
+	>
+	<a href="https://i.loli.net/2019/10/24/sGT7QYRWariKDHz.png" >
+		<img src="https://i.loli.net/2019/10/24/sGT7QYRWariKDHz.png"
+			
+			
+			
+            data-src="https://i.loli.net/2019/10/24/sGT7QYRWariKDHz.png"
+			alt="Nginx日志长什么样子">
+	</a>
+	
+	<figcaption>Nginx日志长什么样子</figcaption>
+	
+</figure></p>
+<p>OK，现在有日志文件啦，这 PV/UV 到底从哪里来呢？其实，到这里已经无所谓用什么方法啦，因为你可以用 ELK 全家桶把给它收集了去，或是选一门你喜欢的语言用正则给它匹配出来，这都完全没有问题，无非就是一个工具选择的问题。为了简单起见，我们直接用 Shell 命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1">#统计指定页面的PV</span>
+</span></span><span class="line"><span class="cl">grep / localhost.access.log <span class="p">|</span> wc -l
+</span></span><span class="line"><span class="cl">grep /favicon.ico localhost.access.log <span class="p">|</span> wc -l
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#统计站点PV</span>
+</span></span><span class="line"><span class="cl">awk <span class="s1">&#39;{print $6}&#39;</span> localhost.access.log <span class="p">|</span> wc -l <span class="c1">#$6表示模板中的第6个变量，即Referer</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#统计访客IP</span>
+</span></span><span class="line"><span class="cl">awk <span class="s1">&#39;{print $1}&#39;</span> localhost.access.log <span class="p">|</span> sort -r <span class="p">|</span>uniq -c <span class="p">|</span>wc -l <span class="c1">#$1表示模板中第一个变量，即客户端IP</span>
+</span></span></code></pre></div><p>至此，我们就达到了基于 Nginx 访问日志实现 PV/UV 统计的目的。我知道有同学要问啦，你不是说要在前端通过埋点的方式来收集访客的信息吗，你这说了半天，完全就是说 Nginx 的事情嘛！的确，我们现在可以统计出自己网站的 PV/UV 了，可如果我们想对外提供一个访问统计的服务，我们又该如何做呢？这里简单分享下博主的思路，因为开发环境一直不是很稳定，所以，一直没有时间动手去实践(逃。
+<figure 
+	>
+	<a href="https://i.loli.net/2019/11/25/DBj7SxOa8qf1FZH.png" >
+		<img src="https://i.loli.net/2019/11/25/DBj7SxOa8qf1FZH.png"
+			
+			
+			
+            data-src="https://i.loli.net/2019/11/25/DBj7SxOa8qf1FZH.png"
+			alt="一种PV/UV统计的思路">
+	</a>
+	
+	<figcaption>一种PV/UV统计的思路</figcaption>
+	
+</figure>
+通过这张图片，我们可以大致梳理出整个流程，即前端页面中通过 JavaScript 来调用后端提供的 Analysis Service，此时这个请求会携带一个 Referer 信息，而这个 Referer 对应被访问的站点。注意到这个后端服务经过了一层 Nginx 转发，显然 Nginx 可以获得客户端的 IP 地址，这两个结合起来，表示的就是某个 IP 访问了某个站点，即 PV。像百度站长和腾讯统计会在页面中注入一个 token 或者 Id，主要用途就是确保请求的确是从当前站点中发出的，这就是这类访问统计产品统计的原理。也许在计算 PV/UV 的算法上存在差异，然而核心的原理应该没多大差别啦！</p>
+<h2 id="通过-redis-的-hyperloglog-实现统计">通过 Redis 的 HyperLogLog 实现统计</h2>
+<p>不知道大家有没有发现，统计 PV 其实蛮简单的，因为它只需要对访问量做更新即可。可统计 UV 就会有点麻烦啦，因为同一个人可以多次访问同一篇文章。有时候我们希望统计一天内的访客数，而有时候我们希望统计一周甚至一个月内的访客数，所以，UV 并不像 PV 那样简单，PV 更多的时候是作为一种“汇总”数据，而 UV 则有“实时”的属性。简而言之，我们需要一张表来记录访客数据，博主在设计这张表的时候，更是引入了地理位置、UserAgent 等等相关的字段设计，因为我们会有了解访客来源、访客设备等等一系列“行为”相关的数据记录。对应到数据库的概念，VisitorRecored 这张表实际上是在不停地写入记录的。那么，面对每一个查看实时访客数的请求，我们真的要每次都要去这张表里统计一遍吗？也许我们会想到使用数据库任务去做定时的汇总，或者是任意形式的定时任务譬如 CORN、Hangfire，在这里，我们有更好的选择——HyperLogLog。</p>
+<p>什么是 HyperlLogLog 呢？我们提到的统计 UV 的这个场景，实际上是一个基数计数(Cardinality Counting)的问题，即统计一个集合中不重复的元素个数，例如集合{1,3,5,7,5,7,8}的基数为 5。所以，HyperLogLog 实际上就是一个在误差允许的范围内，快速统计元素数目的算法。为什么说是误差允许范围内呢？因为它来源于一个经典的概率分布——伯努利分布。高中时候，老师讲到这个知识，我们笑称它为“白努力”，因为有一段时间，排列组合属于我怎么学都学不会东西，可不就是白努力吗？HyperLogLog 是在 LogLog 的基础上优化的一种算法，它主要的改进是采用了桶算法作为每一轮伯努利实验的估计值，同时使用调和平均数代替平均数，进而求出最终的估算值。它可以在不存储整个集合的情况下，使用极小的内存统计出集合元素的个数。</p>
+<p>对应到 Redis 里，主要体现在 PFADD、PFCOUNT、PFMERGE 三个命令上。</p>
+<ul>
+<li>PFADD：将多个值存入指定的 HyperLogLog。</li>
+<li>PFCOUNT：获取指定 HyperLogLog 的基数。</li>
+<li>PFMERGE：合并多个 HyperLogLog，合并前与合并后的基数一致(取并集)。</li>
+</ul>
+<p>博主在写这篇博客的时候，基于 LeanCloud 的访问统计<a class="link" href="." >LeanCloud-Counter</a>已经再线上运行了一段时间。下面，我们就以这些数据为例来展示下 HyperLogLog 的用法。为了方便起见，我选择使用 Python 来读写 Redis：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Python" data-lang="Python"><span class="line"><span class="cl"><span class="c1"># 连接Redis</span>
+</span></span><span class="line"><span class="cl"><span class="n">r</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">Redis</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">6379</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查询访客记录</span>
+</span></span><span class="line"><span class="cl"><span class="n">VisitorRecord</span> <span class="o">=</span> <span class="n">leancloud</span><span class="o">.</span><span class="n">Object</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s1">&#39;VisitorRecord&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">query</span> <span class="o">=</span> <span class="n">VisitorRecord</span><span class="o">.</span><span class="n">query</span>
+</span></span><span class="line"><span class="cl"><span class="n">query</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">queryResults</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">find</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 对每个页面使用PFADD</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">queryResults</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">r</span><span class="o">.</span><span class="n">pfadd</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;page_url&#39;</span><span class="p">),</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;visitor_ip&#39;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 使用PFCOUNT返回每个页面的基数</span>
+</span></span><span class="line"><span class="cl"><span class="n">pageUrls</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;page_url&#39;</span><span class="p">),</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;page_title&#39;</span><span class="p">),</span><span class="n">r</span><span class="o">.</span><span class="n">pfcount</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;page_url&#39;</span><span class="p">))),</span> <span class="n">queryResults</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl"><span class="n">pageUrls</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pageUrls</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">pageUrls</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">])</span>
+</span></span></code></pre></div><p>运行完脚本，我们可以统计出访客数目：</p>
+<p><figure 
+	>
+	<a href="https://i.loli.net/2019/11/26/JxUQ9s1EiOlVBCY.png" >
+		<img src="https://i.loli.net/2019/11/26/JxUQ9s1EiOlVBCY.png"
+			
+			
+			
+            data-src="https://i.loli.net/2019/11/26/JxUQ9s1EiOlVBCY.png"
+			alt="使用HyperLogLog统计访客数目">
+	</a>
+	
+	<figcaption>使用HyperLogLog统计访客数目</figcaption>
+	
+</figure></p>
+<h2 id="通过-leancloud-的-hooks-实现统计">通过 LeanCloud 的 Hooks 实现统计</h2>
+<p>像 Hexo、Jekyll 这类静态博客，本质上是非常依赖 Valine、不蒜子等等的第三方服务，而使用 LeanCloud 作为访问量统计的服务提供商，更是早就在博客圈子里流行了。不过我注意到，这些设计都少都会有一点不足，那就是网上的各种设计都没有实现站点的 PV/UV 统计。当我被迫从”不蒜子“上迁移过来以后，我其实非常想实现一个和”不蒜子“一模一样的统计服务，因为这样子的话，我对博客的修改会非常非常小。所以， 我不得不在现有方案上扩展更多的功能，实现单篇文章的 UV、整个站点的 PV/UV、访客 IP/地理位置、客户端 UA 等的统计功能。</p>
+<p>在这个过程中，我发现 LeanCloud 不支持传统关系型数据库里的 Sum()操作，而我更不想在客户端通过分页去对表记录做 Sum()操作。官方提供了离线分析和云函数，可这两个东西都是商业版里支持的东西。最终我找到了，通过 Hooks 来实现站点 PV/UV 统计的这样一种方法。所谓 Hooks，你可以理解为传统关系型数据库里的触发器，它可以在你更新或者插入某个对象的时候，去做一点额外的工作。所以，单篇文章会根据文章链接+访客 IP 生成一条 UV，而 PV 则是每次打开文章就视为一条 PV。所以，最终的方案是插入访客记录(<strong>VisitorRecord</strong>)时更新文章的对应的访问次数(<strong>VisitorCounter</strong>)，而单篇文章的更新则会触发站点 UV/PV 的更新。听起来有点绕人，我们直接来看下面的代码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-JavaScript" data-lang="JavaScript"><span class="line"><span class="cl"><span class="c1">//新建访客记录时，更新对应的UV记录
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">AV</span><span class="p">.</span><span class="nx">Cloud</span><span class="p">.</span><span class="nx">afterSave</span><span class="p">(</span><span class="s1">&#39;VisitorRecord&#39;</span><span class="p">,</span> <span class="kr">async</span> <span class="kd">function</span><span class="p">(</span><span class="nx">request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">query</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AV</span><span class="p">.</span><span class="nx">Query</span><span class="p">(</span><span class="s1">&#39;VisitorCounter&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">page_url</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">object</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;page_url&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;query page_url: &#39;</span> <span class="o">+</span> <span class="nx">page_url</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">query</span><span class="p">.</span><span class="nx">equalTo</span><span class="p">(</span><span class="s1">&#39;page_url&#39;</span><span class="p">,</span> <span class="nx">page_url</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">query</span><span class="p">.</span><span class="nx">find</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">counters</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nx">counters</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">counters</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">increment</span><span class="p">(</span><span class="s1">&#39;page_uv&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;increment UV of page_url: &#39;</span> <span class="o">+</span> <span class="nx">page_url</span> <span class="o">+</span> <span class="s2">&#34;, &#34;</span> <span class="o">+</span> <span class="nx">counters</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;page_pv&#39;</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="nx">counters</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">save</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">});</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//页面PV/UV更新时，更新站点PV/UV
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">AV</span><span class="p">.</span><span class="nx">Cloud</span><span class="p">.</span><span class="nx">afterUpdate</span><span class="p">(</span><span class="s1">&#39;VisitorCounter&#39;</span><span class="p">,</span> <span class="kr">async</span> <span class="kd">function</span><span class="p">(</span><span class="nx">request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">page_url</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">object</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;page_url&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="nx">page_url</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;//&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">site_url</span> <span class="o">=</span> <span class="nx">page_url</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39;//&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">site_url</span> <span class="o">=</span> <span class="nx">site_url</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">site_url</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;now to update site PV/UV with: &#39;</span> <span class="o">+</span> <span class="nx">site_url</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">object</span><span class="p">.</span><span class="nx">updatedKeys</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;page_pv&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">var</span> <span class="nx">query</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AV</span><span class="p">.</span><span class="nx">Query</span><span class="p">(</span><span class="s1">&#39;VisitorCounter&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">query</span><span class="p">.</span><span class="nx">equalTo</span><span class="p">(</span><span class="s1">&#39;page_url&#39;</span><span class="p">,</span><span class="nx">site_url</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">query</span><span class="p">.</span><span class="nx">find</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">counters</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span><span class="p">(</span><span class="nx">counters</span><span class="p">.</span><span class="nx">length</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">counters</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">increment</span><span class="p">(</span><span class="s1">&#39;page_pv&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;update site PV of &#39;</span> <span class="o">+</span> <span class="nx">site_url</span> <span class="o">+</span> <span class="s2">&#34;, &#34;</span> <span class="o">+</span> <span class="nx">counters</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;page_pv&#39;</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="nx">counters</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">save</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">object</span><span class="p">.</span><span class="nx">updatedKeys</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;page_uv&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">var</span> <span class="nx">query</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AV</span><span class="p">.</span><span class="nx">Query</span><span class="p">(</span><span class="s1">&#39;VisitorCounter&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">query</span><span class="p">.</span><span class="nx">equalTo</span><span class="p">(</span><span class="s1">&#39;page_url&#39;</span><span class="p">,</span><span class="nx">site_url</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">query</span><span class="p">.</span><span class="nx">find</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">counters</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span><span class="p">(</span><span class="nx">counters</span><span class="p">.</span><span class="nx">length</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">counters</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">increment</span><span class="p">(</span><span class="s1">&#39;page_uv&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;update site PV of &#39;</span> <span class="o">+</span> <span class="nx">site_url</span> <span class="o">+</span> <span class="s2">&#34;, &#34;</span> <span class="o">+</span> <span class="nx">counters</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;page_uv&#39;</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="nx">counters</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">save</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span></code></pre></div><p>实际上这里整个站点的 UV 统计是不严谨的，因为严格地来讲，同一个 IP 访问了同一个站点下的 N 篇文章，它的 UV 严格地来说应该算 1 次，可我们这个方案本身就是向 LeanCloud 妥协的一种做法，就像我这里直接使用了<code>location.href</code>和<code>document.title</code>，它带来的问题就是，一个网站的域名或者链接发生变化的时候，访问统计就会被重置从 0 开始。“不蒜子”本身就有这个问题。所以，博主这个博客从 15 年到现在，总访问量只有 3 万多，就是因为中间更换过两次域名。从我切换到自己写的统计服务以后，我发现每天来读我博客的人居然不少，我实在不忍心写下这种夸自己的句子啊！</p>
+<p>想解决这个问题，并不是没有办法。像博主一开始设计的时候，是打算用每个页面唯一的 Id 来存储的，而这就要通过 HTML5 中的**data-**或者通过 JavaScript 来传参。可当你打算设计一个更通用的东西的时候，这些想法就显得有点多余，我和大部分人一样，喜欢开箱即用的东西，所以，最好它可以像大多数统计服务一样，只需要在页面里加入一行 JavaScript 脚本。所以，最终采用这样的设计是为了最大限度的开箱即用。考虑到“不蒜子”里因为更换域名而导致的访问统计重置的问题，我增加了一个初始化站点 UV/PV 的功能，满足了像博主这样虚荣心爆棚的人的需要。这一刻，我突然觉得，我和产品经理们一样“自信”啊。正如你所看到的这样，博客底部的访问统计已经从“不蒜子”切换到“LeanCloud-Counter”，为此我在博客上增加了<a class="link" href="https://leancloud.cn"  target="_blank" rel="noopener"
+    >LeanCloud</a>的链接，也许下一阶段会加上 Heroku，总之，我已经完成了访问统计的平滑切换。关于这个项目，如果大家感兴趣，可以参考这个地址：<a class="link" href="https://github.com/qinyuanpei/leancloud-counter"  target="_blank" rel="noopener"
+    >LeanCloud-Counter</a>。</p>
+<h1 id="本文小结">本文小结</h1>
+<p>这篇文章写下来，最大的感受或许是，有一台 Linux 环境的服务器是多么的重要。起初，是在 Windows10 下面的 WSL 里搭了 Docker 环境，再通过 Docker 镜像搭建 Nginx，因为之前的 Consul、ELK 几乎都是这样运作的，而且一直运行的相当稳定，唯一的缺点大概就是 Docker 太容易吃硬盘，有时候难免搞出个内存不足。Nginx 搭好以后，发现需要经常改配置文件，Docker 环境里改起来相当痛苦。直接在 WSL 里安装 Nginx 的话，因为和 Windows 共享端口，和 IIS 明显搞不到一起。想通过 Docker 挂载本机分区，突然想起来 WSL 里的 Docker 只是一个客户端，真正的主角是跑在 Windows 上的 Docker for Windows。最后被迫装了 Windows 版本的 Nginx，果然还是会和 IIS 冲突，我想说，心好累有木有啊_(:з」∠)_。好了，这篇博客总算写完了！</p>
+
+</section>
+
+
+    <footer class="article-footer">
+
+    
+
+<div style="padding: 10px 0; margin: 20px auto; width: 100%; font-size:16px; text-align: center;">
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+        <span>打赏</span></button>
+    <div id="QR" style="display: none;">
+        
+        <div id="wechat" style="display: inline-block">
+            <a class="fancybox" rel="group">
+                <img id="wechat_qr" src="/imgs/reward/wechat.jpg" alt="wechat"></a>
+            <p>微信打赏</p>
+        </div>
+        
+        <div id="wechat" style="display: inline-block">
+            <a class="fancybox" rel="group">
+                <img id="alipay_qr" src="/imgs/reward/alipay.jpg" alt="alipay"></a>
+            <p>支付宝打赏</p>
+        </div>
+        
+    </div>
+</div>
+
+
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E8%AE%BF%E9%97%AE%E9%87%8F/">访问量</a>
+        
+            <a href="/tags/nginx/">Nginx</a>
+        
+            <a href="/tags/hyperlog/">Hyperlog</a>
+        
+    </section>
+
+
+    <div class="social-share"></div>
+    
+    <section class="article-footer-notes">
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>
+            BY-NC-SA 4.0
+        </span>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+        <span>
+            最后更新 2024-05-27
+        </span>
+        
+    </section>
+</footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
+    
+</article>
+
+    
+
+    <aside class="related-contents--wrapper">
+    
+    
+    
+        <h2 class="section-title">相关文章</h2>
+        <div class="related-contents">
+            <div class="flex article-list--tile">
+                
+                    
+<article class="has-image">
+    <a href="/posts/integration-of-distributed-tracing-system-and-logging-system/">
+        
+        
+            <div class="article-image">
+                
+                    <img src="/posts/integration-of-distributed-tracing-system-and-logging-system/bridge.jpg" loading="lazy" data-key="Integration-Of-Distributed-Tracing-System-And-Logging-System" data-hash="/posts/integration-of-distributed-tracing-system-and-logging-system/bridge.jpg"/>
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">浅议分布式链路追踪与日志的整合</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/a-story-of-git-large-file-storage/">
+        
+        
+            <div class="article-image">
+                
+                    <img src="/posts/a-story-of-git-large-file-storage/cover.jpg" loading="lazy" data-key="A-Story-Of-Git-Large-File-Storage" data-hash="/posts/a-story-of-git-large-file-storage/cover.jpg"/>
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">关于 Git 大文件上传这件小事</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/3219639636/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3219639636" loading="lazy" data-key="3219639636" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">EFCore 实体命名约定库：EFCore.NamingConventions</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/2151871792/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=2151871792" loading="lazy" data-key="2151871792" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">浅议 EF Core 分库分表及多租户架构的实现</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/835719605/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=835719605" loading="lazy" data-key="835719605" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">基于选项模式实现.NET Core 的配置热更新</h2>
+        </div>
+    </a>
+</article>
+                
+            </div>
+        </div>
+    
+</aside>
+
+     
+    
+        
+    <script src='//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js'></script>
+<div id="waline" class="waline-container"></div>
+<style>
+    .waline-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+    .waline-container .vcount {
+        color: var(--card-text-color-main);
+    }
+</style>
+
+
+    <script>
+        
+        var waline = new Waline({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+        });
+    </script>
+
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2014 - 
+        
+        2024 元视角
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> v0.126.1 <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.7.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> <br />
+        已创作 274 篇文章，共计 1038468 字 <br />
+        
+    </section>
+    <section class="written-by">
+        <img src="/imgs/Written-By-Human-Not-By-AI-Badge-white.svg" />
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    
+    
+    <aside class="sidebar right-sidebar sticky">
+        
+            <form action="/search/" class="search-form widget" >
+        <p>
+            <label>搜索</label>
+            <input name="keyword" required placeholder="请输入关键词" />
+        
+            <button title="搜索">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+            </button>
+        </p>
+    </form>
+        
+            
+    <section class="widget archives">
+        
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#pvuv-的概念">PV/UV 的概念</a></li>
+    <li><a href="#如何设计一个访问统计系统">如何设计一个访问统计系统</a>
+      <ol>
+        <li><a href="#通过-nginx-的-access_log-实现统计">通过 Nginx 的 access_log 实现统计</a></li>
+        <li><a href="#通过-redis-的-hyperloglog-实现统计">通过 Redis 的 HyperLogLog 实现统计</a></li>
+        <li><a href="#通过-leancloud-的-hooks-实现统计">通过 LeanCloud 的 Hooks 实现统计</a></li>
+      </ol>
+    </li>
+    <li><a href="#本文小结">本文小结</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+        
+            <section class="widget archives">
+        
+        <h2 class="widget-title section-title">归档</h2>
+
+        
+        
+        
+        
+        
+        <div class="widget-archive--list">
+            <div class="archives-year">
+                    <a href="/archives/#2024">
+                        
+                            <span class="year">2024</span>
+                            <span class="count">14</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2023">
+                        
+                            <span class="year">2023</span>
+                            <span class="count">11</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2022">
+                        
+                            <span class="year">2022</span>
+                            <span class="count">27</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2021">
+                        
+                            <span class="year">2021</span>
+                            <span class="count">42</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2020">
+                        
+                            <span class="year">2020</span>
+                            <span class="count">26</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2019">
+                        
+                            <span class="year">更多</span>
+                        
+                    </a> 
+                </div>
+            
+        </div>
+    </section>
+        
+            <section class="widget archives">
+    
+    <h2 class="widget-title section-title">日历</h2>
+    <div class="widget--toc" style="background-color: white; border-radius: 15px; padding: 10px; margin: 20px auto; width: 300px; height: 480px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+        <img id="calendar-cover" src="" style="object-fit: cover; width: 100%; height: 100%;" />
+    </div>
+</section>
+<script>
+    const getImageUrl = (date) => {
+        const currentYear = date.getFullYear();
+        const currentMonth = String(date.getMonth() + 1).padStart(2, '0');
+        const currentDate = String(date.getDate()).padStart(2, '0');
+        return `https://img.owspace.com/Public/uploads/Download/${currentYear}/${currentMonth}${currentDate}.jpg`
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const eleImg = document.querySelector("#calendar-cover");
+        if (document.location.pathname.startsWith('/posts')) {
+            let publishedTime = document.querySelector('meta[property="article:published_time"]').content;
+            publishedTime = publishedTime.substring(0, 10);
+            eleImg.src = getImageUrl(new Date(publishedTime))
+        } else {
+            eleImg.src = getImageUrl(new Date())
+        }
+    });
+    </script>
+        
+            <section class="widget tagCloud">
+    
+    <h2 class="widget-title section-title">标签云</h2>
+
+    <div class="tagCloud-tags">
+        
+            <a href="/tags/%E8%AE%BF%E9%97%AE%E9%87%8F/" class="font_size_1">
+                访问量
+            </a>
+        
+            <a href="/tags/%E6%95%B0%E5%AD%A6/" class="font_size_5">
+                数学
+            </a>
+        
+            <a href="/tags/webview2/" class="font_size_1">
+                WebView2
+            </a>
+        
+            <a href="/tags/%E5%BC%82%E6%AD%A5/" class="font_size_2">
+                异步
+            </a>
+        
+            <a href="/tags/linq/" class="font_size_1">
+                Linq
+            </a>
+        
+            <a href="/tags/%E8%9B%8B%E7%82%92%E9%A5%AD/" class="font_size_1">
+                蛋炒饭
+            </a>
+        
+            <a href="/tags/gpts/" class="font_size_1">
+                GPTs
+            </a>
+        
+            <a href="/tags/sublime/" class="font_size_1">
+                Sublime
+            </a>
+        
+            <a href="/tags/%E7%A9%B9%E4%B9%8B%E6%89%89/" class="font_size_1">
+                穹之扉
+            </a>
+        
+            <a href="/tags/vscode/" class="font_size_2">
+                VSCode
+            </a>
+        
+            <a href="/tags/ci/" class="font_size_2">
+                CI
+            </a>
+        
+            <a href="/tags/%E5%89%91%E6%8C%87offer/" class="font_size_1">
+                剑指Offer
+            </a>
+        
+            <a href="/tags/%E9%A9%AC%E5%B0%94%E5%85%8B%E6%96%AF/" class="font_size_1">
+                马尔克斯
+            </a>
+        
+            <a href="/tags/%E5%91%BD%E4%BB%A4/" class="font_size_1">
+                命令
+            </a>
+        
+            <a href="/tags/flv/" class="font_size_1">
+                FLV
+            </a>
+        
+            <a href="/tags/%E6%97%B6%E5%8C%BA/" class="font_size_1">
+                时区
+            </a>
+        
+            <a href="/tags/%E9%87%8D%E8%AF%95/" class="font_size_2">
+                重试
+            </a>
+        
+            <a href="/tags/retrofit/" class="font_size_1">
+                Retrofit
+            </a>
+        
+            <a href="/tags/fody/" class="font_size_1">
+                Fody
+            </a>
+        
+            <a href="/tags/castle/" class="font_size_1">
+                Castle
+            </a>
+        
+            <a href="/tags/sse/" class="font_size_2">
+                SSE
+            </a>
+        
+            <a href="/tags/%E6%8A%80%E6%9C%AF%E6%80%9D%E8%80%83/" class="font_size_1">
+                技术思考
+            </a>
+        
+            <a href="/tags/ai/" class="font_size_1">
+                AI
+            </a>
+        
+            <a href="/tags/python/" class="font_size_22">
+                Python
+            </a>
+        
+            <a href="/tags/pgvector/" class="font_size_1">
+                Pgvector
+            </a>
+        
+
+        <a href="/tags" class="font_size_9999">
+            更多
+        </a>
+    </div>
+</section>
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script>
+<script type="text/javascript" src="/ts/main.js" defer></script>
+<script type="text/javascript" src="/ts/badge.js"></script>
+    <script type="text/javascript">
+        let createBadge = window.createBadge;
+        createBadge('Git', '7f1e7a2', '#35495e', '#ffc107');
+        createBadge('Hugo', 'v0.126.1', '#35495e', '#41b883');
+        
+    </script><script type="text/javascript" src="/ts/chat-widget.js" defer></script>
+
+
+
+    </body>
+</html>

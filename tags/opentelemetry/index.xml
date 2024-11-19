@@ -1,1 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>OpenTelemetry on 元视角</title><link>https://blog.yuanpei.me/tags/opentelemetry/</link><description>Recent content in OpenTelemetry on 元视角</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate><atom:link href="https://blog.yuanpei.me/tags/opentelemetry/index.xml" rel="self" type="application/rss+xml"/><item><title>浅议分布式链路追踪与日志的整合</title><link>https://blog.yuanpei.me/posts/integration-of-distributed-tracing-system-and-logging-system/</link><pubDate>Sat, 15 Oct 2022 12:30:47 +0000</pubDate><guid>https://blog.yuanpei.me/posts/integration-of-distributed-tracing-system-and-logging-system/</guid><description>最近拜读了 Artech 大佬的新文章 《几个Caller-特性的妙用》，可以说是受益匪浅。不过，对我而言，最大的收获当属这篇文章里的第二主角，即 ActivitySource 和 Activity，这组 API 可以认为是微软针对 OpenTelemetry 规范的一种实现，即：每一个 Activity 都对应着一个 Span 。在以前的博客 《En</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>OpenTelemetry on 元视角</title>
+    <link>http://localhost:1313/tags/opentelemetry/</link>
+    <description>Recent content in OpenTelemetry on 元视角</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/opentelemetry/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>浅议分布式链路追踪与日志的整合</title>
+      <link>http://localhost:1313/posts/integration-of-distributed-tracing-system-and-logging-system/</link>
+      <pubDate>Sat, 15 Oct 2022 12:30:47 +0000</pubDate>
+      <guid>http://localhost:1313/posts/integration-of-distributed-tracing-system-and-logging-system/</guid>
+      <description>最近拜读了 Artech 大佬的新文章 《几个Caller-特性的妙用》，可以说是受益匪浅。不过，对我而言，最大的收获当属这篇文章里的第二主角，即 ActivitySource 和 Activity，这组 API 可以认为是微软针对 OpenTelemetry 规范的一种实现，即：每一个 Activity 都对应着一个 Span 。在以前的博客 《En</description>
+    </item>
+  </channel>
+</rss>

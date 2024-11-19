@@ -1,1 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>PWA on 元视角</title><link>https://blog.yuanpei.me/tags/pwa/</link><description>Recent content in PWA on 元视角</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate><atom:link href="https://blog.yuanpei.me/tags/pwa/index.xml" rel="self" type="application/rss+xml"/><item><title>迁移 Hexo 博客到 Google 渐进式 Web 应用(PWA)</title><link>https://blog.yuanpei.me/posts/450254281/</link><pubDate>Tue, 24 Oct 2017 23:13:41 +0000</pubDate><guid>https://blog.yuanpei.me/posts/450254281/</guid><description>如果说通过TravisCI实现博客的自动化部署，是持续集成这个概念在工作以外的一种延伸，那么今天这篇文章想要和大家分享的，则是我自身寻求技术转型和突破的一种挣扎。前段时间Paul同我聊到Web技术的发展趋势，Paul认为Web应用会逐渐取代</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>PWA on 元视角</title>
+    <link>http://localhost:1313/tags/pwa/</link>
+    <description>Recent content in PWA on 元视角</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/pwa/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>迁移 Hexo 博客到 Google 渐进式 Web 应用(PWA)</title>
+      <link>http://localhost:1313/posts/450254281/</link>
+      <pubDate>Tue, 24 Oct 2017 23:13:41 +0000</pubDate>
+      <guid>http://localhost:1313/posts/450254281/</guid>
+      <description>如果说通过TravisCI实现博客的自动化部署，是持续集成这个概念在工作以外的一种延伸，那么今天这篇文章想要和大家分享的，则是我自身寻求技术转型和突破的一种挣扎。前段时间Paul同我聊到Web技术的发展趋势，Paul认为Web应用会逐渐取代</description>
+    </item>
+  </channel>
+</rss>

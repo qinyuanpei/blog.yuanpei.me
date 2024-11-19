@@ -1,279 +1,1345 @@
-<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=referrer content="no-referrer"><meta name=viewport content='width=device-width,initial-scale=1'><meta http-equiv=content-language content='zh-CN'><link rel=apple-touch-icon href=/imgs/avatar.jpg><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="black"><link rel=icon type=image/x-icon href=/imgs/favicon.ico><link rel=icon type=image/png href=/imgs/favicon.png><meta name=description content='秦元培在博客中分享了使用uGUI制作虚拟摇杆的过程。虚拟摇杆由背景层和控制层构成，通过计算2D向量判断移动方向。他展示了如何编写虚拟摇杆脚本，实现了触摸事件处理和移动逻辑分离。另外，他还展示了如何在3D模式下测试虚拟摇杆，包括角色朝向和移动控制。最终展示了虚拟摇杆在手机上的实际效果。'><meta name=keywords content='游戏开发,虚拟摇杆,uGUI'><meta name=author content="飞鸿踏雪"><title>教你一步步实现一个虚拟摇杆 - 元视角</title>
-<link rel=canonical href=https://blog.yuanpei.me/posts/331752533/><link rel=stylesheet href=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css><meta property='og:title' content='教你一步步实现一个虚拟摇杆 - 元视角'><meta property='og:description' content='秦元培在博客中分享了使用uGUI制作虚拟摇杆的过程。虚拟摇杆由背景层和控制层构成，通过计算2D向量判断移动方向。他展示了如何编写虚拟摇杆脚本，实现了触摸事件处理和移动逻辑分离。另外，他还展示了如何在3D模式下测试虚拟摇杆，包括角色朝向和移动控制。最终展示了虚拟摇杆在手机上的实际效果。'><meta property='og:url' content='https://blog.yuanpei.me/posts/331752533/'><meta property='og:site_name' content='元视角'><meta property='og:type' content='article'><meta property='article:section' content='Posts'><meta property='article:tag' content='游戏开发'><meta property='article:tag' content='虚拟摇杆'><meta property='article:tag' content='uGUI'><meta property='article:published_time' content='2015-10-30T09:44:18+00:00'><meta property='article:modified_time' content='2024-05-24T17:38:16+08:00'><meta property='og:image' content='https://blog.yuanpei.me/'><meta name=twitter:title content="教你一步步实现一个虚拟摇杆 - 元视角"><meta name=twitter:description content="秦元培在博客中分享了使用uGUI制作虚拟摇杆的过程。虚拟摇杆由背景层和控制层构成，通过计算2D向量判断移动方向。他展示了如何编写虚拟摇杆脚本，实现了触摸事件处理和移动逻辑分离。另外，他还展示了如何在3D模式下测试虚拟摇杆，包括角色朝向和移动控制。最终展示了虚拟摇杆在手机上的实际效果。"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://blog.yuanpei.me/'><meta name=msvalidate.01 content="713A48A3FE17D4841C292A6B3942EB4C"><meta name=baidu-site-verification content="c50FGqYOSh"><meta name=google-site-verification content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s"><script src=//instant.page/5.1.0 type=module integrity=sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex
-on-phone--column extended"><div id=article-toolbar><a href=/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
-<span>返回</span></a></div><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
-<span class=hamburger-box><span class=hamburger-inner></span></span></button><header class=site-info><figure class=site-avatar><a href=/><img src=/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar>
-</a><span class=emoji>👌</span></figure><h1 class=site-name><a href=/>元视角</a></h1><h2 class=site-description>起风了，唯有努力生存</h2><ol class=social-menu><li><a href=mailto:qinyuanpei@163.com rel=noreferrer target=_blank title=Mail><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg></a></li><li><a href=https://github.com/qinyuanpei rel=noreferrer target=_blank title=GitHub><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://www.zhihu.com/people/qinyuanpei rel=noreferrer target=_blank title=Zhihu><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 6h6v12h-2l-2 2-1-2h-1z"/><path d="M4 12h6.5"/><path d="M10.5 6h-5"/><path d="M6 4c-.5 2.5-1.5 3.5-2.5 4.5"/><path d="M8 6v7c0 4.5-2 5.5-4 7"/><path d="M11 18l-3-5"/></svg></a></li><li><a href=https://www.douban.com/people/60029335 rel=noreferrer target=_blank title=Douban><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h16"/><path d="M5 4h14"/><path d="M8 8h8a2 2 0 012 2v2a2 2 0 01-2 2H8a2 2 0 01-2-2v-2a2 2 0 012-2z"/><path d="M16 14l-2 6"/><path d="M8 17l1 3"/></svg></a></li><li><a href=https://weibo.com/1278609231/profile rel=noreferrer target=_blank title=Weibo><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 14.127C19 17.2 15.498 20 11 20c-4.126.0-8-2.224-8-5.565.0-1.78.984-3.737 2.7-5.567 2.362-2.51 5.193-3.687 6.551-2.238.415.44.752 1.39.749 2.062 2-1.615 4.308.387 3.5 2.693 1.26.557 2.5.538 2.5 2.742z"/><path d="M15 4h1a5 5 0 015 5v1"/></svg></a></li><li><a href=/index.xml rel=noreferrer target=_blank title=RSS><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="5" cy="19" r="1"/><path d="M4 4a16 16 0 0116 16"/><path d="M4 11a9 9 0 019 9"/></svg></a></li></ol></header><ol class=menu id=main-menu><li><a href=/><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
-<span>首页</span></a></li><li><a href=/archives><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-<span>归档</span></a></li><li><a href=/works><!doctype html><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style/></defs><path d="M843.093333 815.36l-189.44-294.826667A85.333333 85.333333.0 01640 474.453333V170.666667h21.333333a21.333333 21.333333.0 0021.333334-21.333334v-42.666666a21.333333 21.333333.0 00-21.333334-21.333334H362.666667a21.333333 21.333333.0 00-21.333334 21.333334v42.666666a21.333333 21.333333.0 0021.333334 21.333334H384V474.88a85.333333 85.333333.0 01-13.653333 46.08l-189.44 294.826667a64.426667 64.426667.0 000 66.56l13.653333 24.32a64.853333 64.853333.0 0055.466667 32h525.226666a64.853333 64.853333.0 0055.466667-32L844.8 881.92a63.573333 63.573333.0 00-1.706667-66.56zm-400.64-248.32a173.226667 173.226667.0 0026.88-92.16V170.666667h85.333334v303.786666a167.68 167.68.0 0027.306666 92.16l74.24 116.053334H367.786667z" p-id="1250" fill="#8a8a8a"/></svg>
-<span>作品</span></a></li><li><a href=/search><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
-<span>搜索</span></a></li><li><a href=/links><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572 12 20l-7.5-7.428A5 5 0 1112 6.006a5 5 0 117.5 6.572"/><path d="M12 6 8.707 9.293a1 1 0 000 1.414l.543.543c.69.69 1.81.69 2.5.0l1-1a3.182 3.182.0 014.5.0l2.25 2.25"/><path d="M12.5 15.5l2 2"/><path d="M15 13l2 2"/></svg>
-<span>友链</span></a></li><li class=current><a href=/about><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
-<span>关于</span></a></li><li id=dark-mode-toggle><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14.828 14.828A4 4 0 109.172 9.172a4 4 0 005.656 5.656z"/><path d="M6.343 17.657l-1.414 1.414"/><path d="M6.343 6.343 4.929 4.929"/><path d="M17.657 6.343l1.414-1.414"/><path d="M17.657 17.657l1.414 1.414"/><path d="M4 12H2"/><path d="M12 4V2"/><path d="M20 12h2"/><path d="M12 20v2"/></svg>
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3c.132.0.263.0.393.0a7.5 7.5.0 007.92 12.446A9 9 0 1112 2.992z"/><path d="M17 4a2 2 0 002 2 2 2 0 00-2 2 2 2 0 00-2-2 2 2 0 002-2"/><path d="M19 11h2m-1-1v2"/></svg>
-<span id=dark-mode-text>夜间模式</span></li></ol></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/unity3d/>Unity3D</a></header><h2 class=article-title><a href=/posts/331752533/>教你一步步实现一个虚拟摇杆</a></h2><footer class=article-time><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published>2015-10-30</time></div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 5 分钟</time></div></footer></div></header><div class=post-ai><div class=ai-title><i class=ai-title-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/><path d="M9 16c1 .667 2 1 3 1s2-.333 3-1"/><path d="M9 7 8 3"/><path d="M15 7l1-4"/><path d="M9 12v-1"/><path d="M15 12v-1"/></svg></i><div class=ai-title-text>AI 摘要</div></div><div id=ai-explanation class=ai-explanation></div><div class="ai-explanation ai-explanation-content">秦元培在博客中分享了使用uGUI制作虚拟摇杆的过程。虚拟摇杆由背景层和控制层构成，通过计算2D向量判断移动方向。他展示了如何编写虚拟摇杆脚本，实现了触摸事件处理和移动逻辑分离。另外，他还展示了如何在3D模式下测试虚拟摇杆，包括角色朝向和移动控制。最终展示了虚拟摇杆在手机上的实际效果。</div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector(".ai-explanation-content").textContent;new TypeIt("#ai-explanation",{strings:e,speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><section class=article-content><p>各位朋友，大家好，我是秦元培，欢迎大家关注我的博客，我的博客地址是<a class=link href=http://qinyuanpei.com target=_blank rel=noopener>http://qinyuanpei.com</a>。最近因为项目需要决定尝试自己来实现一个虚拟摇杆，所以在今天的文章中我们的目标是使用 uGUI 来制作一个可以在移动平台稳定运行的虚拟摇杆(请不要问我为什么不使用 NGUI 来实现，你说我做个虚拟摇杆有必要在项目里导入那么多的资源嘛 23333)。关于使用第三方插件来实现虚拟摇杆，请大家参照我以前写的文章<a class=link href=http://blog.csdn.net/qinyuanpei/article/details/26204177 target=_blank rel=noopener>Unity3D 游戏开发之使用 EasyTouch 虚拟摇杆控制人物移动</a>，在这里就不再赘述了。</p><p>虚拟摇杆这种输入方式相信大家在手机游戏平台上已经相当的熟悉了，首先我们来简单了解下虚拟摇杆的设计原理。虚拟摇杆有一张固定的 2D 贴图(背景层)和一张可拖动的 2D 贴图(控制层)构成，默认情况下控制层在背景层的中心，我们称这个位置为初始位置，当移动控制层后移动层的位置会发生变化，此时控制层的当前位置和初始位置两点间可以计算出一个 2D 向量，通过这个向量我们就可以判断虚拟摇杆的移动方向。在经典的八方向摇杆导航中摇杆中可移动方向被分成了上、左上、右上、下、左下、右下、左、右共 8 个方向。我们知道根据三角函数可以非常容易地计算出这个 2D 向量的角度并由此判定摇杆是在向着这 8 个方向中的哪一个方向移动。在今天的文章中，我们不需要考虑这 8 个方向，因为我们可以向任何一个方向进行移动。</p><p>好了，首先在场景中创建两个 Image 组件和一个空的游戏体，然后将这两个 Image 组件拖拽到这个空的游戏体下使它们称为其子节点。这里需要注意的是这两个 Image 的层级关系。现在我们来编写脚本，这个脚本将被添加到控制层物体上：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=cm>/*
-</span></span></span><span class=line><span class=cl><span class=cm> * uGUI虚拟摇杆
-</span></span></span><span class=line><span class=cl><span class=cm> * 作者：秦元培
-</span></span></span><span class=line><span class=cl><span class=cm> * 博客：http://qinyuanpei.com
-</span></span></span><span class=line><span class=cl><span class=cm> * 时间：2015年10月24日
-</span></span></span><span class=line><span class=cl><span class=cm> */</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>UnityEngine</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>UnityEngine.UI</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>UnityEngine.EventSystems</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>JoyStick</span> <span class=p>:</span> <span class=n>MonoBehaviour</span><span class=p>,</span><span class=n>IPointerDownHandler</span><span class=p>,</span> <span class=n>IPointerUpHandler</span><span class=p>,</span> <span class=n>IDragHandler</span>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 摇杆最大半径</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 以像素为单位</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kt>float</span> <span class=n>JoyStickRadius</span> <span class=p>=</span> <span class=m>50</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 摇杆重置所诉</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kt>float</span> <span class=n>JoyStickResetSpeed</span> <span class=p>=</span> <span class=m>5.0f</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 当前物体的Transform组件</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=kd>private</span> <span class=n>RectTransform</span> <span class=n>selfTransform</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 是否触摸了虚拟摇杆</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=kd>private</span> <span class=kt>bool</span> <span class=n>isTouched</span> <span class=p>=</span> <span class=kc>false</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 虚拟摇杆的默认位置</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=kd>private</span> <span class=n>Vector2</span> <span class=n>originPosition</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 虚拟摇杆的移动方向</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=kd>private</span> <span class=n>Vector2</span> <span class=n>touchedAxis</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=n>Vector2</span> <span class=n>TouchedAxis</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=k>get</span>
-</span></span><span class=line><span class=cl>        <span class=p>{</span>
-</span></span><span class=line><span class=cl>            <span class=k>if</span><span class=p>(</span><span class=n>touchedAxis</span><span class=p>.</span><span class=n>magnitude</span> <span class=p>&lt;</span> <span class=n>JoyStickRadius</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=n>touchedAxis</span><span class=p>.</span><span class=n>normalized</span> <span class=p>/</span> <span class=n>JoyStickRadius</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=n>touchedAxis</span><span class=p>.</span><span class=n>normalized</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>        <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=cs>/// 定义触摸开始事件委托 </span>
-</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=k>delegate</span> <span class=k>void</span> <span class=n>JoyStickTouchBegin</span><span class=p>(</span><span class=n>Vector2</span> <span class=n>vec</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 定义触摸过程事件委托 </span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;param name=&#34;vec&#34;&gt;虚拟摇杆的移动方向&lt;/param&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=k>delegate</span> <span class=k>void</span> <span class=n>JoyStickTouchMove</span><span class=p>(</span><span class=n>Vector2</span> <span class=n>vec</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 定义触摸结束事件委托</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=k>delegate</span> <span class=k>void</span> <span class=n>JoyStickTouchEnd</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 注册触摸开始事件</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=k>event</span> <span class=n>JoyStickTouchBegin</span> <span class=n>OnJoyStickTouchBegin</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 注册触摸过程事件</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=k>event</span> <span class=n>JoyStickTouchMove</span> <span class=n>OnJoyStickTouchMove</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// 注册触摸结束事件</span>
-</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=k>event</span> <span class=n>JoyStickTouchEnd</span> <span class=n>OnJoyStickTouchEnd</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Start</span> <span class=p>()</span> 
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=c1>//初始化虚拟摇杆的默认方向</span>
-</span></span><span class=line><span class=cl>        <span class=n>selfTransform</span> <span class=p>=</span> <span class=k>this</span><span class=p>.</span><span class=n>GetComponent</span><span class=p>&lt;</span><span class=n>RectTransform</span><span class=p>&gt;();</span>
-</span></span><span class=line><span class=cl>        <span class=n>originPosition</span> <span class=p>=</span> <span class=n>selfTransform</span><span class=p>.</span><span class=n>anchoredPosition</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>	<span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=k>void</span> <span class=n>OnPointerDown</span><span class=p>(</span><span class=n>PointerEventData</span> <span class=n>eventData</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=n>isTouched</span> <span class=p>=</span> <span class=kc>true</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>		<span class=n>touchedAxis</span> <span class=p>=</span> <span class=n>GetJoyStickAxis</span><span class=p>(</span><span class=n>eventData</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>OnJoyStickTouchBegin</span> <span class=p>!=</span> <span class=kc>null</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>			<span class=k>this</span><span class=p>.</span><span class=n>OnJoyStickTouchBegin</span><span class=p>(</span><span class=n>TouchedAxis</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=k>void</span> <span class=n>OnPointerUp</span><span class=p>(</span><span class=n>PointerEventData</span> <span class=n>eventData</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=n>isTouched</span> <span class=p>=</span> <span class=kc>false</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>		<span class=n>selfTransform</span><span class=p>.</span><span class=n>anchoredPosition</span> <span class=p>=</span> <span class=n>originPosition</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>		<span class=n>touchedAxis</span> <span class=p>=</span> <span class=n>Vector2</span><span class=p>.</span><span class=n>zero</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>OnJoyStickTouchEnd</span> <span class=p>!=</span> <span class=kc>null</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>			<span class=k>this</span><span class=p>.</span><span class=n>OnJoyStickTouchEnd</span><span class=p>();</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=k>void</span> <span class=n>OnDrag</span><span class=p>(</span><span class=n>PointerEventData</span> <span class=n>eventData</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>		<span class=n>touchedAxis</span> <span class=p>=</span> <span class=n>GetJoyStickAxis</span><span class=p>(</span><span class=n>eventData</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>OnJoyStickTouchMove</span> <span class=p>!=</span> <span class=kc>null</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>			<span class=k>this</span><span class=p>.</span><span class=n>OnJoyStickTouchMove</span><span class=p>(</span><span class=n>TouchedAxis</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=k>void</span> <span class=n>Update</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=c1>//当虚拟摇杆移动到最大半径时摇杆无法拖动</span>
-</span></span><span class=line><span class=cl>        <span class=c1>//为了确保被控制物体可以继续移动</span>
-</span></span><span class=line><span class=cl>        <span class=c1>//在这里手动触发OnJoyStickTouchMove事件</span>
-</span></span><span class=line><span class=cl>        <span class=k>if</span><span class=p>(</span><span class=n>isTouched</span> <span class=p>&amp;&amp;</span> <span class=n>touchedAxis</span><span class=p>.</span><span class=n>magnitude</span><span class=p>&gt;=</span><span class=n>JoyStickRadius</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>        <span class=p>{</span>
-</span></span><span class=line><span class=cl>            <span class=k>if</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>OnJoyStickTouchMove</span> <span class=p>!=</span> <span class=kc>null</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>                <span class=k>this</span><span class=p>.</span><span class=n>OnJoyStickTouchMove</span><span class=p>(</span><span class=n>TouchedAxis</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>        <span class=c1>//松开虚拟摇杆后让虚拟摇杆回到默认位置</span>
-</span></span><span class=line><span class=cl>        <span class=k>if</span><span class=p>(</span><span class=n>selfTransform</span><span class=p>.</span><span class=n>anchoredPosition</span><span class=p>.</span><span class=n>magnitude</span> <span class=p>&gt;</span> <span class=n>originPosition</span><span class=p>.</span><span class=n>magnitude</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>            <span class=n>selfTransform</span><span class=p>.</span><span class=n>anchoredPosition</span> <span class=p>-=</span> <span class=n>TouchedAxis</span> <span class=p>*</span> <span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span> <span class=p>*</span> <span class=n>JoyStickResetSpeed</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=cs>/// 返回虚拟摇杆的偏移量</span>
-</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;returns&gt;The joy stick axis.&lt;/returns&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;eventData&#34;&gt;Event data.&lt;/param&gt;</span>
-</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=n>Vector2</span> <span class=n>GetJoyStickAxis</span><span class=p>(</span><span class=n>PointerEventData</span> <span class=n>eventData</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>	<span class=p>{</span>
-</span></span><span class=line><span class=cl>		<span class=c1>//获取手指位置的世界坐标</span>
-</span></span><span class=line><span class=cl>		<span class=n>Vector3</span> <span class=n>worldPosition</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=n>RectTransformUtility</span><span class=p>.</span><span class=n>ScreenPointToWorldPointInRectangle</span> <span class=p>(</span><span class=n>selfTransform</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>		         <span class=n>eventData</span><span class=p>.</span><span class=n>position</span><span class=p>,</span> <span class=n>eventData</span><span class=p>.</span><span class=n>pressEventCamera</span><span class=p>,</span> <span class=k>out</span> <span class=n>worldPosition</span><span class=p>))</span>
-</span></span><span class=line><span class=cl>			<span class=n>selfTransform</span><span class=p>.</span><span class=n>position</span> <span class=p>=</span> <span class=n>worldPosition</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>		<span class=c1>//获取摇杆的偏移量</span>
-</span></span><span class=line><span class=cl>		<span class=n>Vector2</span> <span class=n>touchAxis</span> <span class=p>=</span> <span class=n>selfTransform</span><span class=p>.</span><span class=n>anchoredPosition</span><span class=p>-</span><span class=n>originPosition</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>		<span class=c1>//摇杆偏移量限制</span>
-</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>touchAxis</span><span class=p>.</span><span class=n>magnitude</span> <span class=p>&gt;=</span> <span class=n>JoyStickRadius</span><span class=p>)</span> 
-</span></span><span class=line><span class=cl>		<span class=p>{</span>
-</span></span><span class=line><span class=cl>			<span class=n>touchAxis</span> <span class=p>=</span> <span class=n>touchAxis</span><span class=p>.</span><span class=n>normalized</span> <span class=p>*</span> <span class=n>JoyStickRadius</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>			<span class=n>selfTransform</span><span class=p>.</span><span class=n>anchoredPosition</span> <span class=p>=</span> <span class=n>touchAxis</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>		<span class=p>}</span>
-</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>touchAxis</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>	<span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><p>在这段脚本中，我们实现了 OnPointerDown、OnPointerUp 和 OnDrag 三个 uGUI 事件接口，然后注册了相关的事件委托，这里借鉴了 EasyTouch 的设计，可以使得虚拟摇杆的逻辑和角色控制逻辑相互分离。这里的核心方法是 GetJoyStickAxis()方法，通过这个方法我们可以获得一个 Vector2 类型的值，它表示的是未标准化过的虚拟摇杆的偏移量。这里的 RectTransformUtility.ScreenPointToWorldPointInRectangle()方法表示将一个屏幕坐标转化为对应 RectTransform 的世界坐标，RectTransform 的 anchoredPosition 属性表示的是当前元素在场景中的屏幕坐标。我们知道屏幕坐标是以像素为单位的，因此这里使用屏幕坐标可以计算出虚拟摇杆在水平方向和垂直方向上移动了多少个像素，我们以此来作为虚拟摇杆的偏移量衡量指标。TouchedAxis 是经过标准化以后的偏移量，我们将把这个值传递到事件委托中以提供给外部来调用。好了，要说的就这些了，没有说到的大家可以看看代码里的注释或者是在博客中给我留言，就是这样啦。</p><p>接下来，我们在场景中添加一个角色模型来测试我们编写的虚拟摇杆，因为在 JoyStick 中我们已经定义了事件委托，所以在这里就是简单的调用啦。好了，我们一起来看看代码吧！</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=cm>/*
-</span></span></span><span class=line><span class=cl><span class=cm> * Joystick3D.cs
-</span></span></span><span class=line><span class=cl><span class=cm> * 3D模式下的虚拟摇杆测试
-</span></span></span><span class=line><span class=cl><span class=cm> * 作者：秦元培
-</span></span></span><span class=line><span class=cl><span class=cm> * 博客：http://qinyuanpei.com
-</span></span></span><span class=line><span class=cl><span class=cm> * 时间：2015年10月30日
-</span></span></span><span class=line><span class=cl><span class=cm> */</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>UnityEngine</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>JoyStick3D</span> <span class=p>:</span> <span class=n>MonoBehaviour</span> 
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=n>JoyStick</span> <span class=n>js</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>	
-</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Start</span> <span class=p>()</span> 
-</span></span><span class=line><span class=cl>	<span class=p>{</span>
-</span></span><span class=line><span class=cl>		<span class=n>js</span> <span class=p>=</span> <span class=n>GameObject</span><span class=p>.</span><span class=n>FindObjectOfType</span><span class=p>&lt;</span><span class=n>JoyStick</span><span class=p>&gt;</span> <span class=p>();</span>
-</span></span><span class=line><span class=cl>		<span class=n>js</span><span class=p>.</span><span class=n>OnJoyStickTouchBegin</span> <span class=p>+=</span> <span class=n>OnJoyStickBegin</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>		<span class=n>js</span><span class=p>.</span><span class=n>OnJoyStickTouchMove</span> <span class=p>+=</span> <span class=n>OnJoyStickMove</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>		<span class=n>js</span><span class=p>.</span><span class=n>OnJoyStickTouchEnd</span> <span class=p>+=</span> <span class=n>OnJoyStickEnd</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>	<span class=p>}</span>
-</span></span><span class=line><span class=cl>	
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>OnJoyStickBegin</span><span class=p>(</span><span class=n>Vector2</span> <span class=n>vec</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>	<span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=s>&#34;开始触摸虚拟摇杆&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>	<span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>OnJoyStickMove</span> <span class=p>(</span><span class=n>Vector2</span> <span class=n>vec</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>	<span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=s>&#34;正在移动虚拟摇杆&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>        <span class=c1>//设置角色朝向</span>
-</span></span><span class=line><span class=cl>		<span class=n>Quaternion</span> <span class=n>q</span> <span class=p>=</span> <span class=n>Quaternion</span><span class=p>.</span><span class=n>LookRotation</span> <span class=p>(</span><span class=k>new</span> <span class=n>Vector3</span> <span class=p>(</span><span class=n>vec</span><span class=p>.</span><span class=n>x</span><span class=p>,</span> <span class=m>0</span><span class=p>,</span> <span class=n>vec</span><span class=p>.</span><span class=n>y</span><span class=p>));</span>
-</span></span><span class=line><span class=cl>		<span class=n>transform</span><span class=p>.</span><span class=n>rotation</span> <span class=p>=</span> <span class=n>q</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>        <span class=c1>//移动角色并播放奔跑动画</span>
-</span></span><span class=line><span class=cl>		<span class=n>transform</span><span class=p>.</span><span class=n>Translate</span><span class=p>(</span><span class=n>Vector3</span><span class=p>.</span><span class=n>forward</span> <span class=p>*</span> <span class=m>75f</span> <span class=p>*</span> <span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>		<span class=n>animation</span><span class=p>.</span><span class=n>CrossFade</span><span class=p>(</span><span class=s>&#34;Run&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>	<span class=p>}</span>
-</span></span><span class=line><span class=cl>	
-</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>OnJoyStickEnd</span> <span class=p>()</span>
-</span></span><span class=line><span class=cl>	<span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=s>&#34;触摸移动摇杆结束&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>        <span class=c1>//播放默认待机动画</span>
-</span></span><span class=line><span class=cl>		<span class=n>animation</span><span class=p>.</span><span class=n>CrossFade</span><span class=p>(</span><span class=s>&#34;idle&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>	<span class=p>}</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=k>void</span> <span class=n>OnGUI</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>    <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=n>GUI</span><span class=p>.</span><span class=n>Label</span><span class=p>(</span><span class=k>new</span> <span class=n>Rect</span><span class=p>(</span><span class=m>30</span><span class=p>,</span><span class=m>30</span><span class=p>,</span><span class=m>200</span><span class=p>,</span><span class=m>30</span><span class=p>),</span><span class=s>&#34;3D模式下的虚拟摇杆测试&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><p>最终程序的运行效果如下图所示，我们编写的这个虚拟摇杆可以在手机上完美的运行，欢饮大家来一起测试和吐槽！</p><p><figure><a href=/posts/331752533/20151030145705436.gif><img src=/posts/331752533/20151030145705436.gif data-src=/posts/331752533/20151030145705436.gif alt=2D模式演示></a><figcaption>2D模式演示</figcaption></figure></p><p><figure><a href=/posts/331752533/20151030150441747.gif><img src=/posts/331752533/20151030150441747.gif data-src=/posts/331752533/20151030150441747.gif alt=3D模式演示></a><figcaption>3D模式演示</figcaption></figure></p><p>好了，今天的内容就是这样啦！欢迎大家继续关注我的博客，希望大家喜欢！</p></section><footer class=article-footer><div style="padding:10px 0;margin:20px auto;width:100%;font-size:16px;text-align:center"><button id=rewardButton disable=enable onclick='var qr=document.getElementById("QR");qr.style.display==="none"?qr.style.display="block":qr.style.display="none"'>
-<span>打赏</span></button><div id=QR style=display:none><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=wechat_qr src=/imgs/reward/wechat.jpg alt=wechat></a><p>微信打赏</p></div><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=alipay_qr src=/imgs/reward/alipay.jpg alt=alipay></a><p>支付宝打赏</p></div></div></div><section class=article-tags><a href=/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/>游戏开发</a>
-<a href=/tags/%E8%99%9A%E6%8B%9F%E6%91%87%E6%9D%86/>虚拟摇杆</a>
-<a href=/tags/ugui/>UGUI</a></section><div class=social-share></div><section class=article-footer-notes><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>BY-NC-SA 4.0
-</span><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<span>最后更新 2024-05-24</span></section></footer><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css integrity=sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn crossorigin=anonymous><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js integrity=sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8 crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js integrity=sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl crossorigin=anonymous defer></script><script>window.addEventListener("DOMContentLoaded",()=>{renderMathInElement(document.querySelector(`.article-content`),{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}]})})</script></article><aside class=related-contents--wrapper><h2 class=section-title>相关文章</h2><div class=related-contents><div class="flex article-list--tile"><article class=has-image><a href=/posts/1150143610/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=1150143610" loading=lazy data-key=1150143610 data-hash></div><div class=article-details><h2 class=article-title>在 Unity3D 中使用 uGUI 实现 3D 旋转特效</h2></div></a></article><article class=has-image><a href=/posts/1190622881/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=1190622881" loading=lazy data-key=1190622881 data-hash></div><div class=article-details><h2 class=article-title>Unity3D 游戏开发之在 uGUI 中使用不规则精灵制作按钮</h2></div></a></article><article class=has-image><a href=/posts/166983157/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=166983157" loading=lazy data-key=166983157 data-hash></div><div class=article-details><h2 class=article-title>Unity3D 游戏开发之分页效果在 uGUI 中的实现</h2></div></a></article><article class=has-image><a href=/posts/821259985/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=821259985" loading=lazy data-key=821259985 data-hash></div><div class=article-details><h2 class=article-title>在 Unity3D 中加载外部图片的两种方法</h2></div></a></article><article class=has-image><a href=/posts/632291273/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=632291273" loading=lazy data-key=632291273 data-hash></div><div class=article-details><h2 class=article-title>在 Unity3D 中基于订阅者模式实现事件机制</h2></div></a></article></div></div></aside><script src=//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js></script><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}</style><script>var waline=new Waline({el:"#waline",serverURL:"https://waline.yuanpei.me/",lang:"zh",dark:"auto",path:window.location.href,requiredMeta:["nick","mail"]})</script><footer class=site-footer><section class=copyright>&copy;
-2014 -
-2024 元视角</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> v0.126.1<br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.7.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a><br>已创作 274 篇文章，共计 1038468 字<br></section><section class=written-by><img src=/imgs/Written-By-Human-Not-By-AI-Badge-white.svg></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-<button class="pswp__button pswp__button--share" title=Share></button>
-<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-</button>
-<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous></main><aside class="sidebar right-sidebar sticky"><form action=/search/ class="search-form widget"><p><label>搜索</label>
-<input name=keyword required placeholder=请输入关键词>
-<button title=搜索><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></button></p></form><section class="widget archives"><h2 class="widget-title section-title">归档</h2><div class=widget-archive--list><div class=archives-year><a href=/archives/#2024><span class=year>2024</span>
-<span class=count>14</span></a></div><div class=archives-year><a href=/archives/#2023><span class=year>2023</span>
-<span class=count>11</span></a></div><div class=archives-year><a href=/archives/#2022><span class=year>2022</span>
-<span class=count>27</span></a></div><div class=archives-year><a href=/archives/#2021><span class=year>2021</span>
-<span class=count>42</span></a></div><div class=archives-year><a href=/archives/#2020><span class=year>2020</span>
-<span class=count>26</span></a></div><div class=archives-year><a href=/archives/#2019><span class=year>更多</span></a></div></div></section><section class="widget archives"><h2 class="widget-title section-title">日历</h2><div class=widget--toc style="background-color:#fff;border-radius:15px;padding:10px;margin:20px auto;width:300px;height:480px;display:flex;justify-content:center;align-items:center;overflow:hidden"><img id=calendar-cover src style=object-fit:cover;width:100%;height:100%></div></section><script>const getImageUrl=e=>{const t=e.getFullYear(),n=String(e.getMonth()+1).padStart(2,"0"),s=String(e.getDate()).padStart(2,"0");return`https://img.owspace.com/Public/uploads/Download/${t}/${n}${s}.jpg`};document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector("#calendar-cover");if(document.location.pathname.startsWith("/posts")){let t=document.querySelector('meta[property="article:published_time"]').content;t=t.substring(0,10),e.src=getImageUrl(new Date(t))}else e.src=getImageUrl(new Date)})</script><section class="widget tagCloud"><h2 class="widget-title section-title">标签云</h2><div class=tagCloud-tags><a href=/tags/%E5%B9%B3%E5%87%A1/ class=font_size_1>平凡
-</a><a href=/tags/%E8%84%9A%E6%9C%AC/ class=font_size_1>脚本
-</a><a href=/tags/%E6%A1%8C%E9%9D%A2/ class=font_size_1>桌面
-</a><a href=/tags/%E4%BD%90%E8%97%A4%E5%81%A5/ class=font_size_1>佐藤健
-</a><a href=/tags/msbuild/ class=font_size_1>MSBuild
-</a><a href=/tags/%E8%A3%85%E9%A5%B0%E5%99%A8/ class=font_size_1>装饰器
-</a><a href=/tags/%E6%84%9F%E6%82%9F/ class=font_size_23>感悟
-</a><a href=/tags/wsl/ class=font_size_2>WSL
-</a><a href=/tags/jaeger/ class=font_size_1>Jaeger
-</a><a href=/tags/%E7%B1%B3%E8%8A%B1%E4%B9%8B%E5%91%B3/ class=font_size_1>米花之味
-</a><a href=/tags/eventbus/ class=font_size_1>EventBus
-</a><a href=/tags/%E5%AE%9E%E4%BD%93/ class=font_size_2>实体
-</a><a href=/tags/usb/ class=font_size_1>USB
-</a><a href=/tags/%E8%B5%B0%E8%B5%B0%E5%81%9C%E5%81%9C/ class=font_size_1>走走停停
-</a><a href=/tags/%E8%AF%BB%E4%B9%A6/ class=font_size_6>读书
-</a><a href=/tags/%E6%97%B6%E5%8C%BA/ class=font_size_1>时区
-</a><a href=/tags/%E5%B7%A5%E5%85%B7/ class=font_size_2>工具
-</a><a href=/tags/%E4%BD%8E%E4%BB%A3%E7%A0%81/ class=font_size_1>低代码
-</a><a href=/tags/ugui/ class=font_size_5>UGUI
-</a><a href=/tags/%E9%AA%8C%E8%AF%81/ class=font_size_1>验证
-</a><a href=/tags/dynamic-proxy/ class=font_size_1>Dynamic Proxy
-</a><a href=/tags/kindle/ class=font_size_3>Kindle
-</a><a href=/tags/svg/ class=font_size_1>SVG
-</a><a href=/tags/mono/ class=font_size_4>Mono
-</a><a href=/tags/efcore/ class=font_size_1>EFCore
-</a><a href=/tags class=font_size_9999>更多</a></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous></script><script type=text/javascript src=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/ts/main.js defer></script><script type=text/javascript src=/ts/badge.js></script><script type=text/javascript>let createBadge=window.createBadge;createBadge("Git","7f1e7a2","#35495e","#ffc107"),createBadge("Hugo","v0.126.1","#35495e","#41b883")</script><script type=text/javascript src=/ts/chat-widget.js defer></script></body></html>
+<!DOCTYPE html>
+<html lang="en-us">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name="referrer" content="no-referrer"/>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+
+<meta http-equiv='content-language' content='zh-CN'>
+
+
+<link rel="apple-touch-icon" href="/imgs/avatar.jpg">
+
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+
+<link rel="icon" type="image/x-icon" href="/imgs/favicon.ico">
+
+
+<link rel="icon" type="image/png" href="/imgs/favicon.png"><meta name='description' content='秦元培在博客中分享了使用uGUI制作虚拟摇杆的过程。虚拟摇杆由背景层和控制层构成，通过计算2D向量判断移动方向。他展示了如何编写虚拟摇杆脚本，实现了触摸事件处理和移动逻辑分离。另外，他还展示了如何在3D模式下测试虚拟摇杆，包括角色朝向和移动控制。最终展示了虚拟摇杆在手机上的实际效果。'><meta name='keywords' content='游戏开发, 虚拟摇杆, uGUI'>
+
+<meta name="author" content="飞鸿踏雪"><title>教你一步步实现一个虚拟摇杆 - 元视角</title>
+
+<link rel='canonical' href='http://localhost:1313/posts/331752533/'>
+
+
+
+<link rel="stylesheet" href="/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css">
+<meta property='og:title' content='教你一步步实现一个虚拟摇杆 - 元视角'>
+<meta property='og:description' content='秦元培在博客中分享了使用uGUI制作虚拟摇杆的过程。虚拟摇杆由背景层和控制层构成，通过计算2D向量判断移动方向。他展示了如何编写虚拟摇杆脚本，实现了触摸事件处理和移动逻辑分离。另外，他还展示了如何在3D模式下测试虚拟摇杆，包括角色朝向和移动控制。最终展示了虚拟摇杆在手机上的实际效果。'>
+<meta property='og:url' content='http://localhost:1313/posts/331752533/'>
+<meta property='og:site_name' content='元视角'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='游戏开发' /><meta property='article:tag' content='虚拟摇杆' /><meta property='article:tag' content='uGUI' /><meta property='article:published_time' content='2015-10-30T09:44:18&#43;00:00'/><meta property='article:modified_time' content='2024-05-24T17:38:16&#43;08:00'/><meta property='og:image' content='http://localhost:1313/' />
+<meta name="twitter:title" content="教你一步步实现一个虚拟摇杆 - 元视角">
+<meta name="twitter:description" content="秦元培在博客中分享了使用uGUI制作虚拟摇杆的过程。虚拟摇杆由背景层和控制层构成，通过计算2D向量判断移动方向。他展示了如何编写虚拟摇杆脚本，实现了触摸事件处理和移动逻辑分离。另外，他还展示了如何在3D模式下测试虚拟摇杆，包括角色朝向和移动控制。最终展示了虚拟摇杆在手机上的实际效果。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='http://localhost:1313/' />
+
+    
+        
+            <meta name="msvalidate.01" content="713A48A3FE17D4841C292A6B3942EB4C" />
+        
+    
+        
+            <meta name="baidu-site-verification" content="c50FGqYOSh" />
+        
+    
+        
+            <meta name="google-site-verification" content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s" />
+        
+    
+
+  
+
+<script src="//instant.page/5.1.0" type="module" integrity="sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css"
+/>
+    </head>
+    <body class="
+    article-page
+">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex 
+    on-phone--column extended
+">
+    <div id="article-toolbar">
+        <a href="/" class="back-home">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="15 6 9 12 15 18" />
+</svg>
+
+
+
+            <span>返回</span>
+        </a>
+    </div>
+    <aside class="sidebar left-sidebar sticky">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header class="site-info">
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">👌</span>
+                
+            </figure>
+            
+        
+        
+        <h1 class="site-name"><a href="/">元视角</a></h1>
+        <h2 class="site-description">起风了，唯有努力生存</h2><ol class="social-menu">
+                
+                    
+                    
+                    
+                    
+                    <li>
+                        <a 
+                            href='mailto:qinyuanpei@163.com'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Mail"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
+  <path d="M3 7l9 6l9 -6" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://github.com/qinyuanpei'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="GitHub"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://www.zhihu.com/people/qinyuanpei'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Zhihu"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M14 6h6v12h-2l-2 2l-1 -2h-1z" />
+  <path d="M4 12h6.5" />
+  <path d="M10.5 6h-5" />
+  <path d="M6 4c-.5 2.5 -1.5 3.5 -2.5 4.5" />
+  <path d="M8 6v7c0 4.5 -2 5.5 -4 7" />
+  <path d="M11 18l-3 -5" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://www.douban.com/people/60029335'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Douban"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 20h16" />
+  <path d="M5 4h14" />
+  <path d="M8 8h8a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2v-2a2 2 0 0 1 2 -2z" />
+  <path d="M16 14l-2 6" />
+  <path d="M8 17l1 3" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='https://weibo.com/1278609231/profile'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="Weibo"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M19 14.127c0 3.073 -3.502 5.873 -8 5.873c-4.126 0 -8 -2.224 -8 -5.565c0 -1.78 .984 -3.737 2.7 -5.567c2.362 -2.51 5.193 -3.687 6.551 -2.238c.415 .44 .752 1.39 .749 2.062c2 -1.615 4.308 .387 3.5 2.693c1.26 .557 2.5 .538 2.5 2.742z" />
+  <path d="M15 4h1a5 5 0 0 1 5 5v1" />
+</svg>
+                            
+                        </a>
+                    </li>
+                
+                    
+                    
+                    <li>
+                        <a 
+                            href='/index.xml'
+                            rel="noreferrer"
+                            target="_blank"
+                            title="RSS"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="5" cy="19" r="1" />
+  <path d="M4 4a16 16 0 0 1 16 16" />
+  <path d="M4 11a9 9 0 0 1 9 9" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+            </ol></header>
+
+    <ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>首页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/works' >
+                
+                
+                
+                    <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style type="text/css"></style></defs><path d="M843.093333 815.36l-189.44-294.826667a85.333333 85.333333 0 0 1-13.653333-46.08V170.666667h21.333333a21.333333 21.333333 0 0 0 21.333334-21.333334v-42.666666a21.333333 21.333333 0 0 0-21.333334-21.333334h-298.666666a21.333333 21.333333 0 0 0-21.333334 21.333334v42.666666a21.333333 21.333333 0 0 0 21.333334 21.333334H384v304.213333a85.333333 85.333333 0 0 1-13.653333 46.08l-189.44 294.826667a64.426667 64.426667 0 0 0 0 66.56l13.653333 24.32a64.853333 64.853333 0 0 0 55.466667 32h525.226666a64.853333 64.853333 0 0 0 55.466667-32l14.08-24.746667a63.573333 63.573333 0 0 0-1.706667-66.56z m-400.64-248.32a173.226667 173.226667 0 0 0 26.88-92.16V170.666667h85.333334v303.786666a167.68 167.68 0 0 0 27.306666 92.16L656.213333 682.666667H367.786667z" p-id="1250" fill="#8a8a8a"></path></svg>
+                
+                <span>作品</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+  <path d="M12 6l-3.293 3.293a1 1 0 0 0 0 1.414l.543 .543c.69 .69 1.81 .69 2.5 0l1 -1a3.182 3.182 0 0 1 4.5 0l2.25 2.25" />
+  <path d="M12.5 15.5l2 2" />
+  <path d="M15 13l2 2" />
+</svg>
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+
+        <li  class='current' >
+            <a href='/about' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+
+        
+            <li id="dark-mode-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" />
+  <path d="M6.343 17.657l-1.414 1.414" />
+  <path d="M6.343 6.343l-1.414 -1.414" />
+  <path d="M17.657 6.343l1.414 -1.414" />
+  <path d="M17.657 17.657l1.414 1.414" />
+  <path d="M4 12h-2" />
+  <path d="M12 4v-2" />
+  <path d="M20 12h2" />
+  <path d="M12 20v2" />
+</svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+  <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" />
+  <path d="M19 11h2m-1 -1v2" />
+</svg>
+                <span id="dark-mode-text">夜间模式</span>
+            </li>
+        
+    </ol>
+</aside>
+
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/unity3d/" >
+                Unity3D
+            </a>
+        
+    </header>
+    
+
+    <h2 class="article-title">
+        <a href="/posts/331752533/">教你一步步实现一个虚拟摇杆</a>
+    </h2>
+    
+    
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2015-10-30</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 5 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+</div>
+</header>
+
+    
+        
+
+
+<div class="post-ai">
+    <div class="ai-title">
+        <i class="ai-title-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2z" />
+  <path d="M9 16c1 .667 2 1 3 1s2 -.333 3 -1" />
+  <path d="M9 7l-1 -4" />
+  <path d="M15 7l1 -4" />
+  <path d="M9 12v-1" />
+  <path d="M15 12v-1" />
+</svg></i>
+        <div class="ai-title-text">AI 摘要</div>
+    </div>
+    <div id="ai-explanation" class="ai-explanation"></div>
+    <div class="ai-explanation ai-explanation-content">秦元培在博客中分享了使用uGUI制作虚拟摇杆的过程。虚拟摇杆由背景层和控制层构成，通过计算2D向量判断移动方向。他展示了如何编写虚拟摇杆脚本，实现了触摸事件处理和移动逻辑分离。另外，他还展示了如何在3D模式下测试虚拟摇杆，包括角色朝向和移动控制。最终展示了虚拟摇杆在手机上的实际效果。</div>
+</div>
+
+<script src="https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const matchingSummary = document.querySelector(".ai-explanation-content").textContent;
+
+    new TypeIt("#ai-explanation", {
+        strings: matchingSummary,
+        speed: 10,
+        lifeLike: true,
+        waitUntilVisible: true,
+    }).go();
+});
+</script>
+
+    
+
+    <section class="article-content">
+    
+    
+    <p>各位朋友，大家好，我是秦元培，欢迎大家关注我的博客，我的博客地址是<a class="link" href="http://qinyuanpei.com"  target="_blank" rel="noopener"
+    >http://qinyuanpei.com</a>。最近因为项目需要决定尝试自己来实现一个虚拟摇杆，所以在今天的文章中我们的目标是使用 uGUI 来制作一个可以在移动平台稳定运行的虚拟摇杆(请不要问我为什么不使用 NGUI 来实现，你说我做个虚拟摇杆有必要在项目里导入那么多的资源嘛 23333)。关于使用第三方插件来实现虚拟摇杆，请大家参照我以前写的文章<a class="link" href="http://blog.csdn.net/qinyuanpei/article/details/26204177"  target="_blank" rel="noopener"
+    >Unity3D 游戏开发之使用 EasyTouch 虚拟摇杆控制人物移动</a>，在这里就不再赘述了。</p>
+<p>虚拟摇杆这种输入方式相信大家在手机游戏平台上已经相当的熟悉了，首先我们来简单了解下虚拟摇杆的设计原理。虚拟摇杆有一张固定的 2D 贴图(背景层)和一张可拖动的 2D 贴图(控制层)构成，默认情况下控制层在背景层的中心，我们称这个位置为初始位置，当移动控制层后移动层的位置会发生变化，此时控制层的当前位置和初始位置两点间可以计算出一个 2D 向量，通过这个向量我们就可以判断虚拟摇杆的移动方向。在经典的八方向摇杆导航中摇杆中可移动方向被分成了上、左上、右上、下、左下、右下、左、右共 8 个方向。我们知道根据三角函数可以非常容易地计算出这个 2D 向量的角度并由此判定摇杆是在向着这 8 个方向中的哪一个方向移动。在今天的文章中，我们不需要考虑这 8 个方向，因为我们可以向任何一个方向进行移动。</p>
+<p>好了，首先在场景中创建两个 Image 组件和一个空的游戏体，然后将这两个 Image 组件拖拽到这个空的游戏体下使它们称为其子节点。这里需要注意的是这两个 Image 的层级关系。现在我们来编写脚本，这个脚本将被添加到控制层物体上：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-csharp" data-lang="csharp"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * uGUI虚拟摇杆
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 作者：秦元培
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 博客：http://qinyuanpei.com
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 时间：2015年10月24日
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="nn">System.Collections</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="nn">UnityEngine.UI</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="nn">UnityEngine.EventSystems</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">class</span> <span class="nc">JoyStick</span> <span class="p">:</span> <span class="n">MonoBehaviour</span><span class="p">,</span><span class="n">IPointerDownHandler</span><span class="p">,</span> <span class="n">IPointerUpHandler</span><span class="p">,</span> <span class="n">IDragHandler</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 摇杆最大半径</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 以像素为单位</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">float</span> <span class="n">JoyStickRadius</span> <span class="p">=</span> <span class="m">50</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 摇杆重置所诉</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">float</span> <span class="n">JoyStickResetSpeed</span> <span class="p">=</span> <span class="m">5.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 当前物体的Transform组件</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">RectTransform</span> <span class="n">selfTransform</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 是否触摸了虚拟摇杆</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">bool</span> <span class="n">isTouched</span> <span class="p">=</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 虚拟摇杆的默认位置</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Vector2</span> <span class="n">originPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 虚拟摇杆的移动方向</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Vector2</span> <span class="n">touchedAxis</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Vector2</span> <span class="n">TouchedAxis</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">get</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span><span class="p">(</span><span class="n">touchedAxis</span><span class="p">.</span><span class="n">magnitude</span> <span class="p">&lt;</span> <span class="n">JoyStickRadius</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="n">touchedAxis</span><span class="p">.</span><span class="n">normalized</span> <span class="p">/</span> <span class="n">JoyStickRadius</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">touchedAxis</span><span class="p">.</span><span class="n">normalized</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="cs">/// 定义触摸开始事件委托 </span>
+</span></span><span class="line"><span class="cl">	<span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">public</span> <span class="k">delegate</span> <span class="k">void</span> <span class="n">JoyStickTouchBegin</span><span class="p">(</span><span class="n">Vector2</span> <span class="n">vec</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 定义触摸过程事件委托 </span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;param name=&#34;vec&#34;&gt;虚拟摇杆的移动方向&lt;/param&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">public</span> <span class="k">delegate</span> <span class="k">void</span> <span class="n">JoyStickTouchMove</span><span class="p">(</span><span class="n">Vector2</span> <span class="n">vec</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 定义触摸结束事件委托</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">public</span> <span class="k">delegate</span> <span class="k">void</span> <span class="n">JoyStickTouchEnd</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 注册触摸开始事件</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">public</span> <span class="k">event</span> <span class="n">JoyStickTouchBegin</span> <span class="n">OnJoyStickTouchBegin</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 注册触摸过程事件</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">public</span> <span class="k">event</span> <span class="n">JoyStickTouchMove</span> <span class="n">OnJoyStickTouchMove</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// 注册触摸结束事件</span>
+</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">public</span> <span class="k">event</span> <span class="n">JoyStickTouchEnd</span> <span class="n">OnJoyStickTouchEnd</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">void</span> <span class="n">Start</span> <span class="p">()</span> 
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//初始化虚拟摇杆的默认方向</span>
+</span></span><span class="line"><span class="cl">        <span class="n">selfTransform</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">GetComponent</span><span class="p">&lt;</span><span class="n">RectTransform</span><span class="p">&gt;();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">originPosition</span> <span class="p">=</span> <span class="n">selfTransform</span><span class="p">.</span><span class="n">anchoredPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="k">void</span> <span class="n">OnPointerDown</span><span class="p">(</span><span class="n">PointerEventData</span> <span class="n">eventData</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">isTouched</span> <span class="p">=</span> <span class="kc">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">touchedAxis</span> <span class="p">=</span> <span class="n">GetJoyStickAxis</span><span class="p">(</span><span class="n">eventData</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">OnJoyStickTouchBegin</span> <span class="p">!=</span> <span class="kc">null</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">this</span><span class="p">.</span><span class="n">OnJoyStickTouchBegin</span><span class="p">(</span><span class="n">TouchedAxis</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="k">void</span> <span class="n">OnPointerUp</span><span class="p">(</span><span class="n">PointerEventData</span> <span class="n">eventData</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">isTouched</span> <span class="p">=</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">selfTransform</span><span class="p">.</span><span class="n">anchoredPosition</span> <span class="p">=</span> <span class="n">originPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">touchedAxis</span> <span class="p">=</span> <span class="n">Vector2</span><span class="p">.</span><span class="n">zero</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">OnJoyStickTouchEnd</span> <span class="p">!=</span> <span class="kc">null</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">this</span><span class="p">.</span><span class="n">OnJoyStickTouchEnd</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="k">void</span> <span class="n">OnDrag</span><span class="p">(</span><span class="n">PointerEventData</span> <span class="n">eventData</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">touchedAxis</span> <span class="p">=</span> <span class="n">GetJoyStickAxis</span><span class="p">(</span><span class="n">eventData</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">OnJoyStickTouchMove</span> <span class="p">!=</span> <span class="kc">null</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">this</span><span class="p">.</span><span class="n">OnJoyStickTouchMove</span><span class="p">(</span><span class="n">TouchedAxis</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">void</span> <span class="n">Update</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//当虚拟摇杆移动到最大半径时摇杆无法拖动</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//为了确保被控制物体可以继续移动</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//在这里手动触发OnJoyStickTouchMove事件</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span><span class="p">(</span><span class="n">isTouched</span> <span class="p">&amp;&amp;</span> <span class="n">touchedAxis</span><span class="p">.</span><span class="n">magnitude</span><span class="p">&gt;=</span><span class="n">JoyStickRadius</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">OnJoyStickTouchMove</span> <span class="p">!=</span> <span class="kc">null</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">this</span><span class="p">.</span><span class="n">OnJoyStickTouchMove</span><span class="p">(</span><span class="n">TouchedAxis</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">//松开虚拟摇杆后让虚拟摇杆回到默认位置</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span><span class="p">(</span><span class="n">selfTransform</span><span class="p">.</span><span class="n">anchoredPosition</span><span class="p">.</span><span class="n">magnitude</span> <span class="p">&gt;</span> <span class="n">originPosition</span><span class="p">.</span><span class="n">magnitude</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">selfTransform</span><span class="p">.</span><span class="n">anchoredPosition</span> <span class="p">-=</span> <span class="n">TouchedAxis</span> <span class="p">*</span> <span class="n">Time</span><span class="p">.</span><span class="n">deltaTime</span> <span class="p">*</span> <span class="n">JoyStickResetSpeed</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="cs">/// &lt;summary&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="cs">/// 返回虚拟摇杆的偏移量</span>
+</span></span><span class="line"><span class="cl">	<span class="cs">/// &lt;/summary&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="cs">/// &lt;returns&gt;The joy stick axis.&lt;/returns&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="cs">/// &lt;param name=&#34;eventData&#34;&gt;Event data.&lt;/param&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">private</span> <span class="n">Vector2</span> <span class="n">GetJoyStickAxis</span><span class="p">(</span><span class="n">PointerEventData</span> <span class="n">eventData</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">//获取手指位置的世界坐标</span>
+</span></span><span class="line"><span class="cl">		<span class="n">Vector3</span> <span class="n">worldPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">RectTransformUtility</span><span class="p">.</span><span class="n">ScreenPointToWorldPointInRectangle</span> <span class="p">(</span><span class="n">selfTransform</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		         <span class="n">eventData</span><span class="p">.</span><span class="n">position</span><span class="p">,</span> <span class="n">eventData</span><span class="p">.</span><span class="n">pressEventCamera</span><span class="p">,</span> <span class="k">out</span> <span class="n">worldPosition</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">			<span class="n">selfTransform</span><span class="p">.</span><span class="n">position</span> <span class="p">=</span> <span class="n">worldPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">//获取摇杆的偏移量</span>
+</span></span><span class="line"><span class="cl">		<span class="n">Vector2</span> <span class="n">touchAxis</span> <span class="p">=</span> <span class="n">selfTransform</span><span class="p">.</span><span class="n">anchoredPosition</span><span class="p">-</span><span class="n">originPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">//摇杆偏移量限制</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span><span class="p">(</span><span class="n">touchAxis</span><span class="p">.</span><span class="n">magnitude</span> <span class="p">&gt;=</span> <span class="n">JoyStickRadius</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">touchAxis</span> <span class="p">=</span> <span class="n">touchAxis</span><span class="p">.</span><span class="n">normalized</span> <span class="p">*</span> <span class="n">JoyStickRadius</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="n">selfTransform</span><span class="p">.</span><span class="n">anchoredPosition</span> <span class="p">=</span> <span class="n">touchAxis</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="n">touchAxis</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>在这段脚本中，我们实现了 OnPointerDown、OnPointerUp 和 OnDrag 三个 uGUI 事件接口，然后注册了相关的事件委托，这里借鉴了 EasyTouch 的设计，可以使得虚拟摇杆的逻辑和角色控制逻辑相互分离。这里的核心方法是 GetJoyStickAxis()方法，通过这个方法我们可以获得一个 Vector2 类型的值，它表示的是未标准化过的虚拟摇杆的偏移量。这里的 RectTransformUtility.ScreenPointToWorldPointInRectangle()方法表示将一个屏幕坐标转化为对应 RectTransform 的世界坐标，RectTransform 的 anchoredPosition 属性表示的是当前元素在场景中的屏幕坐标。我们知道屏幕坐标是以像素为单位的，因此这里使用屏幕坐标可以计算出虚拟摇杆在水平方向和垂直方向上移动了多少个像素，我们以此来作为虚拟摇杆的偏移量衡量指标。TouchedAxis 是经过标准化以后的偏移量，我们将把这个值传递到事件委托中以提供给外部来调用。好了，要说的就这些了，没有说到的大家可以看看代码里的注释或者是在博客中给我留言，就是这样啦。</p>
+<p>接下来，我们在场景中添加一个角色模型来测试我们编写的虚拟摇杆，因为在 JoyStick 中我们已经定义了事件委托，所以在这里就是简单的调用啦。好了，我们一起来看看代码吧！</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-csharp" data-lang="csharp"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * Joystick3D.cs
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 3D模式下的虚拟摇杆测试
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 作者：秦元培
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 博客：http://qinyuanpei.com
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 时间：2015年10月30日
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="nn">System.Collections</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">class</span> <span class="nc">JoyStick3D</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">private</span> <span class="n">JoyStick</span> <span class="n">js</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="k">void</span> <span class="n">Start</span> <span class="p">()</span> 
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">js</span> <span class="p">=</span> <span class="n">GameObject</span><span class="p">.</span><span class="n">FindObjectOfType</span><span class="p">&lt;</span><span class="n">JoyStick</span><span class="p">&gt;</span> <span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="n">js</span><span class="p">.</span><span class="n">OnJoyStickTouchBegin</span> <span class="p">+=</span> <span class="n">OnJoyStickBegin</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">js</span><span class="p">.</span><span class="n">OnJoyStickTouchMove</span> <span class="p">+=</span> <span class="n">OnJoyStickMove</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">js</span><span class="p">.</span><span class="n">OnJoyStickTouchEnd</span> <span class="p">+=</span> <span class="n">OnJoyStickEnd</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">void</span> <span class="n">OnJoyStickBegin</span><span class="p">(</span><span class="n">Vector2</span> <span class="n">vec</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Debug</span><span class="p">.</span><span class="n">Log</span><span class="p">(</span><span class="s">&#34;开始触摸虚拟摇杆&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">void</span> <span class="n">OnJoyStickMove</span> <span class="p">(</span><span class="n">Vector2</span> <span class="n">vec</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Debug</span><span class="p">.</span><span class="n">Log</span><span class="p">(</span><span class="s">&#34;正在移动虚拟摇杆&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">//设置角色朝向</span>
+</span></span><span class="line"><span class="cl">		<span class="n">Quaternion</span> <span class="n">q</span> <span class="p">=</span> <span class="n">Quaternion</span><span class="p">.</span><span class="n">LookRotation</span> <span class="p">(</span><span class="k">new</span> <span class="n">Vector3</span> <span class="p">(</span><span class="n">vec</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="n">vec</span><span class="p">.</span><span class="n">y</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">		<span class="n">transform</span><span class="p">.</span><span class="n">rotation</span> <span class="p">=</span> <span class="n">q</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">//移动角色并播放奔跑动画</span>
+</span></span><span class="line"><span class="cl">		<span class="n">transform</span><span class="p">.</span><span class="n">Translate</span><span class="p">(</span><span class="n">Vector3</span><span class="p">.</span><span class="n">forward</span> <span class="p">*</span> <span class="m">75f</span> <span class="p">*</span> <span class="n">Time</span><span class="p">.</span><span class="n">deltaTime</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="n">animation</span><span class="p">.</span><span class="n">CrossFade</span><span class="p">(</span><span class="s">&#34;Run&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="k">void</span> <span class="n">OnJoyStickEnd</span> <span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Debug</span><span class="p">.</span><span class="n">Log</span><span class="p">(</span><span class="s">&#34;触摸移动摇杆结束&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">//播放默认待机动画</span>
+</span></span><span class="line"><span class="cl">		<span class="n">animation</span><span class="p">.</span><span class="n">CrossFade</span><span class="p">(</span><span class="s">&#34;idle&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">void</span> <span class="n">OnGUI</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GUI</span><span class="p">.</span><span class="n">Label</span><span class="p">(</span><span class="k">new</span> <span class="n">Rect</span><span class="p">(</span><span class="m">30</span><span class="p">,</span><span class="m">30</span><span class="p">,</span><span class="m">200</span><span class="p">,</span><span class="m">30</span><span class="p">),</span><span class="s">&#34;3D模式下的虚拟摇杆测试&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>最终程序的运行效果如下图所示，我们编写的这个虚拟摇杆可以在手机上完美的运行，欢饮大家来一起测试和吐槽！</p>
+<p><figure 
+	>
+	<a href="/posts/331752533/20151030145705436.gif" >
+		<img src="/posts/331752533/20151030145705436.gif"
+			
+			
+			
+            data-src="/posts/331752533/20151030145705436.gif"
+			alt="2D模式演示">
+	</a>
+	
+	<figcaption>2D模式演示</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="/posts/331752533/20151030150441747.gif" >
+		<img src="/posts/331752533/20151030150441747.gif"
+			
+			
+			
+            data-src="/posts/331752533/20151030150441747.gif"
+			alt="3D模式演示">
+	</a>
+	
+	<figcaption>3D模式演示</figcaption>
+	
+</figure></p>
+<p>好了，今天的内容就是这样啦！欢迎大家继续关注我的博客，希望大家喜欢！</p>
+</section>
+
+
+    <footer class="article-footer">
+
+    
+
+<div style="padding: 10px 0; margin: 20px auto; width: 100%; font-size:16px; text-align: center;">
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+        <span>打赏</span></button>
+    <div id="QR" style="display: none;">
+        
+        <div id="wechat" style="display: inline-block">
+            <a class="fancybox" rel="group">
+                <img id="wechat_qr" src="/imgs/reward/wechat.jpg" alt="wechat"></a>
+            <p>微信打赏</p>
+        </div>
+        
+        <div id="wechat" style="display: inline-block">
+            <a class="fancybox" rel="group">
+                <img id="alipay_qr" src="/imgs/reward/alipay.jpg" alt="alipay"></a>
+            <p>支付宝打赏</p>
+        </div>
+        
+    </div>
+</div>
+
+
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发</a>
+        
+            <a href="/tags/%E8%99%9A%E6%8B%9F%E6%91%87%E6%9D%86/">虚拟摇杆</a>
+        
+            <a href="/tags/ugui/">UGUI</a>
+        
+    </section>
+
+
+    <div class="social-share"></div>
+    
+    <section class="article-footer-notes">
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>
+            BY-NC-SA 4.0
+        </span>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+        <span>
+            最后更新 2024-05-24
+        </span>
+        
+    </section>
+</footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
+    
+</article>
+
+    
+
+    <aside class="related-contents--wrapper">
+    
+    
+    
+        <h2 class="section-title">相关文章</h2>
+        <div class="related-contents">
+            <div class="flex article-list--tile">
+                
+                    
+<article class="has-image">
+    <a href="/posts/1150143610/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=1150143610" loading="lazy" data-key="1150143610" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">在 Unity3D 中使用 uGUI 实现 3D 旋转特效</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/1190622881/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=1190622881" loading="lazy" data-key="1190622881" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Unity3D 游戏开发之在 uGUI 中使用不规则精灵制作按钮</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/166983157/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=166983157" loading="lazy" data-key="166983157" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Unity3D 游戏开发之分页效果在 uGUI 中的实现</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/821259985/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=821259985" loading="lazy" data-key="821259985" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">在 Unity3D 中加载外部图片的两种方法</h2>
+        </div>
+    </a>
+</article>
+                
+                    
+<article class="has-image">
+    <a href="/posts/632291273/">
+        
+        
+            <div class="article-image">
+                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=632291273" loading="lazy" data-key="632291273" data-hash="" />
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">在 Unity3D 中基于订阅者模式实现事件机制</h2>
+        </div>
+    </a>
+</article>
+                
+            </div>
+        </div>
+    
+</aside>
+
+     
+    
+        
+    <script src='//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js'></script>
+<div id="waline" class="waline-container"></div>
+<style>
+    .waline-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+    .waline-container .vcount {
+        color: var(--card-text-color-main);
+    }
+</style>
+
+
+    <script>
+        
+        var waline = new Waline({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+        });
+    </script>
+
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2014 - 
+        
+        2024 元视角
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> v0.126.1 <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.7.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> <br />
+        已创作 274 篇文章，共计 1038468 字 <br />
+        
+    </section>
+    <section class="written-by">
+        <img src="/imgs/Written-By-Human-Not-By-AI-Badge-white.svg" />
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    
+    
+    <aside class="sidebar right-sidebar sticky">
+        
+            <form action="/search/" class="search-form widget" >
+        <p>
+            <label>搜索</label>
+            <input name="keyword" required placeholder="请输入关键词" />
+        
+            <button title="搜索">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+            </button>
+        </p>
+    </form>
+        
+            
+        
+            <section class="widget archives">
+        
+        <h2 class="widget-title section-title">归档</h2>
+
+        
+        
+        
+        
+        
+        <div class="widget-archive--list">
+            <div class="archives-year">
+                    <a href="/archives/#2024">
+                        
+                            <span class="year">2024</span>
+                            <span class="count">14</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2023">
+                        
+                            <span class="year">2023</span>
+                            <span class="count">11</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2022">
+                        
+                            <span class="year">2022</span>
+                            <span class="count">27</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2021">
+                        
+                            <span class="year">2021</span>
+                            <span class="count">42</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2020">
+                        
+                            <span class="year">2020</span>
+                            <span class="count">26</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2019">
+                        
+                            <span class="year">更多</span>
+                        
+                    </a> 
+                </div>
+            
+        </div>
+    </section>
+        
+            <section class="widget archives">
+    
+    <h2 class="widget-title section-title">日历</h2>
+    <div class="widget--toc" style="background-color: white; border-radius: 15px; padding: 10px; margin: 20px auto; width: 300px; height: 480px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+        <img id="calendar-cover" src="" style="object-fit: cover; width: 100%; height: 100%;" />
+    </div>
+</section>
+<script>
+    const getImageUrl = (date) => {
+        const currentYear = date.getFullYear();
+        const currentMonth = String(date.getMonth() + 1).padStart(2, '0');
+        const currentDate = String(date.getDate()).padStart(2, '0');
+        return `https://img.owspace.com/Public/uploads/Download/${currentYear}/${currentMonth}${currentDate}.jpg`
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const eleImg = document.querySelector("#calendar-cover");
+        if (document.location.pathname.startsWith('/posts')) {
+            let publishedTime = document.querySelector('meta[property="article:published_time"]').content;
+            publishedTime = publishedTime.substring(0, 10);
+            eleImg.src = getImageUrl(new Date(publishedTime))
+        } else {
+            eleImg.src = getImageUrl(new Date())
+        }
+    });
+    </script>
+        
+            <section class="widget tagCloud">
+    
+    <h2 class="widget-title section-title">标签云</h2>
+
+    <div class="tagCloud-tags">
+        
+            <a href="/tags/%E6%9C%8D%E5%8A%A1%E7%BC%96%E6%8E%92/" class="font_size_1">
+                服务编排
+            </a>
+        
+            <a href="/tags/%E5%B9%B3%E5%87%A1/" class="font_size_1">
+                平凡
+            </a>
+        
+            <a href="/tags/%E5%BE%AE%E5%8D%9A/" class="font_size_3">
+                微博
+            </a>
+        
+            <a href="/tags/%E5%A4%A7%E6%8A%A4%E6%B3%95/" class="font_size_1">
+                大护法
+            </a>
+        
+            <a href="/tags/binlog/" class="font_size_2">
+                Binlog
+            </a>
+        
+            <a href="/tags/%E5%85%B3%E5%8D%A1%E7%B3%BB%E7%BB%9F/" class="font_size_1">
+                关卡系统
+            </a>
+        
+            <a href="/tags/%E5%85%AC%E4%BC%97%E5%8F%B7/" class="font_size_1">
+                公众号
+            </a>
+        
+            <a href="/tags/%E7%AB%A5%E8%AF%9D/" class="font_size_1">
+                童话
+            </a>
+        
+            <a href="/tags/nginx/" class="font_size_3">
+                Nginx
+            </a>
+        
+            <a href="/tags/%E7%89%88%E6%9D%83/" class="font_size_1">
+                版权
+            </a>
+        
+            <a href="/tags/hangfire/" class="font_size_1">
+                Hangfire
+            </a>
+        
+            <a href="/tags/%E6%8F%90%E7%BA%B2/" class="font_size_1">
+                提纲
+            </a>
+        
+            <a href="/tags/%E5%A4%8F%E7%9B%AE%E6%BC%B1%E7%9F%B3/" class="font_size_1">
+                夏目漱石
+            </a>
+        
+            <a href="/tags/svg/" class="font_size_1">
+                SVG
+            </a>
+        
+            <a href="/tags/%E8%AE%B0%E5%BD%95/" class="font_size_1">
+                记录
+            </a>
+        
+            <a href="/tags/%E7%9C%9F%E5%AE%9E/" class="font_size_1">
+                真实
+            </a>
+        
+            <a href="/tags/%E6%B5%81%E5%AA%92%E4%BD%93/" class="font_size_1">
+                流媒体
+            </a>
+        
+            <a href="/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="font_size_1">
+                响应式
+            </a>
+        
+            <a href="/tags/%E6%97%B6%E9%97%B4/" class="font_size_3">
+                时间
+            </a>
+        
+            <a href="/tags/channel/" class="font_size_1">
+                Channel
+            </a>
+        
+            <a href="/tags/%E8%B0%83%E4%BC%98/" class="font_size_1">
+                调优
+            </a>
+        
+            <a href="/tags/llama.cpp/" class="font_size_1">
+                Llama.cpp
+            </a>
+        
+            <a href="/tags/%E5%9B%9E%E9%A1%BE/" class="font_size_1">
+                回顾
+            </a>
+        
+            <a href="/tags/ar/" class="font_size_3">
+                AR
+            </a>
+        
+            <a href="/tags/polly/" class="font_size_1">
+                Polly
+            </a>
+        
+
+        <a href="/tags" class="font_size_9999">
+            更多
+        </a>
+    </div>
+</section>
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script>
+<script type="text/javascript" src="/ts/main.js" defer></script>
+<script type="text/javascript" src="/ts/badge.js"></script>
+    <script type="text/javascript">
+        let createBadge = window.createBadge;
+        createBadge('Git', '7f1e7a2', '#35495e', '#ffc107');
+        createBadge('Hugo', 'v0.126.1', '#35495e', '#41b883');
+        
+    </script><script type="text/javascript" src="/ts/chat-widget.js" defer></script>
+
+
+
+    </body>
+</html>

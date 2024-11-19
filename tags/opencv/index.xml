@@ -1,1 +1,47 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>OpenCV on 元视角</title><link>https://blog.yuanpei.me/tags/opencv/</link><description>Recent content in OpenCV on 元视角</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 27 May 2024 16:14:15 +0800</lastBuildDate><atom:link href="https://blog.yuanpei.me/tags/opencv/index.xml" rel="self" type="application/rss+xml"/><item><title>视频是不能 P 的系列：OpenCV 和 Dlib 实现表情包</title><link>https://blog.yuanpei.me/posts/make-memes-with-opencv-and-dlib/</link><pubDate>Fri, 01 Jul 2022 22:49:47 +0000</pubDate><guid>https://blog.yuanpei.me/posts/make-memes-with-opencv-and-dlib/</guid><description>2020 年年底的时候，博主曾心血来潮地开启过一个系列：视频是不能 P 的，其灵感则是来源于互联网上的一个梗，即：视频不能 P 所以是真的。不过，在一个美颜盛行的时代，辨别真伪实在是一件奢侈的事情，在各种深度学习框架光环的加持下，在视频中实现“改头换面”已</description></item><item><title>Python 图像风格化迁移助力画家梦想</title><link>https://blog.yuanpei.me/posts/a-introduction-to-stylized-migration-of-python/</link><pubDate>Sun, 01 May 2022 13:32:47 +0000</pubDate><guid>https://blog.yuanpei.me/posts/a-introduction-to-stylized-migration-of-python/</guid><description>很多年前，星爷在《食神》这部电影里大彻大悟，「只要用心，人人都是食神」。从那个时候起，这句话就隐隐约约带着返璞归真、回归本心的意思。如同电影里描绘的餐饮行业一样，在资本市场的裹挟下，造神这项运动显得轻而易举，这个食神可以是史蒂·周，可以是唐</description></item><item><title>使用 Python 自动识别防疫健康码</title><link>https://blog.yuanpei.me/posts/1509692610/</link><pubDate>Thu, 19 Aug 2021 14:13:32 +0000</pubDate><guid>https://blog.yuanpei.me/posts/1509692610/</guid><description>这个月月初的时候，朋友兴奋地和我描述着他的计划——准备带孩子到宁夏自驾游。朋友感慨道，“小孩只在书本上见过黄河、见过沙漠，这样的人生多少有一点遗憾”，可正如新冠病毒会变异为德尔塔一样，生活里唯一不变的变化本身，局部地区疫情卷土重来，朋友为了</description></item><item><title>视频是不能 P 的系列：OpenCV 人脸检测</title><link>https://blog.yuanpei.me/posts/2997581895/</link><pubDate>Fri, 25 Dec 2020 22:49:47 +0000</pubDate><guid>https://blog.yuanpei.me/posts/2997581895/</guid><description>恍惚间，2020 年已接近尾声，回首过去这一年，无论是疫情、失业还是“996”，均以某种特殊的方式铭刻着这一年的记忆。也许，是这个冬天的西安雾霾更少一点。所以，有时透过中午的一抹冬阳，居然意外地觉得春天的脚步渐渐近了，甚至连圣诞节这种“洋节日</description></item><item><title>作为技术宅的我，是这样追鬼滅の刃的</title><link>https://blog.yuanpei.me/posts/3602353334/</link><pubDate>Tue, 15 Dec 2020 22:49:47 +0000</pubDate><guid>https://blog.yuanpei.me/posts/3602353334/</guid><description>有人说，“男人至死都是少年”，而这句听起来有一点中二的话，其实是出自一部同样有一点中二的动漫——银魂。我个人的理解是，知世故而不世故。也许，年轻时那些天马行空的想法，就像堂吉诃德大战风车一样荒诞，可依然愿意去怀着这样的梦想去生活。正如罗曼罗</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>OpenCV on 元视角</title>
+    <link>http://localhost:1313/tags/opencv/</link>
+    <description>Recent content in OpenCV on 元视角</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 27 May 2024 16:14:15 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/opencv/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>视频是不能 P 的系列：OpenCV 和 Dlib 实现表情包</title>
+      <link>http://localhost:1313/posts/make-memes-with-opencv-and-dlib/</link>
+      <pubDate>Fri, 01 Jul 2022 22:49:47 +0000</pubDate>
+      <guid>http://localhost:1313/posts/make-memes-with-opencv-and-dlib/</guid>
+      <description>2020 年年底的时候，博主曾心血来潮地开启过一个系列：视频是不能 P 的，其灵感则是来源于互联网上的一个梗，即：视频不能 P 所以是真的。不过，在一个美颜盛行的时代，辨别真伪实在是一件奢侈的事情，在各种深度学习框架光环的加持下，在视频中实现“改头换面”已</description>
+    </item>
+    <item>
+      <title>Python 图像风格化迁移助力画家梦想</title>
+      <link>http://localhost:1313/posts/a-introduction-to-stylized-migration-of-python/</link>
+      <pubDate>Sun, 01 May 2022 13:32:47 +0000</pubDate>
+      <guid>http://localhost:1313/posts/a-introduction-to-stylized-migration-of-python/</guid>
+      <description>很多年前，星爷在《食神》这部电影里大彻大悟，「只要用心，人人都是食神」。从那个时候起，这句话就隐隐约约带着返璞归真、回归本心的意思。如同电影里描绘的餐饮行业一样，在资本市场的裹挟下，造神这项运动显得轻而易举，这个食神可以是史蒂·周，可以是唐</description>
+    </item>
+    <item>
+      <title>使用 Python 自动识别防疫健康码</title>
+      <link>http://localhost:1313/posts/1509692610/</link>
+      <pubDate>Thu, 19 Aug 2021 14:13:32 +0000</pubDate>
+      <guid>http://localhost:1313/posts/1509692610/</guid>
+      <description>这个月月初的时候，朋友兴奋地和我描述着他的计划——准备带孩子到宁夏自驾游。朋友感慨道，“小孩只在书本上见过黄河、见过沙漠，这样的人生多少有一点遗憾”，可正如新冠病毒会变异为德尔塔一样，生活里唯一不变的变化本身，局部地区疫情卷土重来，朋友为了</description>
+    </item>
+    <item>
+      <title>视频是不能 P 的系列：OpenCV 人脸检测</title>
+      <link>http://localhost:1313/posts/2997581895/</link>
+      <pubDate>Fri, 25 Dec 2020 22:49:47 +0000</pubDate>
+      <guid>http://localhost:1313/posts/2997581895/</guid>
+      <description>恍惚间，2020 年已接近尾声，回首过去这一年，无论是疫情、失业还是“996”，均以某种特殊的方式铭刻着这一年的记忆。也许，是这个冬天的西安雾霾更少一点。所以，有时透过中午的一抹冬阳，居然意外地觉得春天的脚步渐渐近了，甚至连圣诞节这种“洋节日</description>
+    </item>
+    <item>
+      <title>作为技术宅的我，是这样追鬼滅の刃的</title>
+      <link>http://localhost:1313/posts/3602353334/</link>
+      <pubDate>Tue, 15 Dec 2020 22:49:47 +0000</pubDate>
+      <guid>http://localhost:1313/posts/3602353334/</guid>
+      <description>有人说，“男人至死都是少年”，而这句听起来有一点中二的话，其实是出自一部同样有一点中二的动漫——银魂。我个人的理解是，知世故而不世故。也许，年轻时那些天马行空的想法，就像堂吉诃德大战风车一样荒诞，可依然愿意去怀着这样的梦想去生活。正如罗曼罗</description>
+    </item>
+  </channel>
+</rss>

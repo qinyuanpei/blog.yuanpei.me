@@ -1,1 +1,26 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>JavaScript on 元视角</title><link>https://blog.yuanpei.me/tags/javascript/</link><description>Recent content in JavaScript on 元视角</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate><atom:link href="https://blog.yuanpei.me/tags/javascript/index.xml" rel="self" type="application/rss+xml"/><item><title>聊一聊前端图片懒加载背后的故事</title><link>https://blog.yuanpei.me/posts/the-story-behind-the-lazy-loading-of-front-end-pictures/</link><pubDate>Tue, 02 Aug 2022 22:49:47 +0000</pubDate><guid>https://blog.yuanpei.me/posts/the-story-behind-the-lazy-loading-of-front-end-pictures/</guid><description>相信大家已经注意到我博客有了一点变化，因为博主最近利用空闲时间对博客进行了优化。经过博主的不懈努力，首屏渲染时间从原来的 2.0 秒缩短到了 1.7 秒。虽然这个优化相当得感人，不过我还是在这个过程中有所收获。Stack 这个主题中大量使用了图片这种元素，特</description></item><item><title>zTree 删除/拖拽子节点保留父节点分组样式</title><link>https://blog.yuanpei.me/posts/1397717193/</link><pubDate>Fri, 12 Apr 2019 12:37:10 +0000</pubDate><guid>https://blog.yuanpei.me/posts/1397717193/</guid><description>最近需要在项目中实现报表的自定义设置功能，即用户可以针对报表新建自定义分组，分组间可以互相嵌套，分组及分组内的报表需要支持拖拽排序、编辑、删除……相信听到这里，你大概明白我要实现一个什么样的功能了。不错，我要实现一个集美观、功能于一身的树形</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JavaScript on 元视角</title>
+    <link>http://localhost:1313/tags/javascript/</link>
+    <description>Recent content in JavaScript on 元视角</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/javascript/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>聊一聊前端图片懒加载背后的故事</title>
+      <link>http://localhost:1313/posts/the-story-behind-the-lazy-loading-of-front-end-pictures/</link>
+      <pubDate>Tue, 02 Aug 2022 22:49:47 +0000</pubDate>
+      <guid>http://localhost:1313/posts/the-story-behind-the-lazy-loading-of-front-end-pictures/</guid>
+      <description>相信大家已经注意到我博客有了一点变化，因为博主最近利用空闲时间对博客进行了优化。经过博主的不懈努力，首屏渲染时间从原来的 2.0 秒缩短到了 1.7 秒。虽然这个优化相当得感人，不过我还是在这个过程中有所收获。Stack 这个主题中大量使用了图片这种元素，特</description>
+    </item>
+    <item>
+      <title>zTree 删除/拖拽子节点保留父节点分组样式</title>
+      <link>http://localhost:1313/posts/1397717193/</link>
+      <pubDate>Fri, 12 Apr 2019 12:37:10 +0000</pubDate>
+      <guid>http://localhost:1313/posts/1397717193/</guid>
+      <description>最近需要在项目中实现报表的自定义设置功能，即用户可以针对报表新建自定义分组，分组间可以互相嵌套，分组及分组内的报表需要支持拖拽排序、编辑、删除……相信听到这里，你大概明白我要实现一个什么样的功能了。不错，我要实现一个集美观、功能于一身的树形</description>
+    </item>
+  </channel>
+</rss>

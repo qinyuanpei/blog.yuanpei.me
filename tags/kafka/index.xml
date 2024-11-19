@@ -1,1 +1,26 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kafka on 元视角</title><link>https://blog.yuanpei.me/tags/kafka/</link><description>Recent content in Kafka on 元视角</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate><atom:link href="https://blog.yuanpei.me/tags/kafka/index.xml" rel="self" type="application/rss+xml"/><item><title>再议 DDD 视角下的 EFCore 与 领域事件</title><link>https://blog.yuanpei.me/posts/review-efcore-and-domain-events-from-ddd-perspective/</link><pubDate>Sat, 28 May 2022 16:37:47 +0000</pubDate><guid>https://blog.yuanpei.me/posts/review-efcore-and-domain-events-from-ddd-perspective/</guid><description>在上家公司工作的时候，我们有部分业务是采用事件/消息驱动的形式。虽然，当时博主还没能用上诸如 Kafka、RabbitMQ 这样的消息中间件，可数据库 + Quartz 这样一个堪称“简陋”的组合，完全不影响博主对事件/消息驱动这种思想的启蒙。后来，在实现数据</description></item><item><title>浅议非典型 Web 应用场景下的身份认证</title><link>https://blog.yuanpei.me/posts/2478147871/</link><pubDate>Tue, 28 Dec 2021 11:53:29 +0000</pubDate><guid>https://blog.yuanpei.me/posts/2478147871/</guid><description>据我所知，软件行业，向来是充满着鄙视链的，人们时常会因为语言、框架、范式、架构等等问题而争执不休。不必说 PHP 到底是不是世界上最好的语言，不必说原生与 Web 到底哪一个真正代表着未来，更不必说前端与后端到底哪一个更有技术含量，单单一个 C++ 的版本，199</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kafka on 元视角</title>
+    <link>http://localhost:1313/tags/kafka/</link>
+    <description>Recent content in Kafka on 元视角</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 27 May 2024 11:06:18 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/kafka/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>再议 DDD 视角下的 EFCore 与 领域事件</title>
+      <link>http://localhost:1313/posts/review-efcore-and-domain-events-from-ddd-perspective/</link>
+      <pubDate>Sat, 28 May 2022 16:37:47 +0000</pubDate>
+      <guid>http://localhost:1313/posts/review-efcore-and-domain-events-from-ddd-perspective/</guid>
+      <description>在上家公司工作的时候，我们有部分业务是采用事件/消息驱动的形式。虽然，当时博主还没能用上诸如 Kafka、RabbitMQ 这样的消息中间件，可数据库 + Quartz 这样一个堪称“简陋”的组合，完全不影响博主对事件/消息驱动这种思想的启蒙。后来，在实现数据</description>
+    </item>
+    <item>
+      <title>浅议非典型 Web 应用场景下的身份认证</title>
+      <link>http://localhost:1313/posts/2478147871/</link>
+      <pubDate>Tue, 28 Dec 2021 11:53:29 +0000</pubDate>
+      <guid>http://localhost:1313/posts/2478147871/</guid>
+      <description>据我所知，软件行业，向来是充满着鄙视链的，人们时常会因为语言、框架、范式、架构等等问题而争执不休。不必说 PHP 到底是不是世界上最好的语言，不必说原生与 Web 到底哪一个真正代表着未来，更不必说前端与后端到底哪一个更有技术含量，单单一个 C++ 的版本，199</description>
+    </item>
+  </channel>
+</rss>
