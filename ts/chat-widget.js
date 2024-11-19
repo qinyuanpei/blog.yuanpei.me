@@ -1,24 +1,8 @@
-(() => {
-  // <stdin>
-  (function() {
-    const host = document.createElement("div");
-    const shadow = host.attachShadow({ mode: "open" });
-    const shadowStyle = document.createElement("style");
-    shadowStyle.textContent = `
+(()=>{(function(){let g=document.createElement("div"),o=g.attachShadow({mode:"open"}),x=document.createElement("style");x.textContent=`
       :host {
         display: block;
       }
-    `;
-    shadow.appendChild(shadowStyle);
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css";
-    shadow.appendChild(link);
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
-    shadow.appendChild(script);
-    const injectedStyle = document.createElement("style");
-    injectedStyle.innerHTML = `
+    `,o.appendChild(x);let m=document.createElement("link");m.rel="stylesheet",m.href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css",o.appendChild(m);let v=document.createElement("script");v.src="https://cdn.jsdelivr.net/npm/marked/marked.min.js",o.appendChild(v);let w=document.createElement("style");w.innerHTML=`
     .hidden {
       display: none;
     }
@@ -119,13 +103,7 @@
         display: none;
       }
     }
-    `;
-    shadow.appendChild(injectedStyle);
-    const chatWidgetContainer = document.createElement("div");
-    chatWidgetContainer.id = "chat-widget-container";
-    shadow.appendChild(chatWidgetContainer);
-    document.body.append(host);
-    chatWidgetContainer.innerHTML = `
+    `,o.appendChild(w);let u=document.createElement("div");u.id="chat-widget-container",o.appendChild(u),document.body.append(g),u.innerHTML=`
       <div id="chat-bubble" class="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center cursor-pointer text-3xl">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -159,207 +137,26 @@
         </div>
       </div>
       <div class="mask"></div>
-    `;
-    const chatInput = shadow.getElementById("chat-input");
-    const chatSubmit = shadow.getElementById("chat-submit");
-    const chatMessages = shadow.getElementById("chat-messages");
-    const chatBubble = shadow.getElementById("chat-bubble");
-    const chatPopup = shadow.getElementById("chat-popup");
-    const closePopup = shadow.getElementById("close-popup");
-    const expandPopup = shadow.getElementById("expand-popop");
-    const welcomeMessage = "\u4F60\u597D\uFF0C\u8FD9\u91CC\u662F\u535A\u5BA2 [\u201C\u5143\u89C6\u89D2\u201D](https://blog.yuanpei.me) \u7684 AI \u52A9\u624B\uFF0C\u4F60\u53EF\u4EE5\u4ECE\u8FD9\u91CC\u4E86\u89E3\u535A\u4E3B\u7684\u4FE1\u606F\uFF0C\u5BF9\u535A\u5BA2\u7684\u5185\u5BB9\u8FDB\u884C\u68C0\u7D22\u548C\u63D0\u95EE\u3002";
-    chatSubmit.addEventListener("click", async function() {
-      const message = chatInput.value.trim();
-      if (!message)
-        return;
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      chatInput.value = "";
-      await onUserRequest(message);
-    });
-    chatInput.addEventListener("keyup", function(event) {
-      if (event.key === "Enter") {
-        chatSubmit.click();
-      }
-    });
-    chatBubble.addEventListener("click", function() {
-      togglePopup();
-    });
-    closePopup.addEventListener("click", function() {
-      togglePopup();
-    });
-    expandPopup.addEventListener("click", function() {
-      chatPopup.classList.toggle("fullscreen");
-    });
-    function togglePopup() {
-      const mainCotainer = document.querySelector(".container");
-      const maskElement = shadow.querySelector(".mask");
-      maskElement.classList.toggle("show");
-      const chatPopup2 = shadow.getElementById("chat-popup");
-      chatPopup2.classList.toggle("hidden");
-      if (chatPopup2.classList.contains("fullscreen")) {
-        chatPopup2.classList.toggle("fullscreen");
-      }
-      if (!chatPopup2.classList.contains("hidden")) {
-        shadow.getElementById("chat-input").focus();
-        mainCotainer.style.pointerEvents = "none";
-        document.documentElement.style.overflowY = "hidden";
-      } else {
-        mainCotainer.style.pointerEvents = "auto";
-        document.documentElement.style.overflowY = "auto";
-      }
-      showWelcome(welcomeMessage);
-    }
-    async function onUserRequest(message) {
-      const messageElement = document.createElement("div");
-      messageElement.className = "flex justify-end mb-3";
-      messageElement.innerHTML = `
+    `;let p=o.getElementById("chat-input"),c=o.getElementById("chat-submit"),d=o.getElementById("chat-messages"),k=o.getElementById("chat-bubble"),E=o.getElementById("chat-popup"),M=o.getElementById("close-popup"),H=o.getElementById("expand-popop"),L="\u4F60\u597D\uFF0C\u8FD9\u91CC\u662F\u535A\u5BA2 [\u201C\u5143\u89C6\u89D2\u201D](https://blog.yuanpei.me) \u7684 AI \u52A9\u624B\uFF0C\u4F60\u53EF\u4EE5\u4ECE\u8FD9\u91CC\u4E86\u89E3\u535A\u4E3B\u7684\u4FE1\u606F\uFF0C\u5BF9\u535A\u5BA2\u7684\u5185\u5BB9\u8FDB\u884C\u68C0\u7D22\u548C\u63D0\u95EE\u3002";c.addEventListener("click",async function(){let t=p.value.trim();t&&(d.scrollTop=d.scrollHeight,p.value="",await f(t))}),p.addEventListener("keyup",function(t){t.key==="Enter"&&c.click()}),k.addEventListener("click",function(){b()}),M.addEventListener("click",function(){b()}),H.addEventListener("click",function(){E.classList.toggle("fullscreen")});function b(){let t=document.querySelector(".container");o.querySelector(".mask").classList.toggle("show");let n=o.getElementById("chat-popup");n.classList.toggle("hidden"),n.classList.contains("fullscreen")&&n.classList.toggle("fullscreen"),n.classList.contains("hidden")?(t.style.pointerEvents="auto",document.documentElement.style.overflowY="auto"):(o.getElementById("chat-input").focus(),t.style.pointerEvents="none",document.documentElement.style.overflowY="hidden"),I(L)}async function f(t){let s=document.createElement("div");s.className="flex justify-end mb-3",s.innerHTML=`
         <div class="bg-gray-800 text-white rounded-lg py-2 px-4 max-w-[70%] text-xl">
-          ${message}
+          ${t}
         </div>
-      `;
-      chatMessages.appendChild(messageElement);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      chatInput.value = "";
-      chatSubmit.disabled = true;
-      chatSubmit.classList.add("opacity-50", "cursor-not-allowed");
-      let replyMessage = "";
-      for await (const result of callCozeApi(message)) {
-        const messageId = result.id;
-        const replyElement = shadow.getElementById(messageId);
-        if (result.type == "answer") {
-          replyMessage += result.content;
-          if (replyElement) {
-            updateReply(replyElement, replyMessage);
-          } else {
-            reply(replyMessage, messageId);
-          }
-        } else if (result.type == "follow_up") {
-          addSuggestion(result.content, messageId);
-        }
-      }
-      chatSubmit.disabled = false;
-      chatSubmit.classList.remove("opacity-50", "cursor-not-allowed");
-    }
-    function reply(message, id) {
-      const markedHtml = marked.parse(message);
-      const chatMessages2 = shadow.getElementById("chat-messages");
-      const replyElement = document.createElement("div");
-      replyElement.id = id;
-      replyElement.className = "flex mb-3 text-lg";
-      replyElement.innerHTML = `
+      `,d.appendChild(s),d.scrollTop=d.scrollHeight,p.value="",c.disabled=!0,c.classList.add("opacity-50","cursor-not-allowed");let n="";for await(let e of _(t)){let a=e.id,i=o.getElementById(a);e.type=="answer"?(n+=e.content,i?C(i,n):B(n,a)):e.type=="follow_up"&&T(e.content,a)}c.disabled=!1,c.classList.remove("opacity-50","cursor-not-allowed")}function B(t,s){let n=marked.parse(t),e=o.getElementById("chat-messages"),a=document.createElement("div");a.id=s,a.className="flex mb-3 text-lg",a.innerHTML=`
         <div class="bg-gray-200 text-black rounded-lg py-2 px-4 max-w-[70%]">
-          <div class="markdown-content text-xl">${markedHtml}</div>
+          <div class="markdown-content text-xl">${n}</div>
         </div>
-      `;
-      chatMessages2.appendChild(replyElement);
-      chatMessages2.scrollTop = chatMessages2.scrollHeight;
-    }
-    function updateReply(replyElement, message) {
-      const markedHtml = marked.parse(message);
-      const chatMessages2 = shadow.getElementById("chat-messages");
-      replyElement.innerHTML = `
+      `,e.appendChild(a),e.scrollTop=e.scrollHeight}function C(t,s){let n=marked.parse(s),e=o.getElementById("chat-messages");t.innerHTML=`
         <div class="bg-gray-200 text-black rounded-lg py-2 px-4 max-w-[70%]">
-            <div class="markdown-content text-xl">${markedHtml}</div>
+            <div class="markdown-content text-xl">${n}</div>
         </div>
-      `;
-      chatMessages2.scrollTop = chatMessages2.scrollHeight;
-    }
-    function addSuggestion(content, id) {
-      const chatMessages2 = shadow.getElementById("chat-messages");
-      const suggestElement = document.createElement("div");
-      suggestElement.id = id;
-      suggestElement.className = "flex mb-3 text-lg";
-      suggestElement.innerHTML = `
+      `,e.scrollTop=e.scrollHeight}function T(t,s){let n=o.getElementById("chat-messages"),e=document.createElement("div");e.id=s,e.className="flex mb-3 text-lg",e.innerHTML=`
       <div class="bg-gray-200 text-black rounded-lg py-2 px-4 max-w-[70%] border-2 border-gray-400 cursor-pointer" style="border-width: 1.5px;">
-        ${content}
+        ${t}
       </div>
-      `;
-      suggestElement.addEventListener("click", function() {
-        onUserRequest(content);
-      });
-      chatMessages2.appendChild(suggestElement);
-      chatMessages2.scrollTop = chatMessages2.scrollHeight;
-    }
-    function showWelcome(message) {
-      const chatMessages2 = shadow.getElementById("chat-messages");
-      if (chatMessages2.children.length != 0)
-        return;
-      const markedHtml = marked.parse(message);
-      const welcomeElement = document.createElement("div");
-      welcomeElement.id = "welcome";
-      welcomeElement.className = "flex mb-3 text-lg";
-      welcomeElement.innerHTML = `
+      `,e.addEventListener("click",function(){f(t)}),n.appendChild(e),n.scrollTop=n.scrollHeight}function I(t){let s=o.getElementById("chat-messages");if(s.children.length!=0)return;let n=marked.parse(t),e=document.createElement("div");e.id="welcome",e.className="flex mb-3 text-lg",e.innerHTML=`
         <div class="bg-gray-200 text-black rounded-lg py-2 px-4 max-w-[70%]">
-          <div class="markdown-content text-xl">${markedHtml}</div>
+          <div class="markdown-content text-xl">${n}</div>
         </div>
-      `;
-      chatMessages2.appendChild(welcomeElement);
-      chatMessages2.scrollTop = chatMessages2.scrollHeight;
-    }
-    async function* callCozeApi(input) {
-      const token = "pat_xRZb8zGVA76atWy3qhHPZ6vWacjU9ByOTxiKZic33Q6kK5qB5ZCH8VO6hkQ0XgMF";
-      const path_name = window.location.pathname;
-      const post_url = path_name.startsWith("/posts") ? `https://blog.yuanpei.me${path_name}` : "";
-      const messages = [{
-        role: "user",
-        content: input,
-        content_type: "text"
-      }];
-      if (post_url != "") {
-        messages.unshift({
-          role: "user",
-          content: `post_url: ${post_url}`,
-          content_type: "text"
-        });
-      }
-      const response = await fetch(`https://api.coze.cn/v3/chat`, {
-        method: "POST",
-        headers: {
-          "Accept": "text/event-stream",
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          bot_id: "7359776236354846761",
-          user_id: "blog.yuanpei.me",
-          stream: true,
-          auto_save_history: true,
-          additional_messages: messages,
-          custom_variables: {
-            post_url
-          }
-        })
-      });
-      if (!response.ok) {
-        console.error(response);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let resultData = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done)
-          break;
-        resultData += decoder.decode(value);
-        while (resultData.indexOf("\n") != -1) {
-          const messageIndex = resultData.indexOf("\n");
-          const message = resultData.slice(0, messageIndex);
-          resultData = resultData.slice(messageIndex + 1);
-          if (message.startsWith("event:") && message.trim() == "event:conversation.message.delta")
-            continue;
-          if (message.startsWith("event:") && message.trim() == "event:conversation.message.completed")
-            break;
-          if (message.startsWith("data:")) {
-            if (message.includes("[DONE]"))
-              break;
-            const jsonMessage = JSON.parse(message.substring(5));
-            if (jsonMessage.type == "answer" && !jsonMessage.created_at || jsonMessage.type == "follow_up") {
-              yield jsonMessage;
-            }
-          }
-        }
-      }
-    }
-  })();
-})();
+      `,s.appendChild(e),s.scrollTop=s.scrollHeight}async function*_(t){let s="pat_xRZb8zGVA76atWy3qhHPZ6vWacjU9ByOTxiKZic33Q6kK5qB5ZCH8VO6hkQ0XgMF",n=window.location.pathname,e=n.startsWith("/posts")?`https://blog.yuanpei.me${n}`:"",a=[{role:"user",content:t,content_type:"text"}];e!=""&&a.unshift({role:"user",content:`post_url: ${e}`,content_type:"text"});let i=await fetch("https://api.coze.cn/v3/chat",{method:"POST",headers:{Accept:"text/event-stream","Content-Type":"application/json",Authorization:`Bearer ${s}`},body:JSON.stringify({bot_id:"7359776236354846761",user_id:"blog.yuanpei.me",stream:!0,auto_save_history:!0,additional_messages:a,custom_variables:{post_url:e}})});if(!i.ok)throw console.error(i),new Error(`HTTP error! status: ${i.status}`);let j=i.body.getReader(),z=new TextDecoder,l="";for(;;){let{done:P,value:S}=await j.read();if(P)break;for(l+=z.decode(S);l.indexOf(`
+`)!=-1;){let y=l.indexOf(`
+`),r=l.slice(0,y);if(l=l.slice(y+1),!(r.startsWith("event:")&&r.trim()=="event:conversation.message.delta")){if(r.startsWith("event:")&&r.trim()=="event:conversation.message.completed")break;if(r.startsWith("data:")){if(r.includes("[DONE]"))break;let h=JSON.parse(r.substring(5));(h.type=="answer"&&!h.created_at||h.type=="follow_up")&&(yield h)}}}}}})();})();

@@ -1,1398 +1,241 @@
-<!DOCTYPE html>
-<html lang="en-us">
-    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
-<meta name="referrer" content="no-referrer"/>
-<meta name='viewport' content='width=device-width, initial-scale=1'>
-
-<meta http-equiv='content-language' content='zh-CN'>
-
-
-<link rel="apple-touch-icon" href="/imgs/avatar.jpg">
-
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-
-
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-
-
-<link rel="icon" type="image/x-icon" href="/imgs/favicon.ico">
-
-
-<link rel="icon" type="image/png" href="/imgs/favicon.png"><meta name='description' content='今天文章介绍了在Unity3D中如何使用Mecanim动画系统来控制2D动画。传统的2D动画实现方式是基于逐帧动画，但存在动画和状态维护困难。通过使用Mecanim动画系统，可以更方便地管理动画和状态切换，减少代码量。文章展示了如何创建2D动画并设计动画状态机，以及编写脚本来控制角色动画。最后指出Mecanim动画系统可扩展到位移、旋转、伸缩、渐变和脚本动画。整体内容涵盖了2D动画控制的基本知识和扩展应用。'><meta name='keywords' content='Mecanim, 动画, Unity3D'>
-
-<meta name="author" content="飞鸿踏雪"><title>使用 Mecanim 动画系统来控制 2D 动画 - 元视角</title>
-
-<link rel='canonical' href='http://localhost:1313/posts/2583252123/'>
-
-
-
-<link rel="stylesheet" href="/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css">
-<meta property='og:title' content='使用 Mecanim 动画系统来控制 2D 动画 - 元视角'>
-<meta property='og:description' content='今天文章介绍了在Unity3D中如何使用Mecanim动画系统来控制2D动画。传统的2D动画实现方式是基于逐帧动画，但存在动画和状态维护困难。通过使用Mecanim动画系统，可以更方便地管理动画和状态切换，减少代码量。文章展示了如何创建2D动画并设计动画状态机，以及编写脚本来控制角色动画。最后指出Mecanim动画系统可扩展到位移、旋转、伸缩、渐变和脚本动画。整体内容涵盖了2D动画控制的基本知识和扩展应用。'>
-<meta property='og:url' content='http://localhost:1313/posts/2583252123/'>
-<meta property='og:site_name' content='元视角'>
-<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='Mecanim' /><meta property='article:tag' content='动画' /><meta property='article:tag' content='Unity3D' /><meta property='article:published_time' content='2015-02-11T13:35:58&#43;00:00'/><meta property='article:modified_time' content='2024-02-27T15:48:33&#43;08:00'/><meta property='og:image' content='http://localhost:1313/' />
-<meta name="twitter:title" content="使用 Mecanim 动画系统来控制 2D 动画 - 元视角">
-<meta name="twitter:description" content="今天文章介绍了在Unity3D中如何使用Mecanim动画系统来控制2D动画。传统的2D动画实现方式是基于逐帧动画，但存在动画和状态维护困难。通过使用Mecanim动画系统，可以更方便地管理动画和状态切换，减少代码量。文章展示了如何创建2D动画并设计动画状态机，以及编写脚本来控制角色动画。最后指出Mecanim动画系统可扩展到位移、旋转、伸缩、渐变和脚本动画。整体内容涵盖了2D动画控制的基本知识和扩展应用。"><meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content='http://localhost:1313/' />
-
-    
-        
-            <meta name="msvalidate.01" content="713A48A3FE17D4841C292A6B3942EB4C" />
-        
-    
-        
-            <meta name="baidu-site-verification" content="c50FGqYOSh" />
-        
-    
-        
-            <meta name="google-site-verification" content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s" />
-        
-    
-
-  
-
-<script src="//instant.page/5.1.0" type="module" integrity="sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw"></script>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css"
-/>
-    </head>
-    <body class="
-    article-page
-">
-    <script>
-        (function() {
-            const colorSchemeKey = 'StackColorScheme';
-            if(!localStorage.getItem(colorSchemeKey)){
-                localStorage.setItem(colorSchemeKey, "auto");
-            }
-        })();
-    </script><script>
-    (function() {
-        const colorSchemeKey = 'StackColorScheme';
-        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
-        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
-
-        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
-            
-
-            document.documentElement.dataset.scheme = 'dark';
-        } else {
-            document.documentElement.dataset.scheme = 'light';
-        }
-    })();
-</script>
-<div class="container main-container flex 
-    on-phone--column extended
-">
-    <div id="article-toolbar">
-        <a href="/" class="back-home">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <polyline points="15 6 9 12 15 18" />
-</svg>
-
-
-
-            <span>返回</span>
-        </a>
-    </div>
-    <aside class="sidebar left-sidebar sticky">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
-        <span class="hamburger-box">
-            <span class="hamburger-inner"></span>
-        </span>
-    </button>
-
-    <header class="site-info">
-        
-            
-            <figure class="site-avatar">
-                <a href="/">
-                
-                    
-                    
-                    
-                        
-                        <img src="/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg" width="300"
-                            height="300" class="site-logo" loading="lazy" alt="Avatar">
-                    
-                
-                </a>
-                
-                    <span class="emoji">👌</span>
-                
-            </figure>
-            
-        
-        
-        <h1 class="site-name"><a href="/">元视角</a></h1>
-        <h2 class="site-description">起风了，唯有努力生存</h2><ol class="social-menu">
-                
-                    
-                    
-                    
-                    
-                    <li>
-                        <a 
-                            href='mailto:qinyuanpei@163.com'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="Mail"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
-  <path d="M3 7l9 6l9 -6" />
-</svg>
-                            
-                        </a>
-                    </li>
-                
-                    
-                    
-                    <li>
-                        <a 
-                            href='https://github.com/qinyuanpei'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="GitHub"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
-</svg>
-
-
-
-                            
-                        </a>
-                    </li>
-                
-                    
-                    
-                    <li>
-                        <a 
-                            href='https://www.zhihu.com/people/qinyuanpei'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="Zhihu"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M14 6h6v12h-2l-2 2l-1 -2h-1z" />
-  <path d="M4 12h6.5" />
-  <path d="M10.5 6h-5" />
-  <path d="M6 4c-.5 2.5 -1.5 3.5 -2.5 4.5" />
-  <path d="M8 6v7c0 4.5 -2 5.5 -4 7" />
-  <path d="M11 18l-3 -5" />
-</svg>
-                            
-                        </a>
-                    </li>
-                
-                    
-                    
-                    <li>
-                        <a 
-                            href='https://www.douban.com/people/60029335'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="Douban"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M4 20h16" />
-  <path d="M5 4h14" />
-  <path d="M8 8h8a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2v-2a2 2 0 0 1 2 -2z" />
-  <path d="M16 14l-2 6" />
-  <path d="M8 17l1 3" />
-</svg>
-                            
-                        </a>
-                    </li>
-                
-                    
-                    
-                    <li>
-                        <a 
-                            href='https://weibo.com/1278609231/profile'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="Weibo"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M19 14.127c0 3.073 -3.502 5.873 -8 5.873c-4.126 0 -8 -2.224 -8 -5.565c0 -1.78 .984 -3.737 2.7 -5.567c2.362 -2.51 5.193 -3.687 6.551 -2.238c.415 .44 .752 1.39 .749 2.062c2 -1.615 4.308 .387 3.5 2.693c1.26 .557 2.5 .538 2.5 2.742z" />
-  <path d="M15 4h1a5 5 0 0 1 5 5v1" />
-</svg>
-                            
-                        </a>
-                    </li>
-                
-                    
-                    
-                    <li>
-                        <a 
-                            href='/index.xml'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="RSS"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="5" cy="19" r="1" />
-  <path d="M4 4a16 16 0 0 1 16 16" />
-  <path d="M4 11a9 9 0 0 1 9 9" />
-</svg>
-
-
-
-                            
-                        </a>
-                    </li>
-                
-            </ol></header>
-
-    <ol class="menu" id="main-menu">
-        
-        
-        
-
-        <li >
-            <a href='/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <polyline points="5 12 3 12 12 3 21 12 19 12" />
-  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
-</svg>
-
-
-
-                
-                <span>首页</span>
-            </a>
-        </li>
-        
-        
-
-        <li >
-            <a href='/archives' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <rect x="3" y="4" width="18" height="4" rx="2" />
-  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
-  <line x1="10" y1="12" x2="14" y2="12" />
-</svg>
-
-
-
-                
-                <span>归档</span>
-            </a>
-        </li>
-        
-        
-
-        <li >
-            <a href='/works' >
-                
-                
-                
-                    <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style type="text/css"></style></defs><path d="M843.093333 815.36l-189.44-294.826667a85.333333 85.333333 0 0 1-13.653333-46.08V170.666667h21.333333a21.333333 21.333333 0 0 0 21.333334-21.333334v-42.666666a21.333333 21.333333 0 0 0-21.333334-21.333334h-298.666666a21.333333 21.333333 0 0 0-21.333334 21.333334v42.666666a21.333333 21.333333 0 0 0 21.333334 21.333334H384v304.213333a85.333333 85.333333 0 0 1-13.653333 46.08l-189.44 294.826667a64.426667 64.426667 0 0 0 0 66.56l13.653333 24.32a64.853333 64.853333 0 0 0 55.466667 32h525.226666a64.853333 64.853333 0 0 0 55.466667-32l14.08-24.746667a63.573333 63.573333 0 0 0-1.706667-66.56z m-400.64-248.32a173.226667 173.226667 0 0 0 26.88-92.16V170.666667h85.333334v303.786666a167.68 167.68 0 0 0 27.306666 92.16L656.213333 682.666667H367.786667z" p-id="1250" fill="#8a8a8a"></path></svg>
-                
-                <span>作品</span>
-            </a>
-        </li>
-        
-        
-
-        <li >
-            <a href='/search' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="10" cy="10" r="7" />
-  <line x1="21" y1="21" x2="15" y2="15" />
-</svg>
-
-
-
-                
-                <span>搜索</span>
-            </a>
-        </li>
-        
-        
-
-        <li >
-            <a href='/links' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
-  <path d="M12 6l-3.293 3.293a1 1 0 0 0 0 1.414l.543 .543c.69 .69 1.81 .69 2.5 0l1 -1a3.182 3.182 0 0 1 4.5 0l2.25 2.25" />
-  <path d="M12.5 15.5l2 2" />
-  <path d="M15 13l2 2" />
-</svg>
-                
-                <span>友链</span>
-            </a>
-        </li>
-        
-        
-
-        <li  class='current' >
-            <a href='/about' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="7" r="4" />
-  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-</svg>
-
-
-
-                
-                <span>关于</span>
-            </a>
-        </li>
-        
-
-        
-            <li id="dark-mode-toggle">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" />
-  <path d="M6.343 17.657l-1.414 1.414" />
-  <path d="M6.343 6.343l-1.414 -1.414" />
-  <path d="M17.657 6.343l1.414 -1.414" />
-  <path d="M17.657 17.657l1.414 1.414" />
-  <path d="M4 12h-2" />
-  <path d="M12 4v-2" />
-  <path d="M20 12h2" />
-  <path d="M12 20v2" />
-</svg>
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
-  <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" />
-  <path d="M19 11h2m-1 -1v2" />
-</svg>
-                <span id="dark-mode-text">夜间模式</span>
-            </li>
-        
-    </ol>
-</aside>
-
-<main class="main full-width">
-    <article class="main-article">
-    <header class="article-header">
-
-    <div class="article-details">
-    
-    <header class="article-category">
-        
-            <a href="/categories/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/" >
-                游戏开发
-            </a>
-        
-    </header>
-    
-
-    <h2 class="article-title">
-        <a href="/posts/2583252123/">使用 Mecanim 动画系统来控制 2D 动画</a>
-    </h2>
-    
-    
-
-    
-    <footer class="article-time">
-        
-            <div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
-  <circle cx="18" cy="18" r="4" />
-  <path d="M15 3v4" />
-  <path d="M7 3v4" />
-  <path d="M3 11h16" />
-  <path d="M18 16.496v1.504l1 1" />
-</svg>
-                <time class="article-time--published">2015-02-11</time>
-            </div>
-        
-
-        
-            <div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <polyline points="12 7 12 12 15 15" />
-</svg>
-
-
-
-                <time class="article-time--reading">
-                    阅读时长: 6 分钟
-                </time>
-            </div>
-        
-    </footer>
-    
-</div>
-</header>
-
-    
-        
-
-
-<div class="post-ai">
-    <div class="ai-title">
-        <i class="ai-title-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2z" />
-  <path d="M9 16c1 .667 2 1 3 1s2 -.333 3 -1" />
-  <path d="M9 7l-1 -4" />
-  <path d="M15 7l1 -4" />
-  <path d="M9 12v-1" />
-  <path d="M15 12v-1" />
-</svg></i>
-        <div class="ai-title-text">AI 摘要</div>
-    </div>
-    <div id="ai-explanation" class="ai-explanation"></div>
-    <div class="ai-explanation ai-explanation-content">今天文章介绍了在Unity3D中如何使用Mecanim动画系统来控制2D动画。传统的2D动画实现方式是基于逐帧动画，但存在动画和状态维护困难。通过使用Mecanim动画系统，可以更方便地管理动画和状态切换，减少代码量。文章展示了如何创建2D动画并设计动画状态机，以及编写脚本来控制角色动画。最后指出Mecanim动画系统可扩展到位移、旋转、伸缩、渐变和脚本动画。整体内容涵盖了2D动画控制的基本知识和扩展应用。</div>
-</div>
-
-<script src="https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const matchingSummary = document.querySelector(".ai-explanation-content").textContent;
-
-    new TypeIt("#ai-explanation", {
-        strings: matchingSummary,
-        speed: 10,
-        lifeLike: true,
-        waitUntilVisible: true,
-    }).go();
-});
-</script>
-
-    
-
-    <section class="article-content">
-    
-    
-    <p>各位朋友，大家好，我是秦元培，欢迎大家关注我的博客，我的博客地址是<a class="link" href="http://blog.csdn.net/qinyuanpei"  target="_blank" rel="noopener"
-    >http://blog.csdn.net/qinyuanpei</a>。今天我想和大家分享的话题是在 Unity3D 中使用 Mecanim 动画系统来控制 2D 动画。</p>
-<p>相信在大家的印象中，Mecanim 动画系统主要运用在 3D 动画中，因为 Mecanim 动画系统提供了像动画重定向、人体骨骼动画等 3D 动画的特性，那么 Unity3D 的 Mecanim 动画系统能不能用来控制 2D 动画呢？如果在以前，博主和大家的理解是一样的，认为 Mecanim 只能运用到 3D 动画中，对于 2D 动画只能使用传统的逐帧动画和骨骼动画。可是前不久有位朋友问我，为什么不使用动画组件来控制 2D 动画呢？博主心想啊，这 Mecanim 动画系统真的能控制 2D 动画吗？经过博主查找大量资料和亲身实践，发现 Mecanim 是可以用来控制 2D 动画的，而且由于状态机的引入，我们对动画状态的控制会变得更为简单，从写代码的角度来看，这样可以减少我们的代码量便于维护。那么好了，今天我们就来一起学习下如何使用 Mecanim 动画系统来控制 2D 动画吧！</p>
-<h1 id="传统-2d-动画的实现方式">传统 2D 动画的实现方式</h1>
-<p>在 Unity3D 中传统 2D 动画的实现方式是基于逐帧动画的原理实现的，这种实现方式在 Unity3D 没有推出 Unity2D 前甚至在 Unity2D 推出后相当长的一段时间内，基本上我们最为常用的实现方式，博主在刚开始学习 Unity3D 的时候通常是以 2D 形式来展开的，因为博主认为 2D 和 3D 在原理上基本是相通的，如果我们掌握了 2D 游戏的基本原理，那么在实现 3D 游戏的时候就会相对容易些。我们来看看一个最简单的 2D 动画的脚本实现：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-csharp" data-lang="csharp"><span class="line"><span class="cl"><span class="c1">//精灵渲染器</span>
-</span></span><span class="line"><span class="cl"><span class="kd">private</span> <span class="n">SpriteRenderer</span> <span class="n">mRenderer</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="c1">//精灵集合</span>
-</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">Sprite</span><span class="p">[]</span> <span class="n">Sprites</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="c1">//FPS,即每秒钟的画面帧数</span>
-</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kt">float</span> <span class="n">FPS</span> <span class="p">=</span> <span class="m">24</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="c1">//精灵索引</span>
-</span></span><span class="line"><span class="cl"><span class="kd">private</span> <span class="kt">int</span> <span class="n">index</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="c1">//当前时间</span>
-</span></span><span class="line"><span class="cl"><span class="kd">private</span> <span class="kt">float</span> <span class="n">currentTime</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">void</span> <span class="n">Start</span> <span class="p">()</span> 
-</span></span><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">mRenderer</span> <span class="p">=</span> <span class="n">GetComponent</span><span class="p">&lt;</span><span class="n">SpriteRenderer</span><span class="p">&gt;();</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">	
-</span></span><span class="line"><span class="cl"><span class="k">void</span> <span class="n">Update</span> <span class="p">()</span> 
-</span></span><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">//获取当前时间</span>
-</span></span><span class="line"><span class="cl">    <span class="n">currentTime</span> <span class="p">+=</span> <span class="n">Time</span><span class="p">.</span><span class="n">deltaTime</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">//如果达到了更新画面的时间</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">currentTime</span> <span class="p">&gt;=</span> <span class="m">1</span> <span class="p">/</span> <span class="n">FPS</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">//使索引增加</span>
-</span></span><span class="line"><span class="cl">        <span class="n">index</span> <span class="p">+=</span> <span class="m">1</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">//清除时间记录</span>
-</span></span><span class="line"><span class="cl">        <span class="n">currentTime</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">//当索引更新到最后一帧时,索引重置</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span><span class="p">(</span><span class="n">index</span> <span class="p">&gt;=</span> <span class="n">Sprites</span><span class="p">.</span><span class="n">Length</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">index</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">//更新画面</span>
-</span></span><span class="line"><span class="cl">    <span class="n">mRenderer</span><span class="p">.</span><span class="n">sprite</span> <span class="p">=</span> <span class="n">Sprites</span><span class="p">[</span><span class="n">index</span><span class="p">];</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>通过分析，我们可以发现这段脚本存在以下问题：</p>
-<ul>
-<li>动画维护困难：每增加一个动画就需要添加一个数组，不仅增加了动画的维护难度，同时降低了脚本的效率。</li>
-<li>状态维护困难：因为在 Update 方法里实现的是一个动画，因此当我们需要在各个动画状态间进行切换的时候，我们需要使用更多的代码来维护相关逻辑。</li>
-</ul>
-<h1 id="使用-mecanim-动画系统的实现方式">使用 Mecanim 动画系统的实现方式</h1>
-<p>为了解决传统的 2D 动画实现方式中存在的动画维护困难、状态维护困难这两个问题，我们需要一种更好的方案来实现 2D 动画的控制，这种方案需要提供较为方便的动画维护功能，即各个动画是独立的，当改变了某一个动画时，其余的动画不会发生改变。其次，这种方案需要提供较为方便的状态维护功能，即各个动画状态切换是方便的，我们可以更好地从这一种状态切换到另一种状态。关于动画状态切换，大家可以去了解下有限状态机(FSM)的概念，这里我们不做深入的探究，这里我们选择 Unity3D 的 Mecanim 动画系统，因为 Mecanim 动画系统正好解决了这两个问题。好了，下面我们来一起学习一个 2D 动画的实例：</p>
-<p>首先我们在场景中创建一个名为 PlayerController 的空物体，然后在该物体的下面增加一个精灵组件(Sprite),并将其命名为 PlayerSprite，这样做的好处是 Unity3D 将为我们自动创建较为规范的命名。好了，现在我们选择 PlayerController 这个物体，然后通过 Window -&gt; Animation 菜单打开 Animation 窗口：</p>
-<p><figure 
-	>
-	<a href="http://img.blog.csdn.net/20150301180418811" >
-		<img src="http://img.blog.csdn.net/20150301180418811"
-			
-			
-			
-            data-src="http://img.blog.csdn.net/20150301180418811"
-			alt="创建第一个动画">
-	</a>
-	
-	<figcaption>创建第一个动画</figcaption>
-	
-</figure></p>
-<p>首先我们点击 AddCurve 按钮，此时将弹出一个对话框让我们保存动画文件，这里我们存储为 <a class="link" href="mailto:Player@Idle.anim" >Player@Idle.anim</a>,并将其保存在项目目录下的 Animations\Player 目录下，这样可以方便我们维护和查找特定的动画文件。在保存完动画文件后，此时会弹出如下的界面，我们选择 PlayerSprite 节点下的 SpriteRenderer，然后选择 Sprite，因为这里我们的 2D 动画主要是通过改变 SpriteRenderer 的 Sprite 属性来实现的，最后我们点击 Sprite 节点后面的加号来完成对象的选取。此时会在动画窗口中显示时间轴和刻度线，我们将在这里完成动画的编辑。大家可以注意到默认情况下，动画面板添加了两帧，即第 1 帧和最后一帧，其总时间是 1 秒，同时我们注意到这里有一个采样率(Sample),其实这就是当前动画的 FPS 了。好了，现在我们开始制作第一个动画：</p>
-<p><figure 
-	>
-	<a href="http://img.blog.csdn.net/20150301180502756" >
-		<img src="http://img.blog.csdn.net/20150301180502756"
-			
-			
-			
-            data-src="http://img.blog.csdn.net/20150301180502756"
-			alt="动画序列">
-	</a>
-	
-	<figcaption>动画序列</figcaption>
-	
-</figure></p>
-<p>在资源文件夹中，我们可以找到当前动画的图片素材，注意到这个图片中总共有 12 帧画面，因此我们可以按照 0.05s 的间隔来分配整个时间轴，所以我们可以这样添加帧：</p>
-<p><figure 
-	>
-	<a href="http://img.blog.csdn.net/20150301180533660" >
-		<img src="http://img.blog.csdn.net/20150301180533660"
-			
-			
-			
-            data-src="http://img.blog.csdn.net/20150301180533660"
-			alt="为 Idle 动画添加帧">
-	</a>
-	
-	<figcaption>为 Idle 动画添加帧</figcaption>
-	
-</figure></p>
-<p>好了，现在我们就完成了一个 Idle 动画的制作，现在打开角色的动画控制器 PlayerController，这是 Unity3D 为我们自动创建的一个动画控制器，因为我们现在只有一个 Idle 动画，所以在 Animaotr 窗口中我们可以看到只有一个 Idle 状态，现在我们将这个状态设为默认状态。好了，现在我们可以直接运行游戏，发现在场景中角色开始循环播放 Idle 动画了。好了，现在让我们重复刚才的步骤，来完成角色的其余动画。</p>
-<p><figure 
-	>
-	<a href="http://img.blog.csdn.net/20150301180634110" >
-		<img src="http://img.blog.csdn.net/20150301180634110"
-			
-			
-			
-            data-src="http://img.blog.csdn.net/20150301180634110"
-			alt="Idle 动画效果演示">
-	</a>
-	
-	<figcaption>Idle 动画效果演示</figcaption>
-	
-</figure></p>
-<p>经过一番努力，我们现在已经完成了角色所有动画的制作，现在我们来设计角色的动画状态机：</p>
-<p><figure 
-	>
-	<a href="http://img.blog.csdn.net/20150301180705294" >
-		<img src="http://img.blog.csdn.net/20150301180705294"
-			
-			
-			
-            data-src="http://img.blog.csdn.net/20150301180705294"
-			alt="玩家角色控制器设计">
-	</a>
-	
-	<figcaption>玩家角色控制器设计</figcaption>
-	
-</figure></p>
-<p>设计好角色的动画状态机后我们开始来编写脚本，以实现角色动画的控制：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-csharp" data-lang="csharp"><span class="line"><span class="cl"><span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="nn">System.Collections</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">class</span> <span class="nc">PlayerController</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">enum</span> <span class="n">PlayerState</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">Idle</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">Move</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">LightAttack</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">WeightAttack</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">PlayerState</span> <span class="n">State</span><span class="p">=</span><span class="n">PlayerState</span><span class="p">.</span><span class="n">Idle</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">//玩家移动速度</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">float</span> <span class="n">WalkSpeed</span> <span class="p">=</span> <span class="m">0.75f</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">float</span> <span class="n">RunSpeed</span> <span class="p">=</span> <span class="m">1.5f</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">//玩家跳跃力的强度</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">float</span> <span class="n">JumpForce</span> <span class="p">=</span> <span class="m">200f</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">//位置限制</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">float</span> <span class="n">MinX</span> <span class="p">=</span> <span class="p">-</span><span class="m">5.80f</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">float</span> <span class="n">MaxX</span> <span class="p">=</span>  <span class="m">5.80f</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">float</span> <span class="n">MinY</span> <span class="p">=</span> <span class="p">-</span><span class="m">1.80f</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">float</span> <span class="n">MaxY</span> <span class="p">=</span>  <span class="m">0.35f</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">//玩家朝向，默认朝右</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">bool</span> <span class="n">isFaceRight</span> <span class="p">=</span> <span class="kc">true</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">//动画组件</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Animator</span> <span class="n">mAnim</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">//2D刚体</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Rigidbody2D</span> <span class="n">mRig2D</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">void</span> <span class="n">Start</span> <span class="p">()</span> 
-</span></span><span class="line"><span class="cl">    <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">mAnim</span><span class="p">=</span><span class="n">GetComponent</span><span class="p">&lt;</span><span class="n">Animator</span><span class="p">&gt;();</span>
-</span></span><span class="line"><span class="cl">        <span class="n">mRig2D</span><span class="p">=</span><span class="n">GetComponent</span><span class="p">&lt;</span><span class="n">Rigidbody2D</span><span class="p">&gt;();</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">void</span> <span class="n">Update</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">SpriteMove</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">        <span class="n">SpriteAttack</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">        <span class="n">SpriteJump</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">        <span class="n">SpriteIdle</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
-</span></span><span class="line"><span class="cl">    <span class="cs">/// 精灵Idle</span>
-</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="k">void</span> <span class="n">SpriteIdle</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">//当玩家无任何操作时恢复到Idle状态</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(!</span><span class="n">Input</span><span class="p">.</span><span class="n">anyKey</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mAnim</span><span class="p">.</span><span class="n">SetBool</span><span class="p">(</span><span class="s">&#34;Jump&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mAnim</span><span class="p">.</span><span class="n">SetBool</span><span class="p">(</span><span class="s">&#34;Attack&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mAnim</span><span class="p">.</span><span class="n">SetBool</span><span class="p">(</span><span class="s">&#34;BigAttack&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mAnim</span><span class="p">.</span><span class="n">SetBool</span><span class="p">(</span><span class="s">&#34;Skill&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mAnim</span><span class="p">.</span><span class="n">SetBool</span><span class="p">(</span><span class="s">&#34;BigSkill&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">State</span><span class="p">=</span><span class="n">PlayerState</span><span class="p">.</span><span class="n">Idle</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
-</span></span><span class="line"><span class="cl">    <span class="cs">/// 精灵攻击</span>
-</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="k">void</span> <span class="n">SpriteAttack</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">//轻击，键位J</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span><span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">GetKey</span><span class="p">(</span><span class="n">KeyCode</span><span class="p">.</span><span class="n">J</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mAnim</span><span class="p">.</span><span class="n">SetBool</span><span class="p">(</span><span class="s">&#34;Attack&#34;</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">State</span><span class="p">=</span><span class="n">PlayerState</span><span class="p">.</span><span class="n">LightAttack</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">        <span class="c1">//重击，键位K</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span><span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">GetKey</span><span class="p">(</span><span class="n">KeyCode</span><span class="p">.</span><span class="n">K</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mAnim</span><span class="p">.</span><span class="n">SetBool</span><span class="p">(</span><span class="s">&#34;BigAttack&#34;</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">State</span><span class="p">=</span><span class="n">PlayerState</span><span class="p">.</span><span class="n">WeightAttack</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;summary&gt;</span>
-</span></span><span class="line"><span class="cl">    <span class="cs">/// 精灵跳跃</span>
-</span></span><span class="line"><span class="cl">    <span class="cs">/// &lt;/summary&gt;</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="k">void</span> <span class="n">SpriteJump</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">GetKey</span><span class="p">(</span><span class="n">KeyCode</span><span class="p">.</span><span class="n">I</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mAnim</span><span class="p">.</span><span class="n">SetBool</span><span class="p">(</span><span class="s">&#34;Jump&#34;</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mRig2D</span><span class="p">.</span><span class="n">AddForce</span><span class="p">(</span><span class="k">new</span> <span class="n">Vector2</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="n">Time</span><span class="p">.</span><span class="n">deltaTime</span> <span class="p">*</span> <span class="n">JumpForce</span><span class="p">),</span> <span class="n">ForceMode2D</span><span class="p">.</span><span class="n">Impulse</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="k">void</span> <span class="n">SpriteMove</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">h</span> <span class="p">=</span> <span class="n">Input</span><span class="p">.</span><span class="n">GetAxis</span><span class="p">(</span><span class="s">&#34;Horizontal&#34;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">v</span> <span class="p">=</span> <span class="n">Input</span><span class="p">.</span><span class="n">GetAxis</span><span class="p">(</span><span class="s">&#34;Vertical&#34;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">        <span class="n">Vector2</span> <span class="n">mPos</span> <span class="p">=</span> <span class="n">mRig2D</span><span class="p">.</span><span class="n">position</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">        <span class="n">mAnim</span><span class="p">.</span><span class="n">SetFloat</span><span class="p">(</span><span class="s">&#34;Speed&#34;</span><span class="p">,</span> <span class="n">Mathf</span><span class="p">.</span><span class="n">Sqrt</span><span class="p">(</span><span class="n">h</span> <span class="p">*</span> <span class="n">h</span> <span class="p">+</span> <span class="n">v</span> <span class="p">*</span> <span class="n">v</span><span class="p">));</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">mPosX</span><span class="p">,</span> <span class="n">mPosY</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">Mathf</span><span class="p">.</span><span class="n">Sqrt</span><span class="p">(</span><span class="n">h</span> <span class="p">*</span> <span class="n">h</span> <span class="p">+</span> <span class="n">v</span> <span class="p">*</span> <span class="n">v</span><span class="p">)</span> <span class="p">&gt;</span> <span class="m">0.5f</span><span class="p">){</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mPosX</span> <span class="p">=</span> <span class="n">mPos</span><span class="p">.</span><span class="n">x</span> <span class="p">+</span> <span class="n">h</span> <span class="p">*</span> <span class="n">Time</span><span class="p">.</span><span class="n">deltaTime</span> <span class="p">*</span> <span class="n">RunSpeed</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mPosY</span> <span class="p">=</span> <span class="n">mPos</span><span class="p">.</span><span class="n">y</span> <span class="p">+</span> <span class="n">v</span> <span class="p">*</span> <span class="n">Time</span><span class="p">.</span><span class="n">deltaTime</span> <span class="p">*</span> <span class="n">RunSpeed</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span><span class="k">else</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mPosX</span> <span class="p">=</span> <span class="n">mPos</span><span class="p">.</span><span class="n">x</span> <span class="p">+</span> <span class="n">h</span> <span class="p">*</span> <span class="n">Time</span><span class="p">.</span><span class="n">deltaTime</span> <span class="p">*</span> <span class="n">WalkSpeed</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">            <span class="n">mPosY</span> <span class="p">=</span> <span class="n">mPos</span><span class="p">.</span><span class="n">y</span> <span class="p">+</span> <span class="n">v</span> <span class="p">*</span> <span class="n">Time</span><span class="p">.</span><span class="n">deltaTime</span> <span class="p">*</span> <span class="n">WalkSpeed</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">        <span class="n">mRig2D</span><span class="p">.</span><span class="n">MovePosition</span><span class="p">(</span><span class="k">new</span> <span class="n">Vector2</span><span class="p">(</span><span class="n">mPosX</span><span class="p">,</span> <span class="n">mPosY</span><span class="p">));</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">h</span> <span class="p">&gt;</span> <span class="m">0</span> <span class="p">&amp;&amp;</span> <span class="p">!</span><span class="n">isFaceRight</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">FlipSrite</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">h</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">&amp;&amp;</span> <span class="n">isFaceRight</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">FlipSrite</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">void</span> <span class="n">FlipSrite</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span><span class="p">(</span><span class="n">isFaceRight</span><span class="p">){</span>
-</span></span><span class="line"><span class="cl">            <span class="n">transform</span><span class="p">.</span><span class="n">rotation</span><span class="p">=</span><span class="n">Quaternion</span><span class="p">.</span><span class="n">Euler</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">180</span><span class="p">,</span><span class="m">0</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">isFaceRight</span><span class="p">=</span><span class="kc">false</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span><span class="k">else</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">transform</span><span class="p">.</span><span class="n">rotation</span><span class="p">=</span><span class="n">Quaternion</span><span class="p">.</span><span class="n">Euler</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">isFaceRight</span><span class="p">=</span><span class="kc">true</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>好了，现在我们可以来看看最终的效果，博主这里是想利用这些素材来制作一个横板过关的游戏，可是因为文章篇幅有限，所以这部分内容只能留到以后再和大家分享了。</p>
-<p><figure 
-	>
-	<a href="http://img.blog.csdn.net/20150301180829879" >
-		<img src="http://img.blog.csdn.net/20150301180829879"
-			
-			
-			
-            data-src="http://img.blog.csdn.net/20150301180829879"
-			alt="最终效果演示">
-	</a>
-	
-	<figcaption>最终效果演示</figcaption>
-	
-</figure></p>
-<h1 id="mecanim-动画系统应用扩展">Mecanim 动画系统应用扩展</h1>
-<p>好了，到现在为止，基于 Mecanim 动画系统的 2D 动画控制基本上讲解完了。下面我们说说 Mecaanim 动画系统应用扩展。通过前面的学习，我们知道 Unity2D 使用的 Mecanim 动画系统主要是通过改变游戏体的属性来实现某种特定的动画效果的，例如我们这里的动画是通过改变角色精灵附加的 SpriteRenderer 组件的 Sprite 属性来实现的，因此从本质上来说 Unity2D 的动画控制器是一种属性动画。总体来说，Unity2D 可以实现以下类型的动画：</p>
-<ul>
-<li>位移动画：通过 Transform 组件的 Position 属性实现</li>
-<li>旋转动画：通过 Transform 组件的 Rotation 属性实现</li>
-<li>伸缩动画：通过 Transform 组件的 Scale 属性实现</li>
-<li>渐变动画：通过更改指定组件的颜色或材质实现</li>
-<li>脚本动画：通过更改指定脚本的变量或字段实现</li>
-</ul>
-<p>好了，这就是今天这篇文章的全部内容了，希望大家喜欢！</p>
-</section>
-
-
-    <footer class="article-footer">
-
-    
-
-<div style="padding: 10px 0; margin: 20px auto; width: 100%; font-size:16px; text-align: center;">
-    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
-        <span>打赏</span></button>
-    <div id="QR" style="display: none;">
-        
-        <div id="wechat" style="display: inline-block">
-            <a class="fancybox" rel="group">
-                <img id="wechat_qr" src="/imgs/reward/wechat.jpg" alt="wechat"></a>
-            <p>微信打赏</p>
-        </div>
-        
-        <div id="wechat" style="display: inline-block">
-            <a class="fancybox" rel="group">
-                <img id="alipay_qr" src="/imgs/reward/alipay.jpg" alt="alipay"></a>
-            <p>支付宝打赏</p>
-        </div>
-        
-    </div>
-</div>
-
-
-    
-    <section class="article-tags">
-        
-            <a href="/tags/mecanim/">Mecanim</a>
-        
-            <a href="/tags/%E5%8A%A8%E7%94%BB/">动画</a>
-        
-            <a href="/tags/unity3d/">Unity3D</a>
-        
-    </section>
-
-
-    <div class="social-share"></div>
-    
-    <section class="article-footer-notes">
-
-        
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
-</svg>
-
-
-
-        <span>
-            BY-NC-SA 4.0
-        </span>
-        
-
-        
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <polyline points="12 7 12 12 15 15" />
-</svg>
-
-
-
-        <span>
-            最后更新 2024-02-27
-        </span>
-        
-    </section>
-</footer>
-
-
-    
-        <link 
-                rel="stylesheet" 
-                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
-            ><script 
-                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
-                defer
-                >
-            </script><script 
-                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
-                defer
-                >
-            </script><script>
-    window.addEventListener("DOMContentLoaded", () => {
-        renderMathInElement(document.querySelector(`.article-content`), {
-            delimiters: [
-                { left: "$$", right: "$$", display: true },
-                { left: "$", right: "$", display: false },
-                { left: "\\(", right: "\\)", display: false },
-                { left: "\\[", right: "\\]", display: true }
-            ]
-        });})
-</script>
-    
-</article>
-
-    
-
-    <aside class="related-contents--wrapper">
-    
-    
-    
-        <h2 class="section-title">相关文章</h2>
-        <div class="related-contents">
-            <div class="flex article-list--tile">
-                
-                    
-<article class="has-image">
-    <a href="/posts/1124152964/">
-        
-        
-            <div class="article-image">
-                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=1124152964" loading="lazy" data-key="1124152964" data-hash="" />
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">解析 OBJ 模型并将其加载到 Unity3D 场景中</h2>
-        </div>
-    </a>
-</article>
-                
-                    
-<article class="has-image">
-    <a href="/posts/3019914405/">
-        
-        
-            <div class="article-image">
-                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3019914405" loading="lazy" data-key="3019914405" data-hash="" />
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">Unity3D 游戏开发之 Unity3D 场景编辑器扩展开发</h2>
-        </div>
-    </a>
-</article>
-                
-                    
-<article class="has-image">
-    <a href="/posts/927393529/">
-        
-        
-            <div class="article-image">
-                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=927393529" loading="lazy" data-key="927393529" data-hash="" />
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">Unity3D 游戏场景优化系列之批处理</h2>
-        </div>
-    </a>
-</article>
-                
-                    
-<article class="has-image">
-    <a href="/posts/582264328/">
-        
-        
-            <div class="article-image">
-                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=582264328" loading="lazy" data-key="582264328" data-hash="" />
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">Unity3D 游戏开发之 SQLite 让数据库开发更简单</h2>
-        </div>
-    </a>
-</article>
-                
-                    
-<article class="has-image">
-    <a href="/posts/1467630055/">
-        
-        
-            <div class="article-image">
-                <img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=1467630055" loading="lazy" data-key="1467630055" data-hash="" />
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">Unity3D 游戏开发之使用 AssetBundle 和 Xml 实现场景的动态加载</h2>
-        </div>
-    </a>
-</article>
-                
-            </div>
-        </div>
-    
-</aside>
-
-     
-    
-        
-    <script src='//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js'></script>
-<div id="waline" class="waline-container"></div>
-<style>
-    .waline-container {
-        background-color: var(--card-background);
-        border-radius: var(--card-border-radius);
-        box-shadow: var(--shadow-l1);
-        padding: var(--card-padding);
-    }
-    .waline-container .vcount {
-        color: var(--card-text-color-main);
-    }
-</style>
-
-
-    <script>
-        
-        var waline = new Waline({
-            el: '#waline',
-            serverURL: 'https:\/\/waline.yuanpei.me\/',
-            lang: 'zh',
-            dark: 'auto',
-            path: window.location.href,
-            requiredMeta: ['nick','mail'],
-        });
-    </script>
-
-
-
-    
-
-    <footer class="site-footer">
-    <section class="copyright">
-        &copy; 
-        
-            2014 - 
-        
-        2024 元视角
-    </section>
-    
-    <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> v0.126.1 <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.7.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> <br />
-        已创作 274 篇文章，共计 1038468 字 <br />
-        
-    </section>
-    <section class="written-by">
-        <img src="/imgs/Written-By-Human-Not-By-AI-Badge-white.svg" />
-    </section>
-</footer>
-
-
-    
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-    
-    <div class="pswp__bg"></div>
-
-    
-    <div class="pswp__scroll-wrap">
-
-        
-        <div class="pswp__container">
-            <div class="pswp__item"></div>
-            <div class="pswp__item"></div>
-            <div class="pswp__item"></div>
-        </div>
-
-        
-        <div class="pswp__ui pswp__ui--hidden">
-
-            <div class="pswp__top-bar">
-
-                
-
-                <div class="pswp__counter"></div>
-
-                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-
-                <button class="pswp__button pswp__button--share" title="Share"></button>
-
-                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-
-                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-
-                
-                
-                <div class="pswp__preloader">
-                    <div class="pswp__preloader__icn">
-                        <div class="pswp__preloader__cut">
-                            <div class="pswp__preloader__donut"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-                <div class="pswp__share-tooltip"></div>
-            </div>
-
-            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-            </button>
-
-            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-            </button>
-
-            <div class="pswp__caption">
-                <div class="pswp__caption__center"></div>
-            </div>
-
-        </div>
-
-    </div>
-
-</div><script 
-                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
-                defer
-                >
-            </script><script 
-                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
-                defer
-                >
-            </script><link 
-                rel="stylesheet" 
-                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
-            ><link 
-                rel="stylesheet" 
-                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
-            >
-
-            </main>
-    
-    
-    <aside class="sidebar right-sidebar sticky">
-        
-            <form action="/search/" class="search-form widget" >
-        <p>
-            <label>搜索</label>
-            <input name="keyword" required placeholder="请输入关键词" />
-        
-            <button title="搜索">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="10" cy="10" r="7" />
-  <line x1="21" y1="21" x2="15" y2="15" />
-</svg>
-
-
-
-            </button>
-        </p>
-    </form>
-        
-            
-    <section class="widget archives">
-        
-        <h2 class="widget-title section-title">目录</h2>
-        
-        <div class="widget--toc">
-            <nav id="TableOfContents">
-  <ol>
-    <li><a href="#传统-2d-动画的实现方式">传统 2D 动画的实现方式</a></li>
-    <li><a href="#使用-mecanim-动画系统的实现方式">使用 Mecanim 动画系统的实现方式</a></li>
-    <li><a href="#mecanim-动画系统应用扩展">Mecanim 动画系统应用扩展</a></li>
-  </ol>
-</nav>
-        </div>
-    </section>
-
-        
-            <section class="widget archives">
-        
-        <h2 class="widget-title section-title">归档</h2>
-
-        
-        
-        
-        
-        
-        <div class="widget-archive--list">
-            <div class="archives-year">
-                    <a href="/archives/#2024">
-                        
-                            <span class="year">2024</span>
-                            <span class="count">14</span>
-                        
-                    </a> 
-                </div>
-            <div class="archives-year">
-                    <a href="/archives/#2023">
-                        
-                            <span class="year">2023</span>
-                            <span class="count">11</span>
-                        
-                    </a> 
-                </div>
-            <div class="archives-year">
-                    <a href="/archives/#2022">
-                        
-                            <span class="year">2022</span>
-                            <span class="count">27</span>
-                        
-                    </a> 
-                </div>
-            <div class="archives-year">
-                    <a href="/archives/#2021">
-                        
-                            <span class="year">2021</span>
-                            <span class="count">42</span>
-                        
-                    </a> 
-                </div>
-            <div class="archives-year">
-                    <a href="/archives/#2020">
-                        
-                            <span class="year">2020</span>
-                            <span class="count">26</span>
-                        
-                    </a> 
-                </div>
-            <div class="archives-year">
-                    <a href="/archives/#2019">
-                        
-                            <span class="year">更多</span>
-                        
-                    </a> 
-                </div>
-            
-        </div>
-    </section>
-        
-            <section class="widget archives">
-    
-    <h2 class="widget-title section-title">日历</h2>
-    <div class="widget--toc" style="background-color: white; border-radius: 15px; padding: 10px; margin: 20px auto; width: 300px; height: 480px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
-        <img id="calendar-cover" src="" style="object-fit: cover; width: 100%; height: 100%;" />
-    </div>
-</section>
-<script>
-    const getImageUrl = (date) => {
-        const currentYear = date.getFullYear();
-        const currentMonth = String(date.getMonth() + 1).padStart(2, '0');
-        const currentDate = String(date.getDate()).padStart(2, '0');
-        return `https://img.owspace.com/Public/uploads/Download/${currentYear}/${currentMonth}${currentDate}.jpg`
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const eleImg = document.querySelector("#calendar-cover");
-        if (document.location.pathname.startsWith('/posts')) {
-            let publishedTime = document.querySelector('meta[property="article:published_time"]').content;
-            publishedTime = publishedTime.substring(0, 10);
-            eleImg.src = getImageUrl(new Date(publishedTime))
-        } else {
-            eleImg.src = getImageUrl(new Date())
-        }
-    });
-    </script>
-        
-            <section class="widget tagCloud">
-    
-    <h2 class="widget-title section-title">标签云</h2>
-
-    <div class="tagCloud-tags">
-        
-            <a href="/tags/wsl/" class="font_size_2">
-                WSL
-            </a>
-        
-            <a href="/tags/%E5%AD%A4%E7%8B%AC/" class="font_size_1">
-                孤独
-            </a>
-        
-            <a href="/tags/%E5%81%A5%E5%BA%B7%E7%A0%81/" class="font_size_1">
-                健康码
-            </a>
-        
-            <a href="/tags/ar/" class="font_size_3">
-                AR
-            </a>
-        
-            <a href="/tags/%E6%9E%B6%E6%9E%84/" class="font_size_2">
-                架构
-            </a>
-        
-            <a href="/tags/aigc/" class="font_size_2">
-                AIGC
-            </a>
-        
-            <a href="/tags/websocket/" class="font_size_3">
-                WebSocket
-            </a>
-        
-            <a href="/tags/%E6%80%BB%E7%BB%93/" class="font_size_2">
-                总结
-            </a>
-        
-            <a href="/tags/%E6%97%A0%E9%97%AE%E8%A5%BF%E4%B8%9C/" class="font_size_1">
-                无问西东
-            </a>
-        
-            <a href="/tags/web-api/" class="font_size_1">
-                Web API
-            </a>
-        
-            <a href="/tags/msbuild/" class="font_size_1">
-                MSBuild
-            </a>
-        
-            <a href="/tags/hls/" class="font_size_1">
-                HLS
-            </a>
-        
-            <a href="/tags/easyar/" class="font_size_2">
-                EasyAR
-            </a>
-        
-            <a href="/tags/%E4%BA%8C%E7%BB%B4%E7%A0%81/" class="font_size_1">
-                二维码
-            </a>
-        
-            <a href="/tags/%E8%A1%8C%E4%B8%9A/" class="font_size_1">
-                行业
-            </a>
-        
-            <a href="/tags/%E6%89%93%E5%8D%B0/" class="font_size_2">
-                打印
-            </a>
-        
-            <a href="/tags/diagnostics/" class="font_size_1">
-                Diagnostics
-            </a>
-        
-            <a href="/tags/%E7%94%B5%E5%BD%B1/" class="font_size_12">
-                电影
-            </a>
-        
-            <a href="/tags/%E5%85%AB%E5%8D%A6/" class="font_size_1">
-                八卦
-            </a>
-        
-            <a href="/tags/%E6%99%BA%E8%83%BD%E5%AE%B6%E5%B1%85/" class="font_size_1">
-                智能家居
-            </a>
-        
-            <a href="/tags/%E8%8B%8F%E8%BD%BC/" class="font_size_1">
-                苏轼
-            </a>
-        
-            <a href="/tags/%E8%AF%AD%E6%B3%95/" class="font_size_1">
-                语法
-            </a>
-        
-            <a href="/tags/%E8%B4%BE%E7%BB%B4%E6%96%AF/" class="font_size_1">
-                贾维斯
-            </a>
-        
-            <a href="/tags/envoy/" class="font_size_8">
-                Envoy
-            </a>
-        
-            <a href="/tags/svn/" class="font_size_1">
-                SVN
-            </a>
-        
-
-        <a href="/tags" class="font_size_9999">
-            更多
-        </a>
-    </div>
-</section>
-        
-    </aside>
-
-
-        </div>
-        <script 
-                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
-                
-                >
-            </script>
-<script type="text/javascript" src="/ts/main.js" defer></script>
-<script type="text/javascript" src="/ts/badge.js"></script>
-    <script type="text/javascript">
-        let createBadge = window.createBadge;
-        createBadge('Git', '7f1e7a2', '#35495e', '#ffc107');
-        createBadge('Hugo', 'v0.126.1', '#35495e', '#41b883');
-        
-    </script><script type="text/javascript" src="/ts/chat-widget.js" defer></script>
-
-
-
-    </body>
-</html>
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=referrer content="no-referrer"><meta name=viewport content='width=device-width,initial-scale=1'><meta http-equiv=content-language content='zh-CN'><link rel=apple-touch-icon href=/imgs/avatar.jpg><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="black"><link rel=icon type=image/x-icon href=/imgs/favicon.ico><link rel=icon type=image/png href=/imgs/favicon.png><meta name=description content='今天文章介绍了在Unity3D中如何使用Mecanim动画系统来控制2D动画。传统的2D动画实现方式是基于逐帧动画，但存在动画和状态维护困难。通过使用Mecanim动画系统，可以更方便地管理动画和状态切换，减少代码量。文章展示了如何创建2D动画并设计动画状态机，以及编写脚本来控制角色动画。最后指出Mecanim动画系统可扩展到位移、旋转、伸缩、渐变和脚本动画。整体内容涵盖了2D动画控制的基本知识和扩展应用。'><meta name=keywords content='Mecanim,动画,Unity3D'><meta name=author content="飞鸿踏雪"><title>使用 Mecanim 动画系统来控制 2D 动画 - 元视角</title>
+<link rel=canonical href=https://blog.yuanpei.me/posts/2583252123/><link rel=stylesheet href=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css><meta property='og:title' content='使用 Mecanim 动画系统来控制 2D 动画 - 元视角'><meta property='og:description' content='今天文章介绍了在Unity3D中如何使用Mecanim动画系统来控制2D动画。传统的2D动画实现方式是基于逐帧动画，但存在动画和状态维护困难。通过使用Mecanim动画系统，可以更方便地管理动画和状态切换，减少代码量。文章展示了如何创建2D动画并设计动画状态机，以及编写脚本来控制角色动画。最后指出Mecanim动画系统可扩展到位移、旋转、伸缩、渐变和脚本动画。整体内容涵盖了2D动画控制的基本知识和扩展应用。'><meta property='og:url' content='https://blog.yuanpei.me/posts/2583252123/'><meta property='og:site_name' content='元视角'><meta property='og:type' content='article'><meta property='article:section' content='Posts'><meta property='article:tag' content='Mecanim'><meta property='article:tag' content='动画'><meta property='article:tag' content='Unity3D'><meta property='article:published_time' content='2015-02-11T13:35:58+00:00'><meta property='article:modified_time' content='2024-02-27T15:48:33+08:00'><meta property='og:image' content='https://blog.yuanpei.me/'><meta name=twitter:title content="使用 Mecanim 动画系统来控制 2D 动画 - 元视角"><meta name=twitter:description content="今天文章介绍了在Unity3D中如何使用Mecanim动画系统来控制2D动画。传统的2D动画实现方式是基于逐帧动画，但存在动画和状态维护困难。通过使用Mecanim动画系统，可以更方便地管理动画和状态切换，减少代码量。文章展示了如何创建2D动画并设计动画状态机，以及编写脚本来控制角色动画。最后指出Mecanim动画系统可扩展到位移、旋转、伸缩、渐变和脚本动画。整体内容涵盖了2D动画控制的基本知识和扩展应用。"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://blog.yuanpei.me/'><meta name=msvalidate.01 content="713A48A3FE17D4841C292A6B3942EB4C"><meta name=baidu-site-verification content="c50FGqYOSh"><meta name=google-site-verification content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s"><script src=//instant.page/5.1.0 type=module integrity=sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex
+on-phone--column extended"><div id=article-toolbar><a href=/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
+<span>返回</span></a></div><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header class=site-info><figure class=site-avatar><a href=/><img src=/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>👌</span></figure><h1 class=site-name><a href=/>元视角</a></h1><h2 class=site-description>起风了，唯有努力生存</h2><ol class=social-menu><li><a href=mailto:qinyuanpei@163.com rel=noreferrer target=_blank title=Mail><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg></a></li><li><a href=https://github.com/qinyuanpei rel=noreferrer target=_blank title=GitHub><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://www.zhihu.com/people/qinyuanpei rel=noreferrer target=_blank title=Zhihu><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 6h6v12h-2l-2 2-1-2h-1z"/><path d="M4 12h6.5"/><path d="M10.5 6h-5"/><path d="M6 4c-.5 2.5-1.5 3.5-2.5 4.5"/><path d="M8 6v7c0 4.5-2 5.5-4 7"/><path d="M11 18l-3-5"/></svg></a></li><li><a href=https://www.douban.com/people/60029335 rel=noreferrer target=_blank title=Douban><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h16"/><path d="M5 4h14"/><path d="M8 8h8a2 2 0 012 2v2a2 2 0 01-2 2H8a2 2 0 01-2-2v-2a2 2 0 012-2z"/><path d="M16 14l-2 6"/><path d="M8 17l1 3"/></svg></a></li><li><a href=https://weibo.com/1278609231/profile rel=noreferrer target=_blank title=Weibo><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 14.127C19 17.2 15.498 20 11 20c-4.126.0-8-2.224-8-5.565.0-1.78.984-3.737 2.7-5.567 2.362-2.51 5.193-3.687 6.551-2.238.415.44.752 1.39.749 2.062 2-1.615 4.308.387 3.5 2.693 1.26.557 2.5.538 2.5 2.742z"/><path d="M15 4h1a5 5 0 015 5v1"/></svg></a></li><li><a href=/index.xml rel=noreferrer target=_blank title=RSS><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="5" cy="19" r="1"/><path d="M4 4a16 16 0 0116 16"/><path d="M4 11a9 9 0 019 9"/></svg></a></li></ol></header><ol class=menu id=main-menu><li><a href=/><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>首页</span></a></li><li><a href=/archives><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>归档</span></a></li><li><a href=/works><!doctype html><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style/></defs><path d="M843.093333 815.36l-189.44-294.826667A85.333333 85.333333.0 01640 474.453333V170.666667h21.333333a21.333333 21.333333.0 0021.333334-21.333334v-42.666666a21.333333 21.333333.0 00-21.333334-21.333334H362.666667a21.333333 21.333333.0 00-21.333334 21.333334v42.666666a21.333333 21.333333.0 0021.333334 21.333334H384V474.88a85.333333 85.333333.0 01-13.653333 46.08l-189.44 294.826667a64.426667 64.426667.0 000 66.56l13.653333 24.32a64.853333 64.853333.0 0055.466667 32h525.226666a64.853333 64.853333.0 0055.466667-32L844.8 881.92a63.573333 63.573333.0 00-1.706667-66.56zm-400.64-248.32a173.226667 173.226667.0 0026.88-92.16V170.666667h85.333334v303.786666a167.68 167.68.0 0027.306666 92.16l74.24 116.053334H367.786667z" p-id="1250" fill="#8a8a8a"/></svg>
+<span>作品</span></a></li><li><a href=/search><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>搜索</span></a></li><li><a href=/links><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572 12 20l-7.5-7.428A5 5 0 1112 6.006a5 5 0 117.5 6.572"/><path d="M12 6 8.707 9.293a1 1 0 000 1.414l.543.543c.69.69 1.81.69 2.5.0l1-1a3.182 3.182.0 014.5.0l2.25 2.25"/><path d="M12.5 15.5l2 2"/><path d="M15 13l2 2"/></svg>
+<span>友链</span></a></li><li class=current><a href=/about><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+<span>关于</span></a></li><li id=dark-mode-toggle><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14.828 14.828A4 4 0 109.172 9.172a4 4 0 005.656 5.656z"/><path d="M6.343 17.657l-1.414 1.414"/><path d="M6.343 6.343 4.929 4.929"/><path d="M17.657 6.343l1.414-1.414"/><path d="M17.657 17.657l1.414 1.414"/><path d="M4 12H2"/><path d="M12 4V2"/><path d="M20 12h2"/><path d="M12 20v2"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3c.132.0.263.0.393.0a7.5 7.5.0 007.92 12.446A9 9 0 1112 2.992z"/><path d="M17 4a2 2 0 002 2 2 2 0 00-2 2 2 2 0 00-2-2 2 2 0 002-2"/><path d="M19 11h2m-1-1v2"/></svg>
+<span id=dark-mode-text>夜间模式</span></li></ol></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/>游戏开发</a></header><h2 class=article-title><a href=/posts/2583252123/>使用 Mecanim 动画系统来控制 2D 动画</a></h2><footer class=article-time><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>2015-02-11</time></div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 6 分钟</time></div></footer></div></header><div class=post-ai><div class=ai-title><i class=ai-title-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/><path d="M9 16c1 .667 2 1 3 1s2-.333 3-1"/><path d="M9 7 8 3"/><path d="M15 7l1-4"/><path d="M9 12v-1"/><path d="M15 12v-1"/></svg></i><div class=ai-title-text>AI 摘要</div></div><div id=ai-explanation class=ai-explanation></div><div class="ai-explanation ai-explanation-content">今天文章介绍了在Unity3D中如何使用Mecanim动画系统来控制2D动画。传统的2D动画实现方式是基于逐帧动画，但存在动画和状态维护困难。通过使用Mecanim动画系统，可以更方便地管理动画和状态切换，减少代码量。文章展示了如何创建2D动画并设计动画状态机，以及编写脚本来控制角色动画。最后指出Mecanim动画系统可扩展到位移、旋转、伸缩、渐变和脚本动画。整体内容涵盖了2D动画控制的基本知识和扩展应用。</div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector(".ai-explanation-content").textContent;new TypeIt("#ai-explanation",{strings:e,speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><section class=article-content><p>各位朋友，大家好，我是秦元培，欢迎大家关注我的博客，我的博客地址是<a class=link href=http://blog.csdn.net/qinyuanpei target=_blank rel=noopener>http://blog.csdn.net/qinyuanpei</a>。今天我想和大家分享的话题是在 Unity3D 中使用 Mecanim 动画系统来控制 2D 动画。</p><p>相信在大家的印象中，Mecanim 动画系统主要运用在 3D 动画中，因为 Mecanim 动画系统提供了像动画重定向、人体骨骼动画等 3D 动画的特性，那么 Unity3D 的 Mecanim 动画系统能不能用来控制 2D 动画呢？如果在以前，博主和大家的理解是一样的，认为 Mecanim 只能运用到 3D 动画中，对于 2D 动画只能使用传统的逐帧动画和骨骼动画。可是前不久有位朋友问我，为什么不使用动画组件来控制 2D 动画呢？博主心想啊，这 Mecanim 动画系统真的能控制 2D 动画吗？经过博主查找大量资料和亲身实践，发现 Mecanim 是可以用来控制 2D 动画的，而且由于状态机的引入，我们对动画状态的控制会变得更为简单，从写代码的角度来看，这样可以减少我们的代码量便于维护。那么好了，今天我们就来一起学习下如何使用 Mecanim 动画系统来控制 2D 动画吧！</p><h1 id=传统-2d-动画的实现方式>传统 2D 动画的实现方式</h1><p>在 Unity3D 中传统 2D 动画的实现方式是基于逐帧动画的原理实现的，这种实现方式在 Unity3D 没有推出 Unity2D 前甚至在 Unity2D 推出后相当长的一段时间内，基本上我们最为常用的实现方式，博主在刚开始学习 Unity3D 的时候通常是以 2D 形式来展开的，因为博主认为 2D 和 3D 在原理上基本是相通的，如果我们掌握了 2D 游戏的基本原理，那么在实现 3D 游戏的时候就会相对容易些。我们来看看一个最简单的 2D 动画的脚本实现：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=c1>//精灵渲染器</span>
+</span></span><span class=line><span class=cl><span class=kd>private</span> <span class=n>SpriteRenderer</span> <span class=n>mRenderer</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=c1>//精灵集合</span>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=n>Sprite</span><span class=p>[]</span> <span class=n>Sprites</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=c1>//FPS,即每秒钟的画面帧数</span>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=kt>float</span> <span class=n>FPS</span> <span class=p>=</span> <span class=m>24</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=c1>//精灵索引</span>
+</span></span><span class=line><span class=cl><span class=kd>private</span> <span class=kt>int</span> <span class=n>index</span> <span class=p>=</span> <span class=m>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=c1>//当前时间</span>
+</span></span><span class=line><span class=cl><span class=kd>private</span> <span class=kt>float</span> <span class=n>currentTime</span> <span class=p>=</span> <span class=m>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>void</span> <span class=n>Start</span> <span class=p>()</span> 
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>mRenderer</span> <span class=p>=</span> <span class=n>GetComponent</span><span class=p>&lt;</span><span class=n>SpriteRenderer</span><span class=p>&gt;();</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>	
+</span></span><span class=line><span class=cl><span class=k>void</span> <span class=n>Update</span> <span class=p>()</span> 
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//获取当前时间</span>
+</span></span><span class=line><span class=cl>    <span class=n>currentTime</span> <span class=p>+=</span> <span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//如果达到了更新画面的时间</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span><span class=p>(</span><span class=n>currentTime</span> <span class=p>&gt;=</span> <span class=m>1</span> <span class=p>/</span> <span class=n>FPS</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//使索引增加</span>
+</span></span><span class=line><span class=cl>        <span class=n>index</span> <span class=p>+=</span> <span class=m>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//清除时间记录</span>
+</span></span><span class=line><span class=cl>        <span class=n>currentTime</span> <span class=p>=</span> <span class=m>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//当索引更新到最后一帧时,索引重置</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span><span class=p>(</span><span class=n>index</span> <span class=p>&gt;=</span> <span class=n>Sprites</span><span class=p>.</span><span class=n>Length</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>index</span> <span class=p>=</span> <span class=m>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>//更新画面</span>
+</span></span><span class=line><span class=cl>    <span class=n>mRenderer</span><span class=p>.</span><span class=n>sprite</span> <span class=p>=</span> <span class=n>Sprites</span><span class=p>[</span><span class=n>index</span><span class=p>];</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>通过分析，我们可以发现这段脚本存在以下问题：</p><ul><li>动画维护困难：每增加一个动画就需要添加一个数组，不仅增加了动画的维护难度，同时降低了脚本的效率。</li><li>状态维护困难：因为在 Update 方法里实现的是一个动画，因此当我们需要在各个动画状态间进行切换的时候，我们需要使用更多的代码来维护相关逻辑。</li></ul><h1 id=使用-mecanim-动画系统的实现方式>使用 Mecanim 动画系统的实现方式</h1><p>为了解决传统的 2D 动画实现方式中存在的动画维护困难、状态维护困难这两个问题，我们需要一种更好的方案来实现 2D 动画的控制，这种方案需要提供较为方便的动画维护功能，即各个动画是独立的，当改变了某一个动画时，其余的动画不会发生改变。其次，这种方案需要提供较为方便的状态维护功能，即各个动画状态切换是方便的，我们可以更好地从这一种状态切换到另一种状态。关于动画状态切换，大家可以去了解下有限状态机(FSM)的概念，这里我们不做深入的探究，这里我们选择 Unity3D 的 Mecanim 动画系统，因为 Mecanim 动画系统正好解决了这两个问题。好了，下面我们来一起学习一个 2D 动画的实例：</p><p>首先我们在场景中创建一个名为 PlayerController 的空物体，然后在该物体的下面增加一个精灵组件(Sprite),并将其命名为 PlayerSprite，这样做的好处是 Unity3D 将为我们自动创建较为规范的命名。好了，现在我们选择 PlayerController 这个物体，然后通过 Window -> Animation 菜单打开 Animation 窗口：</p><p><figure><a href=http://img.blog.csdn.net/20150301180418811><img src=http://img.blog.csdn.net/20150301180418811 data-src=http://img.blog.csdn.net/20150301180418811 alt=创建第一个动画></a><figcaption>创建第一个动画</figcaption></figure></p><p>首先我们点击 AddCurve 按钮，此时将弹出一个对话框让我们保存动画文件，这里我们存储为 <a class=link href=mailto:Player@Idle.anim>Player@Idle.anim</a>,并将其保存在项目目录下的 Animations\Player 目录下，这样可以方便我们维护和查找特定的动画文件。在保存完动画文件后，此时会弹出如下的界面，我们选择 PlayerSprite 节点下的 SpriteRenderer，然后选择 Sprite，因为这里我们的 2D 动画主要是通过改变 SpriteRenderer 的 Sprite 属性来实现的，最后我们点击 Sprite 节点后面的加号来完成对象的选取。此时会在动画窗口中显示时间轴和刻度线，我们将在这里完成动画的编辑。大家可以注意到默认情况下，动画面板添加了两帧，即第 1 帧和最后一帧，其总时间是 1 秒，同时我们注意到这里有一个采样率(Sample),其实这就是当前动画的 FPS 了。好了，现在我们开始制作第一个动画：</p><p><figure><a href=http://img.blog.csdn.net/20150301180502756><img src=http://img.blog.csdn.net/20150301180502756 data-src=http://img.blog.csdn.net/20150301180502756 alt=动画序列></a><figcaption>动画序列</figcaption></figure></p><p>在资源文件夹中，我们可以找到当前动画的图片素材，注意到这个图片中总共有 12 帧画面，因此我们可以按照 0.05s 的间隔来分配整个时间轴，所以我们可以这样添加帧：</p><p><figure><a href=http://img.blog.csdn.net/20150301180533660><img src=http://img.blog.csdn.net/20150301180533660 data-src=http://img.blog.csdn.net/20150301180533660 alt="为 Idle 动画添加帧"></a><figcaption>为 Idle 动画添加帧</figcaption></figure></p><p>好了，现在我们就完成了一个 Idle 动画的制作，现在打开角色的动画控制器 PlayerController，这是 Unity3D 为我们自动创建的一个动画控制器，因为我们现在只有一个 Idle 动画，所以在 Animaotr 窗口中我们可以看到只有一个 Idle 状态，现在我们将这个状态设为默认状态。好了，现在我们可以直接运行游戏，发现在场景中角色开始循环播放 Idle 动画了。好了，现在让我们重复刚才的步骤，来完成角色的其余动画。</p><p><figure><a href=http://img.blog.csdn.net/20150301180634110><img src=http://img.blog.csdn.net/20150301180634110 data-src=http://img.blog.csdn.net/20150301180634110 alt="Idle 动画效果演示"></a><figcaption>Idle 动画效果演示</figcaption></figure></p><p>经过一番努力，我们现在已经完成了角色所有动画的制作，现在我们来设计角色的动画状态机：</p><p><figure><a href=http://img.blog.csdn.net/20150301180705294><img src=http://img.blog.csdn.net/20150301180705294 data-src=http://img.blog.csdn.net/20150301180705294 alt=玩家角色控制器设计></a><figcaption>玩家角色控制器设计</figcaption></figure></p><p>设计好角色的动画状态机后我们开始来编写脚本，以实现角色动画的控制：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=k>using</span> <span class=nn>UnityEngine</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>PlayerController</span> <span class=p>:</span> <span class=n>MonoBehaviour</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kd>enum</span> <span class=n>PlayerState</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>Idle</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=n>Move</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=n>LightAttack</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=n>WeightAttack</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=n>PlayerState</span> <span class=n>State</span><span class=p>=</span><span class=n>PlayerState</span><span class=p>.</span><span class=n>Idle</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//玩家移动速度</span>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kt>float</span> <span class=n>WalkSpeed</span> <span class=p>=</span> <span class=m>0.75f</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kt>float</span> <span class=n>RunSpeed</span> <span class=p>=</span> <span class=m>1.5f</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//玩家跳跃力的强度</span>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kt>float</span> <span class=n>JumpForce</span> <span class=p>=</span> <span class=m>200f</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>//位置限制</span>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kt>float</span> <span class=n>MinX</span> <span class=p>=</span> <span class=p>-</span><span class=m>5.80f</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kt>float</span> <span class=n>MaxX</span> <span class=p>=</span>  <span class=m>5.80f</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kt>float</span> <span class=n>MinY</span> <span class=p>=</span> <span class=p>-</span><span class=m>1.80f</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kt>float</span> <span class=n>MaxY</span> <span class=p>=</span>  <span class=m>0.35f</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>//玩家朝向，默认朝右</span>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kt>bool</span> <span class=n>isFaceRight</span> <span class=p>=</span> <span class=kc>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>//动画组件</span>
+</span></span><span class=line><span class=cl>    <span class=kd>private</span> <span class=n>Animator</span> <span class=n>mAnim</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//2D刚体</span>
+</span></span><span class=line><span class=cl>    <span class=kd>private</span> <span class=n>Rigidbody2D</span> <span class=n>mRig2D</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>void</span> <span class=n>Start</span> <span class=p>()</span> 
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>mAnim</span><span class=p>=</span><span class=n>GetComponent</span><span class=p>&lt;</span><span class=n>Animator</span><span class=p>&gt;();</span>
+</span></span><span class=line><span class=cl>        <span class=n>mRig2D</span><span class=p>=</span><span class=n>GetComponent</span><span class=p>&lt;</span><span class=n>Rigidbody2D</span><span class=p>&gt;();</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>void</span> <span class=n>Update</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>SpriteMove</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=n>SpriteAttack</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=n>SpriteJump</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=n>SpriteIdle</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=cs>/// 精灵Idle</span>
+</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=kd>private</span> <span class=k>void</span> <span class=n>SpriteIdle</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//当玩家无任何操作时恢复到Idle状态</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(!</span><span class=n>Input</span><span class=p>.</span><span class=n>anyKey</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>mAnim</span><span class=p>.</span><span class=n>SetBool</span><span class=p>(</span><span class=s>&#34;Jump&#34;</span><span class=p>,</span> <span class=kc>false</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>mAnim</span><span class=p>.</span><span class=n>SetBool</span><span class=p>(</span><span class=s>&#34;Attack&#34;</span><span class=p>,</span> <span class=kc>false</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>mAnim</span><span class=p>.</span><span class=n>SetBool</span><span class=p>(</span><span class=s>&#34;BigAttack&#34;</span><span class=p>,</span> <span class=kc>false</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>mAnim</span><span class=p>.</span><span class=n>SetBool</span><span class=p>(</span><span class=s>&#34;Skill&#34;</span><span class=p>,</span> <span class=kc>false</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>mAnim</span><span class=p>.</span><span class=n>SetBool</span><span class=p>(</span><span class=s>&#34;BigSkill&#34;</span><span class=p>,</span> <span class=kc>false</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>State</span><span class=p>=</span><span class=n>PlayerState</span><span class=p>.</span><span class=n>Idle</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=cs>/// 精灵攻击</span>
+</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=kd>private</span> <span class=k>void</span> <span class=n>SpriteAttack</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//轻击，键位J</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span><span class=p>(</span><span class=n>Input</span><span class=p>.</span><span class=n>GetKey</span><span class=p>(</span><span class=n>KeyCode</span><span class=p>.</span><span class=n>J</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>mAnim</span><span class=p>.</span><span class=n>SetBool</span><span class=p>(</span><span class=s>&#34;Attack&#34;</span><span class=p>,</span> <span class=kc>true</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>State</span><span class=p>=</span><span class=n>PlayerState</span><span class=p>.</span><span class=n>LightAttack</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>//重击，键位K</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span><span class=p>(</span><span class=n>Input</span><span class=p>.</span><span class=n>GetKey</span><span class=p>(</span><span class=n>KeyCode</span><span class=p>.</span><span class=n>K</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>mAnim</span><span class=p>.</span><span class=n>SetBool</span><span class=p>(</span><span class=s>&#34;BigAttack&#34;</span><span class=p>,</span> <span class=kc>true</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>State</span><span class=p>=</span><span class=n>PlayerState</span><span class=p>.</span><span class=n>WeightAttack</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=cs>/// 精灵跳跃</span>
+</span></span><span class=line><span class=cl>    <span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=kd>private</span> <span class=k>void</span> <span class=n>SpriteJump</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>Input</span><span class=p>.</span><span class=n>GetKey</span><span class=p>(</span><span class=n>KeyCode</span><span class=p>.</span><span class=n>I</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>mAnim</span><span class=p>.</span><span class=n>SetBool</span><span class=p>(</span><span class=s>&#34;Jump&#34;</span><span class=p>,</span> <span class=kc>true</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>mRig2D</span><span class=p>.</span><span class=n>AddForce</span><span class=p>(</span><span class=k>new</span> <span class=n>Vector2</span><span class=p>(</span><span class=m>0</span><span class=p>,</span> <span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span> <span class=p>*</span> <span class=n>JumpForce</span><span class=p>),</span> <span class=n>ForceMode2D</span><span class=p>.</span><span class=n>Impulse</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kd>private</span> <span class=k>void</span> <span class=n>SpriteMove</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>float</span> <span class=n>h</span> <span class=p>=</span> <span class=n>Input</span><span class=p>.</span><span class=n>GetAxis</span><span class=p>(</span><span class=s>&#34;Horizontal&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=kt>float</span> <span class=n>v</span> <span class=p>=</span> <span class=n>Input</span><span class=p>.</span><span class=n>GetAxis</span><span class=p>(</span><span class=s>&#34;Vertical&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>Vector2</span> <span class=n>mPos</span> <span class=p>=</span> <span class=n>mRig2D</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>mAnim</span><span class=p>.</span><span class=n>SetFloat</span><span class=p>(</span><span class=s>&#34;Speed&#34;</span><span class=p>,</span> <span class=n>Mathf</span><span class=p>.</span><span class=n>Sqrt</span><span class=p>(</span><span class=n>h</span> <span class=p>*</span> <span class=n>h</span> <span class=p>+</span> <span class=n>v</span> <span class=p>*</span> <span class=n>v</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kt>float</span> <span class=n>mPosX</span><span class=p>,</span> <span class=n>mPosY</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>Mathf</span><span class=p>.</span><span class=n>Sqrt</span><span class=p>(</span><span class=n>h</span> <span class=p>*</span> <span class=n>h</span> <span class=p>+</span> <span class=n>v</span> <span class=p>*</span> <span class=n>v</span><span class=p>)</span> <span class=p>&gt;</span> <span class=m>0.5f</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>            <span class=n>mPosX</span> <span class=p>=</span> <span class=n>mPos</span><span class=p>.</span><span class=n>x</span> <span class=p>+</span> <span class=n>h</span> <span class=p>*</span> <span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span> <span class=p>*</span> <span class=n>RunSpeed</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=n>mPosY</span> <span class=p>=</span> <span class=n>mPos</span><span class=p>.</span><span class=n>y</span> <span class=p>+</span> <span class=n>v</span> <span class=p>*</span> <span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span> <span class=p>*</span> <span class=n>RunSpeed</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span><span class=k>else</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>mPosX</span> <span class=p>=</span> <span class=n>mPos</span><span class=p>.</span><span class=n>x</span> <span class=p>+</span> <span class=n>h</span> <span class=p>*</span> <span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span> <span class=p>*</span> <span class=n>WalkSpeed</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=n>mPosY</span> <span class=p>=</span> <span class=n>mPos</span><span class=p>.</span><span class=n>y</span> <span class=p>+</span> <span class=n>v</span> <span class=p>*</span> <span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span> <span class=p>*</span> <span class=n>WalkSpeed</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>mRig2D</span><span class=p>.</span><span class=n>MovePosition</span><span class=p>(</span><span class=k>new</span> <span class=n>Vector2</span><span class=p>(</span><span class=n>mPosX</span><span class=p>,</span> <span class=n>mPosY</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>h</span> <span class=p>&gt;</span> <span class=m>0</span> <span class=p>&amp;&amp;</span> <span class=p>!</span><span class=n>isFaceRight</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>FlipSrite</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=n>h</span> <span class=p>&lt;</span> <span class=m>0</span> <span class=p>&amp;&amp;</span> <span class=n>isFaceRight</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>FlipSrite</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>void</span> <span class=n>FlipSrite</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span><span class=p>(</span><span class=n>isFaceRight</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>            <span class=n>transform</span><span class=p>.</span><span class=n>rotation</span><span class=p>=</span><span class=n>Quaternion</span><span class=p>.</span><span class=n>Euler</span><span class=p>(</span><span class=m>0</span><span class=p>,</span><span class=m>180</span><span class=p>,</span><span class=m>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>isFaceRight</span><span class=p>=</span><span class=kc>false</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span><span class=k>else</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>transform</span><span class=p>.</span><span class=n>rotation</span><span class=p>=</span><span class=n>Quaternion</span><span class=p>.</span><span class=n>Euler</span><span class=p>(</span><span class=m>0</span><span class=p>,</span><span class=m>0</span><span class=p>,</span><span class=m>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>isFaceRight</span><span class=p>=</span><span class=kc>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>好了，现在我们可以来看看最终的效果，博主这里是想利用这些素材来制作一个横板过关的游戏，可是因为文章篇幅有限，所以这部分内容只能留到以后再和大家分享了。</p><p><figure><a href=http://img.blog.csdn.net/20150301180829879><img src=http://img.blog.csdn.net/20150301180829879 data-src=http://img.blog.csdn.net/20150301180829879 alt=最终效果演示></a><figcaption>最终效果演示</figcaption></figure></p><h1 id=mecanim-动画系统应用扩展>Mecanim 动画系统应用扩展</h1><p>好了，到现在为止，基于 Mecanim 动画系统的 2D 动画控制基本上讲解完了。下面我们说说 Mecaanim 动画系统应用扩展。通过前面的学习，我们知道 Unity2D 使用的 Mecanim 动画系统主要是通过改变游戏体的属性来实现某种特定的动画效果的，例如我们这里的动画是通过改变角色精灵附加的 SpriteRenderer 组件的 Sprite 属性来实现的，因此从本质上来说 Unity2D 的动画控制器是一种属性动画。总体来说，Unity2D 可以实现以下类型的动画：</p><ul><li>位移动画：通过 Transform 组件的 Position 属性实现</li><li>旋转动画：通过 Transform 组件的 Rotation 属性实现</li><li>伸缩动画：通过 Transform 组件的 Scale 属性实现</li><li>渐变动画：通过更改指定组件的颜色或材质实现</li><li>脚本动画：通过更改指定脚本的变量或字段实现</li></ul><p>好了，这就是今天这篇文章的全部内容了，希望大家喜欢！</p></section><footer class=article-footer><div style="padding:10px 0;margin:20px auto;width:100%;font-size:16px;text-align:center"><button id=rewardButton disable=enable onclick='var qr=document.getElementById("QR");qr.style.display==="none"?qr.style.display="block":qr.style.display="none"'>
+<span>打赏</span></button><div id=QR style=display:none><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=wechat_qr src=/imgs/reward/wechat.jpg alt=wechat></a><p>微信打赏</p></div><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=alipay_qr src=/imgs/reward/alipay.jpg alt=alipay></a><p>支付宝打赏</p></div></div></div><section class=article-tags><a href=/tags/mecanim/>Mecanim</a>
+<a href=/tags/%E5%8A%A8%E7%94%BB/>动画</a>
+<a href=/tags/unity3d/>Unity3D</a></section><div class=social-share></div><section class=article-footer-notes><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>BY-NC-SA 4.0
+</span><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新 2024-02-27</span></section></footer><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css integrity=sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn crossorigin=anonymous><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js integrity=sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8 crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js integrity=sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl crossorigin=anonymous defer></script><script>window.addEventListener("DOMContentLoaded",()=>{renderMathInElement(document.querySelector(`.article-content`),{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}]})})</script></article><aside class=related-contents--wrapper><h2 class=section-title>相关文章</h2><div class=related-contents><div class="flex article-list--tile"><article class=has-image><a href=/posts/1124152964/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=1124152964" loading=lazy data-key=1124152964 data-hash></div><div class=article-details><h2 class=article-title>解析 OBJ 模型并将其加载到 Unity3D 场景中</h2></div></a></article><article class=has-image><a href=/posts/3019914405/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=3019914405" loading=lazy data-key=3019914405 data-hash></div><div class=article-details><h2 class=article-title>Unity3D 游戏开发之 Unity3D 场景编辑器扩展开发</h2></div></a></article><article class=has-image><a href=/posts/927393529/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=927393529" loading=lazy data-key=927393529 data-hash></div><div class=article-details><h2 class=article-title>Unity3D 游戏场景优化系列之批处理</h2></div></a></article><article class=has-image><a href=/posts/582264328/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=582264328" loading=lazy data-key=582264328 data-hash></div><div class=article-details><h2 class=article-title>Unity3D 游戏开发之 SQLite 让数据库开发更简单</h2></div></a></article><article class=has-image><a href=/posts/1467630055/><div class=article-image><img src="https://source.unsplash.com/800x0?cloud,sky,dark,star,moon,sea&amp;t=1467630055" loading=lazy data-key=1467630055 data-hash></div><div class=article-details><h2 class=article-title>Unity3D 游戏开发之使用 AssetBundle 和 Xml 实现场景的动态加载</h2></div></a></article></div></div></aside><script src=//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js></script><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}</style><script>var waline=new Waline({el:"#waline",serverURL:"https://waline.yuanpei.me/",lang:"zh",dark:"auto",path:window.location.href,requiredMeta:["nick","mail"]})</script><footer class=site-footer><section class=copyright>&copy;
+2014 -
+2024 元视角</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> v0.126.1<br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.7.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a><br>已创作 274 篇文章，共计 1038468 字<br></section><section class=written-by><img src=/imgs/Written-By-Human-Not-By-AI-Badge-white.svg></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous></main><aside class="sidebar right-sidebar sticky"><form action=/search/ class="search-form widget"><p><label>搜索</label>
+<input name=keyword required placeholder=请输入关键词>
+<button title=搜索><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></button></p></form><section class="widget archives"><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#传统-2d-动画的实现方式>传统 2D 动画的实现方式</a></li><li><a href=#使用-mecanim-动画系统的实现方式>使用 Mecanim 动画系统的实现方式</a></li><li><a href=#mecanim-动画系统应用扩展>Mecanim 动画系统应用扩展</a></li></ol></nav></div></section><section class="widget archives"><h2 class="widget-title section-title">归档</h2><div class=widget-archive--list><div class=archives-year><a href=/archives/#2024><span class=year>2024</span>
+<span class=count>14</span></a></div><div class=archives-year><a href=/archives/#2023><span class=year>2023</span>
+<span class=count>11</span></a></div><div class=archives-year><a href=/archives/#2022><span class=year>2022</span>
+<span class=count>27</span></a></div><div class=archives-year><a href=/archives/#2021><span class=year>2021</span>
+<span class=count>42</span></a></div><div class=archives-year><a href=/archives/#2020><span class=year>2020</span>
+<span class=count>26</span></a></div><div class=archives-year><a href=/archives/#2019><span class=year>更多</span></a></div></div></section><section class="widget archives"><h2 class="widget-title section-title">日历</h2><div class=widget--toc style="background-color:#fff;border-radius:15px;padding:10px;margin:20px auto;width:300px;height:480px;display:flex;justify-content:center;align-items:center;overflow:hidden"><img id=calendar-cover src style=object-fit:cover;width:100%;height:100%></div></section><script>const getImageUrl=e=>{const t=e.getFullYear(),n=String(e.getMonth()+1).padStart(2,"0"),s=String(e.getDate()).padStart(2,"0");return`https://img.owspace.com/Public/uploads/Download/${t}/${n}${s}.jpg`};document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector("#calendar-cover");if(document.location.pathname.startsWith("/posts")){let t=document.querySelector('meta[property="article:published_time"]').content;t=t.substring(0,10),e.src=getImageUrl(new Date(t))}else e.src=getImageUrl(new Date)})</script><section class="widget tagCloud"><h2 class="widget-title section-title">标签云</h2><div class=tagCloud-tags><a href=/tags/%E7%B1%B3%E8%8A%B1%E4%B9%8B%E5%91%B3/ class=font_size_1>米花之味
+</a><a href=/tags/%E8%9B%8B%E7%82%92%E9%A5%AD/ class=font_size_1>蛋炒饭
+</a><a href=/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/ class=font_size_3>跨平台
+</a><a href=/tags/%E4%B8%83%E7%89%9B/ class=font_size_1>七牛
+</a><a href=/tags/%E6%A8%A1%E6%9D%BF/ class=font_size_1>模板
+</a><a href=/tags/%E4%BA%8B%E4%BB%B6/ class=font_size_1>事件
+</a><a href=/tags/%E9%9A%8F%E7%AC%94/ class=font_size_16>随笔
+</a><a href=/tags/%E7%9B%91%E6%8E%A7/ class=font_size_3>监控
+</a><a href=/tags/%E5%BC%82%E5%B8%B8/ class=font_size_3>异常
+</a><a href=/tags/%E5%85%AC%E4%BC%97%E5%8F%B7/ class=font_size_1>公众号
+</a><a href=/tags/sonar/ class=font_size_1>Sonar
+</a><a href=/tags/%E5%85%A8%E6%99%BA%E8%B4%A4/ class=font_size_1>全智贤
+</a><a href=/tags/grafana/ class=font_size_1>Grafana
+</a><a href=/tags/%E5%8D%95%E4%BD%8D/ class=font_size_1>单位
+</a><a href=/tags/%E5%88%AB%E7%A6%BB/ class=font_size_1>别离
+</a><a href=/tags/%E6%99%BA%E8%83%BD%E5%AE%B6%E5%B1%85/ class=font_size_1>智能家居
+</a><a href=/tags/rewrite/ class=font_size_1>Rewrite
+</a><a href=/tags/%E6%9F%A5%E8%AF%A2/ class=font_size_1>查询
+</a><a href=/tags/%E6%83%B3%E6%B3%95/ class=font_size_2>想法
+</a><a href=/tags/mapreduce/ class=font_size_1>MapReduce
+</a><a href=/tags/%E7%A8%8B%E5%BA%8F%E5%91%98/ class=font_size_4>程序员
+</a><a href=/tags/%E5%BE%AE%E4%BF%A1/ class=font_size_1>微信
+</a><a href=/tags/agent/ class=font_size_1>Agent
+</a><a href=/tags/%E5%BD%B1%E8%AF%84/ class=font_size_13>影评
+</a><a href=/tags/pl/sql/ class=font_size_1>PL/SQL
+</a><a href=/tags class=font_size_9999>更多</a></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous></script><script type=text/javascript src=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/ts/main.js defer></script><script type=text/javascript src=/ts/badge.js></script><script type=text/javascript>let createBadge=window.createBadge;createBadge("Git","7f1e7a2","#35495e","#ffc107"),createBadge("Hugo","v0.126.1","#35495e","#41b883")</script><script type=text/javascript src=/ts/chat-widget.js defer></script></body></html>

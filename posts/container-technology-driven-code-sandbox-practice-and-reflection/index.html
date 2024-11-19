@@ -1,1521 +1,185 @@
-<!DOCTYPE html>
-<html lang="en-us">
-    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
-<meta name="referrer" content="no-referrer"/>
-<meta name='viewport' content='width=device-width, initial-scale=1'>
-
-<meta http-equiv='content-language' content='zh-CN'>
-
-
-<link rel="apple-touch-icon" href="/imgs/avatar.jpg">
-
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-
-
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-
-
-<link rel="icon" type="image/x-icon" href="/imgs/favicon.ico">
-
-
-<link rel="icon" type="image/png" href="/imgs/favicon.png"><meta name='description' content='本文探讨了容器技术在代码沙箱实践中的应用与思考。作者尝试复刻 OpenAI 的 Canvas 功能，并比较了 Canvas 与 Claude 的 Artifacts 在编程和写作领域的侧重点。文章强调了代码解释器在 AI 生成代码并执行代码中的重要性，并通过 Semantic Kernel 的 Code Interpreter 插件展示了其扩展 LLM 能力边界的潜力。同时，讨论了现有 Code Interpreter 的隔离性问题，并提出了基于容器技术的解决方案，详细描述了创建隔离代码沙箱的过程和遇到的挑战。最后，文章展望了代码沙箱在 AI 编程领域的重要性，并提出了通过 Jupyter 实现代码可视化的想法。'><meta name='keywords' content='容器, 沙箱, Jupyter, 代码解释器'>
-
-<meta name="author" content="飞鸿踏雪"><title>容器技术驱动下的代码沙箱实践与思考 - 元视角</title>
-
-<link rel='canonical' href='http://localhost:1313/posts/container-technology-driven-code-sandbox-practice-and-reflection/'>
-
-
-
-<link rel="stylesheet" href="/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css">
-<meta property='og:title' content='容器技术驱动下的代码沙箱实践与思考 - 元视角'>
-<meta property='og:description' content='本文探讨了容器技术在代码沙箱实践中的应用与思考。作者尝试复刻 OpenAI 的 Canvas 功能，并比较了 Canvas 与 Claude 的 Artifacts 在编程和写作领域的侧重点。文章强调了代码解释器在 AI 生成代码并执行代码中的重要性，并通过 Semantic Kernel 的 Code Interpreter 插件展示了其扩展 LLM 能力边界的潜力。同时，讨论了现有 Code Interpreter 的隔离性问题，并提出了基于容器技术的解决方案，详细描述了创建隔离代码沙箱的过程和遇到的挑战。最后，文章展望了代码沙箱在 AI 编程领域的重要性，并提出了通过 Jupyter 实现代码可视化的想法。'>
-<meta property='og:url' content='http://localhost:1313/posts/container-technology-driven-code-sandbox-practice-and-reflection/'>
-<meta property='og:site_name' content='元视角'>
-<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='容器' /><meta property='article:tag' content='沙箱' /><meta property='article:tag' content='Jupyter' /><meta property='article:tag' content='代码解释器' /><meta property='article:published_time' content='2024-10-28T12:52:10&#43;00:00'/><meta property='article:modified_time' content='2024-11-08T10:21:22&#43;08:00'/><meta property='og:image' content='http://localhost:1313/posts/container-technology-driven-code-sandbox-practice-and-reflection/developer-8829709_1280.jpg' />
-<meta name="twitter:title" content="容器技术驱动下的代码沙箱实践与思考 - 元视角">
-<meta name="twitter:description" content="本文探讨了容器技术在代码沙箱实践中的应用与思考。作者尝试复刻 OpenAI 的 Canvas 功能，并比较了 Canvas 与 Claude 的 Artifacts 在编程和写作领域的侧重点。文章强调了代码解释器在 AI 生成代码并执行代码中的重要性，并通过 Semantic Kernel 的 Code Interpreter 插件展示了其扩展 LLM 能力边界的潜力。同时，讨论了现有 Code Interpreter 的隔离性问题，并提出了基于容器技术的解决方案，详细描述了创建隔离代码沙箱的过程和遇到的挑战。最后，文章展望了代码沙箱在 AI 编程领域的重要性，并提出了通过 Jupyter 实现代码可视化的想法。"><meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content='http://localhost:1313/posts/container-technology-driven-code-sandbox-practice-and-reflection/developer-8829709_1280.jpg' />
-
-    
-        
-            <meta name="msvalidate.01" content="713A48A3FE17D4841C292A6B3942EB4C" />
-        
-    
-        
-            <meta name="baidu-site-verification" content="c50FGqYOSh" />
-        
-    
-        
-            <meta name="google-site-verification" content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s" />
-        
-    
-
-  
-
-<script src="//instant.page/5.1.0" type="module" integrity="sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw"></script>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css"
-/>
-    </head>
-    <body class="
-    article-page
-">
-    <script>
-        (function() {
-            const colorSchemeKey = 'StackColorScheme';
-            if(!localStorage.getItem(colorSchemeKey)){
-                localStorage.setItem(colorSchemeKey, "auto");
-            }
-        })();
-    </script><script>
-    (function() {
-        const colorSchemeKey = 'StackColorScheme';
-        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
-        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
-
-        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
-            
-
-            document.documentElement.dataset.scheme = 'dark';
-        } else {
-            document.documentElement.dataset.scheme = 'light';
-        }
-    })();
-</script>
-<div class="container main-container flex 
-    on-phone--column extended
-">
-    <div id="article-toolbar">
-        <a href="/" class="back-home">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <polyline points="15 6 9 12 15 18" />
-</svg>
-
-
-
-            <span>返回</span>
-        </a>
-    </div>
-    <aside class="sidebar left-sidebar sticky">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
-        <span class="hamburger-box">
-            <span class="hamburger-inner"></span>
-        </span>
-    </button>
-
-    <header class="site-info">
-        
-            
-            <figure class="site-avatar">
-                <a href="/">
-                
-                    
-                    
-                    
-                        
-                        <img src="/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg" width="300"
-                            height="300" class="site-logo" loading="lazy" alt="Avatar">
-                    
-                
-                </a>
-                
-                    <span class="emoji">👌</span>
-                
-            </figure>
-            
-        
-        
-        <h1 class="site-name"><a href="/">元视角</a></h1>
-        <h2 class="site-description">起风了，唯有努力生存</h2><ol class="social-menu">
-                
-                    
-                    
-                    
-                    
-                    <li>
-                        <a 
-                            href='mailto:qinyuanpei@163.com'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="Mail"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
-  <path d="M3 7l9 6l9 -6" />
-</svg>
-                            
-                        </a>
-                    </li>
-                
-                    
-                    
-                    <li>
-                        <a 
-                            href='https://github.com/qinyuanpei'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="GitHub"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
-</svg>
-
-
-
-                            
-                        </a>
-                    </li>
-                
-                    
-                    
-                    <li>
-                        <a 
-                            href='https://www.zhihu.com/people/qinyuanpei'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="Zhihu"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M14 6h6v12h-2l-2 2l-1 -2h-1z" />
-  <path d="M4 12h6.5" />
-  <path d="M10.5 6h-5" />
-  <path d="M6 4c-.5 2.5 -1.5 3.5 -2.5 4.5" />
-  <path d="M8 6v7c0 4.5 -2 5.5 -4 7" />
-  <path d="M11 18l-3 -5" />
-</svg>
-                            
-                        </a>
-                    </li>
-                
-                    
-                    
-                    <li>
-                        <a 
-                            href='https://www.douban.com/people/60029335'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="Douban"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M4 20h16" />
-  <path d="M5 4h14" />
-  <path d="M8 8h8a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2v-2a2 2 0 0 1 2 -2z" />
-  <path d="M16 14l-2 6" />
-  <path d="M8 17l1 3" />
-</svg>
-                            
-                        </a>
-                    </li>
-                
-                    
-                    
-                    <li>
-                        <a 
-                            href='https://weibo.com/1278609231/profile'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="Weibo"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M19 14.127c0 3.073 -3.502 5.873 -8 5.873c-4.126 0 -8 -2.224 -8 -5.565c0 -1.78 .984 -3.737 2.7 -5.567c2.362 -2.51 5.193 -3.687 6.551 -2.238c.415 .44 .752 1.39 .749 2.062c2 -1.615 4.308 .387 3.5 2.693c1.26 .557 2.5 .538 2.5 2.742z" />
-  <path d="M15 4h1a5 5 0 0 1 5 5v1" />
-</svg>
-                            
-                        </a>
-                    </li>
-                
-                    
-                    
-                    <li>
-                        <a 
-                            href='/index.xml'
-                            rel="noreferrer"
-                            target="_blank"
-                            title="RSS"
-                        >
-                            
-                            
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="5" cy="19" r="1" />
-  <path d="M4 4a16 16 0 0 1 16 16" />
-  <path d="M4 11a9 9 0 0 1 9 9" />
-</svg>
-
-
-
-                            
-                        </a>
-                    </li>
-                
-            </ol></header>
-
-    <ol class="menu" id="main-menu">
-        
-        
-        
-
-        <li >
-            <a href='/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <polyline points="5 12 3 12 12 3 21 12 19 12" />
-  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
-</svg>
-
-
-
-                
-                <span>首页</span>
-            </a>
-        </li>
-        
-        
-
-        <li >
-            <a href='/archives' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <rect x="3" y="4" width="18" height="4" rx="2" />
-  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
-  <line x1="10" y1="12" x2="14" y2="12" />
-</svg>
-
-
-
-                
-                <span>归档</span>
-            </a>
-        </li>
-        
-        
-
-        <li >
-            <a href='/works' >
-                
-                
-                
-                    <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style type="text/css"></style></defs><path d="M843.093333 815.36l-189.44-294.826667a85.333333 85.333333 0 0 1-13.653333-46.08V170.666667h21.333333a21.333333 21.333333 0 0 0 21.333334-21.333334v-42.666666a21.333333 21.333333 0 0 0-21.333334-21.333334h-298.666666a21.333333 21.333333 0 0 0-21.333334 21.333334v42.666666a21.333333 21.333333 0 0 0 21.333334 21.333334H384v304.213333a85.333333 85.333333 0 0 1-13.653333 46.08l-189.44 294.826667a64.426667 64.426667 0 0 0 0 66.56l13.653333 24.32a64.853333 64.853333 0 0 0 55.466667 32h525.226666a64.853333 64.853333 0 0 0 55.466667-32l14.08-24.746667a63.573333 63.573333 0 0 0-1.706667-66.56z m-400.64-248.32a173.226667 173.226667 0 0 0 26.88-92.16V170.666667h85.333334v303.786666a167.68 167.68 0 0 0 27.306666 92.16L656.213333 682.666667H367.786667z" p-id="1250" fill="#8a8a8a"></path></svg>
-                
-                <span>作品</span>
-            </a>
-        </li>
-        
-        
-
-        <li >
-            <a href='/search' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="10" cy="10" r="7" />
-  <line x1="21" y1="21" x2="15" y2="15" />
-</svg>
-
-
-
-                
-                <span>搜索</span>
-            </a>
-        </li>
-        
-        
-
-        <li >
-            <a href='/links' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
-  <path d="M12 6l-3.293 3.293a1 1 0 0 0 0 1.414l.543 .543c.69 .69 1.81 .69 2.5 0l1 -1a3.182 3.182 0 0 1 4.5 0l2.25 2.25" />
-  <path d="M12.5 15.5l2 2" />
-  <path d="M15 13l2 2" />
-</svg>
-                
-                <span>友链</span>
-            </a>
-        </li>
-        
-        
-
-        <li  class='current' >
-            <a href='/about' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="7" r="4" />
-  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-</svg>
-
-
-
-                
-                <span>关于</span>
-            </a>
-        </li>
-        
-
-        
-            <li id="dark-mode-toggle">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" />
-  <path d="M6.343 17.657l-1.414 1.414" />
-  <path d="M6.343 6.343l-1.414 -1.414" />
-  <path d="M17.657 6.343l1.414 -1.414" />
-  <path d="M17.657 17.657l1.414 1.414" />
-  <path d="M4 12h-2" />
-  <path d="M12 4v-2" />
-  <path d="M20 12h2" />
-  <path d="M12 20v2" />
-</svg>
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
-  <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" />
-  <path d="M19 11h2m-1 -1v2" />
-</svg>
-                <span id="dark-mode-text">夜间模式</span>
-            </li>
-        
-    </ol>
-</aside>
-
-<main class="main full-width">
-    <article class="has-image main-article">
-    <header class="article-header">
-        <div class="article-image">
-            <a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/">
-                
-                <img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/developer-8829709_1280.jpg" loading="lazy" alt="Featured image of post 容器技术驱动下的代码沙箱实践与思考" />
-                
-            </a>
-        </div>
-    
-
-    <div class="article-details">
-    
-    <header class="article-category">
-        
-            <a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/" >
-                编程语言
-            </a>
-        
-    </header>
-    
-
-    <h2 class="article-title">
-        <a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/">容器技术驱动下的代码沙箱实践与思考</a>
-    </h2>
-    
-    
-
-    
-    <footer class="article-time">
-        
-            <div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
-  <circle cx="18" cy="18" r="4" />
-  <path d="M15 3v4" />
-  <path d="M7 3v4" />
-  <path d="M3 11h16" />
-  <path d="M18 16.496v1.504l1 1" />
-</svg>
-                <time class="article-time--published">2024-10-28</time>
-            </div>
-        
-
-        
-            <div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <polyline points="12 7 12 12 15 15" />
-</svg>
-
-
-
-                <time class="article-time--reading">
-                    阅读时长: 12 分钟
-                </time>
-            </div>
-        
-    </footer>
-    
-</div>
-</header>
-
-    
-        
-
-
-<div class="post-ai">
-    <div class="ai-title">
-        <i class="ai-title-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2z" />
-  <path d="M9 16c1 .667 2 1 3 1s2 -.333 3 -1" />
-  <path d="M9 7l-1 -4" />
-  <path d="M15 7l1 -4" />
-  <path d="M9 12v-1" />
-  <path d="M15 12v-1" />
-</svg></i>
-        <div class="ai-title-text">AI 摘要</div>
-    </div>
-    <div id="ai-explanation" class="ai-explanation"></div>
-    <div class="ai-explanation ai-explanation-content">本文探讨了容器技术在代码沙箱实践中的应用与思考。作者尝试复刻 OpenAI 的 Canvas 功能，并比较了 Canvas 与 Claude 的 Artifacts 在编程和写作领域的侧重点。文章强调了代码解释器在 AI 生成代码并执行代码中的重要性，并通过 Semantic Kernel 的 Code Interpreter 插件展示了其扩展 LLM 能力边界的潜力。同时，讨论了现有 Code Interpreter 的隔离性问题，并提出了基于容器技术的解决方案，详细描述了创建隔离代码沙箱的过程和遇到的挑战。最后，文章展望了代码沙箱在 AI 编程领域的重要性，并提出了通过 Jupyter 实现代码可视化的想法。</div>
-</div>
-
-<script src="https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const matchingSummary = document.querySelector(".ai-explanation-content").textContent;
-
-    new TypeIt("#ai-explanation", {
-        strings: matchingSummary,
-        speed: 10,
-        lifeLike: true,
-        waitUntilVisible: true,
-    }).go();
-});
-</script>
-
-    
-
-    <section class="article-content">
-    
-    
-    <p>最近，我一直在尝试复刻 OpenAI 的 <a class="link" href="https://openai.com/index/introducing-canvas/"  target="_blank" rel="noopener"
-    >Canvas</a> 功能，它与 Claude 的 <a class="link" href="https://www.anthropic.com/news/artifacts"  target="_blank" rel="noopener"
-    >Artifacts</a> 功能非常相似。当然，两者在侧重点上有所不同——Artifacts 更注重于 “<strong>预览</strong>” 功能，而 Canvas 则专注于编程和写作领域。尽管 Artifacts 珠玉在前，可 Canvas 无疑为交互式体验带来更多可能性。对此，OpenAI 研究主管 Karina Nguyen 曾表示：<strong>我心目中的终极 AGI 界面是一张空白画布（Canvas）</strong>。在当前推崇 “<strong>慢思考</strong>” 的背景下，我有时会觉得下半年的大语言模型（LLM）发展 “<strong>不温不火</strong>”，给人一种即将停滞不前的的感觉。我想，这可能与四季更迭、万物枯荣的规律有关，正所谓 “<strong>环球同此凉热</strong>”。直到这两天，Claude 发布了 <a class="link" href="https://docs.anthropic.com/en/docs/build-with-claude/computer-use"  target="_blank" rel="noopener"
-    >Computer Use</a>，智谱发布了 <a class="link" href="https://xiao9905.github.io/AutoGLM/?utm_source=ai-bot.cn"  target="_blank" rel="noopener"
-    >AutoGLM</a>，这个冬天再次变得热闹起来，为了不辜负这份幸运，我决定更新一篇博客，这次的主题是：容器技术驱动下的代码沙箱实践与思考。</p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101135250.png" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101135250.png"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101135250.png"
-			alt="LangChain 开源的 OpenCanvas">
-	</a>
-	
-	<figcaption>LangChain 开源的 OpenCanvas</figcaption>
-	
-</figure></p>
-<h1 id="为什么需要代码解释器">为什么需要代码解释器？</h1>
-<p>在当前生成式 AI 的浪潮中，代码生成首当其冲，从 <a class="link" href="https://codegeex.cn/zh-CN"  target="_blank" rel="noopener"
-    >CodeGeex</a> 到<a class="link" href="https://tongyi.aliyun.com/lingma"  target="_blank" rel="noopener"
-    >通义灵码</a>，从 <a class="link" href="https://github.com/features/copilot"  target="_blank" rel="noopener"
-    >Github Copilot</a> 到 <a class="link" href="" >Cursor</a>，可谓是层出不穷，其交互方式亦从代码补全逐渐过渡到代码执行。你会注意到，在 OpenAI 的 Canvas 以及 Claude 的 Artifacts 中，都支持前端代码的实时预览，这意味着 AI 生成的不再是冷冰冰的代码，而是所见即所得的、可交互的成果。其实，早在 ChatGPT-3.5 中，OpenAI 就提供了 <a class="link" href="https://platform.openai.com/docs/assistants/tools/code-interpreter"  target="_blank" rel="noopener"
-    >Code Interpreter</a> 插件，可见让 AI 生成代码并执行代码的思路由来已久。究其本质，编程是一项持续改进的活动，必须根据反馈不断地完善代码。如果你使用过 Cursor 这个编辑器，相信你会对这一过程印象深刻，你可以实时地看到修改代码带来的变化，快速验证想法，加快调试和迭代的速度。毫无疑问，这种即时反馈的交互模式大大提高了编程的效率和趣味。</p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Canvas_Hero.webp" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Canvas_Hero.webp"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Canvas_Hero.webp"
-			alt="OpenAI 的 Canvas 功能">
-	</a>
-	
-	<figcaption>OpenAI 的 Canvas 功能</figcaption>
-	
-</figure></p>
-<p>在实现 AI 智能体的过程中，我尝试为 <a class="link" href="https://github.com/microsoft/semantic-kernel"  target="_blank" rel="noopener"
-    >Semantic Kernel</a> 开发过一个 Code Interpreter 插件，我觉得这对于扩展（LLM）的能力边界意义重大。以 “<strong>9.11 和9.8 哪个大</strong>” 这一经典问题为例，在各路大模型普遍翻车的情况下，搭配 Code Interpreter 插件 Agent 表现稍好，因为它可以通过编写 Python 脚本来解决问题。同样地，像 “<strong>strawberry 中有多少个 r</strong>” 这样的问题，都可以通过该插件得到有效解决。或许有人觉得这种方式不够 “<strong>智能</strong>”，可如果使用工具是人类进步的体现，我们为什么要否认 AI 通过工具获得的答案呢？难道只有 o1 这种 “<strong>推理流”</strong> 才算思考，而 ReAct 这种 “<strong>规划流</strong>” 就不是思考？米兰·昆德拉说，“<strong>人类一思考，上帝就发笑</strong>”，人类的思想和行为，在宇宙或者更高存在的眼中可能微不足道，甚至有些可笑，以你我有限的认知去揣度智能，这本来就是一种虚妄。实际上，人类的思维过程并非总是纯粹的推理，我们同样依赖着工具、经验和试错。因此，我认为，无论是通过纯粹的推理还是借助工具，只要能有效地达成目标，都应该被视为智能的表现。</p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Python-Code-Interpreter.jpg" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Python-Code-Interpreter.jpg"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Python-Code-Interpreter.jpg"
-			alt="Code Interpreter 插件">
-	</a>
-	
-	<figcaption>Code Interpreter 插件</figcaption>
-	
-</figure></p>
-<p>目前，这个 Code Interpreter 面临的问题是，它并未与宿主环境实现完全隔离。例如，在执行 C# 脚本时，可以选择 Roslyn、Mono、<a class="link" href="https://github.com/oleg-shilo/cs-script"  target="_blank" rel="noopener"
-    >CS-Script</a> 以及 <a class="link" href="https://github.com/dotnet-script/dotnet-script"  target="_blank" rel="noopener"
-    >dotnet-script</a>；运行 Python 脚本时，可以选择 <a class="link" href="https://github.com/pythonnet/pythonnet"  target="_blank" rel="noopener"
-    >Python.NET</a>；运行 JavaScript 时，可以选择 <a class="link" href="https://github.com/sebastienros/jint"  target="_blank" rel="noopener"
-    >Jint</a>。理论上，可以添加更多运行时环境，只要它们能嵌入.NET 框架。但这样做的风险是，一旦 AI 生成恶意代码，可能就会影响到整个 Agent 的运行。我曾考虑过 Python 的虚拟环境，但这个方案并不通用。更重要的是，Python.NET 依赖的是 Python 的动态链接库而非可执行文件，这意味着虚拟环境并未实现真正的隔离。此外，AI 生成的代码可能依赖第三方库，直接安装到宿主环境可能会引起版本冲突。在大量使用 AI 生成的代码时，我们不得不考虑这些代码的安全性。我的老板曾问我，“你敢在生产环境中直接使用大模型生成的SQL语句吗？”，基于这些考虑，我们必须寻找一种更优的代码沙箱方案。</p>
-<h1 id="容器技术驱动的代码沙箱">容器技术驱动的代码沙箱</h1>
-<p>我们的目标是：创建一个与宿主环境完全隔离的代码沙箱，它能够独立运行代码并管理依赖。此时，我们发现容器技术非常适合这一需求，因为 Docker 利用 Linux 的 Namespace 功能实现了资源隔离。具体来说，我们会为每一种语言准备一个镜像，这个镜像中通常包含了该语言的编译器或者解释器，例如，Java 使用 OpenJDK 镜像，C# 使用.NET SDK 镜像。运行代码时，首先将代码文件挂载到容器中，然后使用编译器或解释器处理该文件。以下是一个简化的流程说明图：</p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Docker-Based-SandBox-Flow.drawio.png" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Docker-Based-SandBox-Flow.drawio.png"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Docker-Based-SandBox-Flow.drawio.png"
-			alt="基于容器技术的代码沙箱流程示意图">
-	</a>
-	
-	<figcaption>基于容器技术的代码沙箱流程示意图</figcaption>
-	
-</figure></p>
-<p>以 Python 为例，假设我们有一个名为 <strong>code_runner/python3</strong> 的镜像，其对应的 Dockerfile 定义如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Dockerfile" data-lang="Dockerfile"><span class="line"><span class="cl"><span class="k">FROM</span><span class="s"> python:3.9.18</span><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> useradd --create-home --no-log-init --shell /bin/bash sandbox <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  <span class="o">&amp;&amp;</span> adduser sandbox sudo <span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">USER</span><span class="s"> sandbox</span><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /home/sandbox</span><span class="err">
-</span></span></span></code></pre></div><p>你会注意到，这里创建了一个名为 <strong>sandbox</strong> 的用户，同时指定了其工作目录为 <strong>/home/sandbox</strong>。 这一点非常重要，因为我们希望使用统一的方式来处理不同的镜像。接下来，对于每一个前端请求，我们将在后端生成一个目录，并在其中存放待执行的代码文件，这里我们将其命名为 <strong>code.py</strong>。此时，通过下面的命令就可以创建容器：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># runner_b8de2d4e-9b72-4e16-99ad-b0a4db6def7f 为后端自动生成的目录</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># 其中存放着待执行的代码文件 code.py</span>
-</span></span><span class="line"><span class="cl">docker run -t -d <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -v runner_b8de2d4e-9b72-4e16-99ad-b0a4db6def7f:/home/sandbox:rw <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  code_runner/python3 python code.py
-</span></span></code></pre></div><p>如果一切顺利的话，你会看到容器开始运行。至此，在容器中执行代码已成为现实。那么，如何得到代码的执行结果呢？通常情况下，你有下面这两种选择：</p>
-<ul>
-<li>容器日志：通过容器日志来捕获程序输出，即：docker logs &lt;容器Id&gt;</li>
-<li>输出重定向：将标准输出重定向到文件，然后再通过读取该文件来捕获程序输出</li>
-</ul>
-<p>如果选择第二种方案，你需要将脚本修改为类似下面这样：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker run -t -d <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -v runner_b8de2d4e-9b72-4e16-99ad-b0a4db6def7f:/home/sandbox:rw <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  code_runner/python3 python code.py &gt; output.txt
-</span></span></code></pre></div><p>这里，我们选择第一种方案，如图所示，程序输出的结果是：<strong>Hello World.</strong>：</p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241030174840.png" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241030174840.png"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241030174840.png"
-			alt="通过容器日志捕获程序输出">
-	</a>
-	
-	<figcaption>通过容器日志捕获程序输出</figcaption>
-	
-</figure></p>
-<p>接下来的流程就变得简单啦，因为我们只需要删除容器、清理目录、返回结果，这个过程非常简单不再赘述。在实际场景中，我们更希望将这一切自动化。当然，你可以使用类似 <code>os.system()</code> 的方案执行 docker 命令。但是，更好的选择是，直接使用 Docker 的 <a class="link" href="https://docker-py.readthedocs.io/en/stable/index.html"  target="_blank" rel="noopener"
-    >Python SDK</a>。此时，上述流程可以被简化为以下代码片段：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">uuid</span><span class="err">，</span> <span class="n">docker</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">container_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;./runner_</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="n">container</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">image</span><span class="o">=</span><span class="s1">&#39;code_runner/python3&#39;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="n">command</span><span class="o">=</span><span class="s1">&#39;python code.py&#39;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="n">volumes</span><span class="o">=</span><span class="p">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">container_name</span><span class="p">):</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;bind&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/sandbox&#39;</span><span class="err">，</span> 
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;mode&#39;</span><span class="p">:</span> <span class="s1">&#39;rw&#39;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}}</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="n">tty</span><span class="o">=</span><span class="kc">True</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="n">detach</span><span class="o">=</span><span class="kc">True</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">container</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">output</span> <span class="o">=</span> <span class="n">container</span><span class="o">.</span><span class="n">logs</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">container</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">container</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span></code></pre></div><p>基于这一原理，我们将镜像和命令与特定语言关联起来，从而得到一个配置文件。实际上，在设计的流程中，后端接收前端请求以后，首要任务是根据选定语言获取相应的镜像和命令。这使我们能够统一处理多种语言。如需支持新语言，只需准备相应的镜像和配置信息。以下配置文件展示了 Python、JavaScript、C# 和 C++ 的实现细节：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="s1">&#39;python3&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="s1">&#39;code_runner/python3&#39;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="s1">&#39;python code.py&#39;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;extension&#39;</span><span class="p">:</span> <span class="s1">&#39;py&#39;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="s1">&#39;javascript&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="s1">&#39;code_runner/nodejs&#39;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="s1">&#39;node code.js&#39;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;extension&#39;</span><span class="p">:</span> <span class="s1">&#39;js&#39;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="s1">&#39;csharp&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="s1">&#39;code_runner/dotnet&#39;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="s1">&#39;dotnet script code.csx&#39;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;extension&#39;</span><span class="p">:</span> <span class="s1">&#39;csx&#39;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="s1">&#39;csharp-mono&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="s1">&#39;code_runner/mono&#39;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="s2">&#34;sh -c &#39;mcs -out:code code.cs &amp;&amp; mono ./code&#39;&#34;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;extension&#39;</span><span class="p">:</span> <span class="s1">&#39;cs&#39;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="s1">&#39;cpp&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="s1">&#39;code_runner/cpp&#39;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="s2">&#34;sh -c &#39;g++ code.cpp -o code &amp;&amp; ./code&#39;&#34;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;extension&#39;</span><span class="p">:</span> <span class="s1">&#39;cpp&#39;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>如图所示，我们现在可以在代码沙箱中运行 C# 代码，这个沙箱目前利用 <a class="link" href="https://github.com/mono/docker"  target="_blank" rel="noopener"
-    >Mono</a> 来编译和执行程序：</p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031100019.png" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031100019.png"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031100019.png"
-			alt="通过代码沙箱运行 C# 代码">
-	</a>
-	
-	<figcaption>通过代码沙箱运行 C# 代码</figcaption>
-	
-</figure></p>
-<h2 id="实践过程中遇到的挑战">实践过程中遇到的挑战</h2>
-<p>到目前为止，一切都算顺利，可如果你认为这就是全部的话，那可就太天真啦！首当其冲的是各种编译型语言，以 C++ 为例，通常的编译命令如下，它实际上是将编译和运行两个步骤合二为一：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">g++ code.cpp -o code <span class="o">&amp;&amp;</span> ./code
-</span></span></code></pre></div><p>可如果你直接将这个命令应用到 Docker 上，你会发现这个 <strong>&amp;&amp;</strong> 无法被正确地识别。此时，你需要使用 <code>sh -c</code> 命令对当前命令进行包装，这样就可以完美地规避这个问题：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sh -c <span class="s1">&#39;g++ code.cpp -o code &amp;&amp; ./code&#39;</span>
-</span></span></code></pre></div><p>如果你运气不佳的话，你可能还会遇到 g++、mono、mcs 这些命令行工具在容器内找不到的情况，此时，你还需要添加必要的环境变量，以 <a class="link" href="https://github.com/mono/docker"  target="_blank" rel="noopener"
-    >Mono</a> 为例，你可以在 Dockerfile 中做如下处理：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ENV <span class="nv">PATH</span><span class="o">=</span><span class="s2">&#34;/usr/bin:/usr/local/bin:</span><span class="si">${</span><span class="nv">PATH</span><span class="si">}</span><span class="s2">&#34;</span>
-</span></span></code></pre></div><p>继续探索，博主这里考虑了两种 C# 脚本化的方案，它们分别是 Mono 和 <a class="link" href="https://github.com/dotnet-script/dotnet-script"  target="_blank" rel="noopener"
-    >dotnet-script</a>，其中：Mono 使用的是标准的 C# 语法，这意味着它必须要有入口方法 Main()，而 <a class="link" href="https://github.com/dotnet-script/dotnet-script"  target="_blank" rel="noopener"
-    >dotnet-script</a> 使用的是顶级语句，所有代码会被放置在一个隐式的 Main() 方法中执行。如果说这种语法上的细微差异尚可接受，那么，接下来请你做好破防的准备：</p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031165405.png" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031165405.png"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031165405.png"
-			alt="破防时刻，控制台乱码">
-	</a>
-	
-	<figcaption>破防时刻，控制台乱码</figcaption>
-	
-</figure></p>
-<p>当然，这并不是你的错，根本原因在于 Docker 输出的日志中包含特殊的 ANSI 转义序列，这些特殊字符通常用于控制终端输出时的颜色和样式，此刻变成了某种噪音。这里，博主介绍两种思路来解决这个问题：</p>
-<ul>
-<li>思路一：正则替换法，网络上广泛流传的正则表达式 r&rsquo;\x1b[[0-9;]*[mK]&rsquo;，经验证，无效！😹</li>
-</ul>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">remove_ansi_sequences</span><span class="p">(</span><span class="n">input_string</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ansi_escape</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\x1b\[([0-?]*[ -/]*[@-~])&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">ansi_escape</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="err">，</span> <span class="n">input_string</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x1b</span><span class="s1">=&#39;</span><span class="err">，</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-</span></span></code></pre></div><ul>
-<li>思路二：重定向法，将终端的标准输出重定向到一个文本文件。果然，大道至简！😂</li>
-</ul>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">dotnet script code.csx  &gt; ./output.txt
-</span></span></code></pre></div><p>个人更推荐这种方案，万一正则表达式再次失效了呢？到目前为止，这个代码沙箱里运行的都是代码片段，这意味着我们可以先暂时忘掉工程实践中的层级结构，你不必通过工程文件或者解决方案来描述各个文件之间的关系。可这样自然就会产生一个问题，代码中的依赖的第三方库该怎么办？此时你有两种策略可供选择：</p>
-<ul>
-<li>策略一：在镜像里通过包管理器提前安装好常用的第三方库，最典型的例子是 <a class="link" href="https://www.anaconda.com/download"  target="_blank" rel="noopener"
-    >Anaconda</a>，它预装了大量与科学计算相关的第三方库，如 <a class="link" href="https://numpy.org/"  target="_blank" rel="noopener"
-    >NumPy</a>、<a class="link" href="https://pandas.pydata.org/"  target="_blank" rel="noopener"
-    >Pandas</a> 等，可以做到一般意义上的开箱即用。</li>
-<li>策略二：在代码沙箱运行时自动安装第三方库，如果你使用过 <a class="link" href="https://jupyter.org/try-jupyter/lab/"  target="_blank" rel="noopener"
-    >Jupyter Notebook</a>，相信你会非常熟悉它管理依赖的方式。如下图所示，我们可以在 Jupyter Notebook 中使用 pip、NuGet 这类包管理器：</li>
-</ul>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101085426.png" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101085426.png"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101085426.png"
-			alt="在 Jupyter Notebook 中使用 pip">
-	</a>
-	
-	<figcaption>在 Jupyter Notebook 中使用 pip</figcaption>
-	
-</figure></p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101091645.png" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101091645.png"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101091645.png"
-			alt="在 Jupyter Notebook 中使用 NuGet">
-	</a>
-	
-	<figcaption>在 Jupyter Notebook 中使用 NuGet</figcaption>
-	
-</figure></p>
-<p>在这种情况下，虽然我们依然是在 Jupyter Notebook 的单元格里写代码，可工程化的思维早已深入人心，“<strong>代码即工程，工程即代码</strong>”。只要大模型可以同时生成代码和依赖项，那么，理论上这些代码上就可以通过 Jupyter Notebook 运行起来。所以，我接下来的想法是，在有了 dotnet-script 和 Mono 这两种 C# 的编译器以后，我想继续扩展出基于 Jupyter Notebook 的方案，至少现在解决了第三方库的依赖问题，对吧？</p>
-<h2 id="jupyter-与结果可视化">Jupyter 与结果可视化</h2>
-<p>你可能会疑惑，既然 dotnet-script 和 Mono 都能运行 C#，为什么还要考虑 Jupyter？除了处理第三方库依赖问题以外，Jupyter 的可视化功能是我最为看重的特性。比如，
-对于数据分析这类任务，如果我们能让大模型将分析结果以图表形式展示出来，这无疑会极大地提升产品的用户体验。再比如，我之前尝试 <a class="link" href="/posts/semantic-kernel-driven-text2sql-practice/" >Text2SQL</a> 的时候，如果 SQL 查询结果能以表格或 Excel 格式展现出来，效果会不会更佳？我认为，<strong>Code Interpreter 适用于两种场景，即：非展示类场景和展示类场景，前者是用程序执行的结果作为上下文，而后者是需要对程序执行的结果进行展示</strong>。显然，在后面这种场景中，Jupyter Notebook 表现上要更胜一筹。如下图所示，我们可以在 Jupyter Notebook 中绘制出各式各样的图表：</p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Visualization.jpg" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Visualization.jpg"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Visualization.jpg"
-			alt="通过 Jupyter 实现可视化">
-	</a>
-	
-	<figcaption>通过 Jupyter 实现可视化</figcaption>
-	
-</figure></p>
-<p>好了，现在让我们来思考，如何将 Jupyter 与我们在前面收获到的经验结合起来。这里需要用到两个重要的工具: <a class="link" href="https://nbformat.readthedocs.io/en/latest/"  target="_blank" rel="noopener"
-    >nbformat</a> 以及 <a class="link" href="https://nbconvert.readthedocs.io/en/latest/"  target="_blank" rel="noopener"
-    >nbconvet</a>。其中，前者负责将代码片段转化为 <code>.ipynb</code> 格式的笔记本，后者负责执行笔记本、获取结果以及格式转换等。如图所示，下面是与 Jupyter 相关的流程示意图：</p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Notebook-Flow.drawio.png" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Notebook-Flow.drawio.png"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Notebook-Flow.drawio.png"
-			alt="基于 Jupyter 的代码执行流程示意图">
-	</a>
-	
-	<figcaption>基于 Jupyter 的代码执行流程示意图</figcaption>
-	
-</figure></p>
-<p>在整个流程中，第一步是从代码片段创建 <code>.ipynb</code> 格式的笔记本文件，而从 <a class="link" href="https://nbformat.readthedocs.io/en/latest/format_description.html"  target="_blank" rel="noopener"
-    >nbformat</a> 的文档中我们可以了解到，Jupyter 的笔记本文件其实是一个 JSON 文件，其标准结构通常类似于下面这样：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nt">&#34;kernel_info&#34;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="err">#</span> <span class="err">if</span> <span class="err">kernel_info</span> <span class="err">is</span> <span class="err">defined，</span> <span class="err">its</span> <span class="err">name</span> <span class="err">field</span> <span class="err">is</span> <span class="err">required.</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;the name of the kernel&#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="s2">&#34;language_info&#34;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="err">#</span> <span class="err">if</span> <span class="err">language_info</span> <span class="err">is</span> <span class="err">defined，</span> <span class="err">its</span> <span class="err">name</span> <span class="err">field</span> <span class="err">is</span> <span class="err">required.</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;the programming language of the kernel&#34;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">            <span class="s2">&#34;version&#34;</span><span class="p">:</span> <span class="s2">&#34;the version of the language&#34;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">            <span class="s2">&#34;codemirror_mode&#34;</span><span class="p">:</span> <span class="s2">&#34;The name of the codemirror mode to use [optional]&#34;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;nbformat&#34;</span><span class="p">:</span> <span class="mi">4</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;nbformat_minor&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;cells&#34;</span><span class="p">:</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">        <span class="err">#</span> <span class="err">list</span> <span class="err">of</span> <span class="err">cell</span> <span class="err">dictionaries，</span> <span class="err">see</span> <span class="err">below</span>
-</span></span><span class="line"><span class="cl">    <span class="p">]</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>对我们而言，这里最关键的是其中的 cells 节点，因为我们需要将代码片段放在这里，在 Jupyter 中通常有三种形式的单元格，即：Code、Markdown 以及 Raw，它们之间唯一的区别是 Code 类型的单元格可以有输出、执行次数等信息，这些细节均可以在文档中找到，这里不再赘述。通常，单元格的标准结构定义如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;cell_type&#34;</span><span class="p">:</span> <span class="s2">&#34;type&#34;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{}</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;single string or [list， of， strings]&#34;</span><span class="err">，</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>不要紧张，我们不会愚蠢到要去手写这个文件的地步，相信我，通过 nbformat 包这一切会变得非常简单：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">nbformat</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">code_to_ipynb</span><span class="p">(</span><span class="n">code_string</span><span class="err">，</span> <span class="n">notebook_name</span><span class="o">=</span><span class="s1">&#39;output_notebook.ipynb&#39;</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="n">nb</span> <span class="o">=</span> <span class="n">nbformat</span><span class="o">.</span><span class="n">v4</span><span class="o">.</span><span class="n">new_notebook</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">code_cell</span> <span class="o">=</span> <span class="n">nbformat</span><span class="o">.</span><span class="n">v4</span><span class="o">.</span><span class="n">new_code_cell</span><span class="p">(</span><span class="n">code_string</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">nb</span><span class="p">[</span><span class="s1">&#39;cells&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code_cell</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">notebook_name</span><span class="err">，</span> <span class="s1">&#39;w&#39;</span><span class="err">，</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">nbformat</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">nb</span><span class="err">，</span> <span class="n">f</span><span class="p">)</span>
-</span></span></code></pre></div><p>现在，我们拥有了一个 <code>.ipynb</code> 格式的笔记本文件，你可以直接通过 Jupyter Notebook 或者  JupyterLab 打开它。当然，我们这里更希望它可以在后台静默执行，因为我们并不需要用到 Jupyter 的可视化界面。此时，我们可以使用 <a class="link" href="https://nbconvert.readthedocs.io/en/latest/"  target="_blank" rel="noopener"
-    >nbconvert</a> 这个工具，它可以将 <code>.ipynb</code> 格式的笔记本文件转换为 HTML、LateX、PDF、Markdown 等常见格式，在指定 Kernel 的情况下，你甚至可以运行整个笔记本文件中的代码，下面是部分命令示例：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 将笔记本转换为 HTML</span>
-</span></span><span class="line"><span class="cl">jupyter nbconvert --to html notebook.ipynb --output notebook.html
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 运行笔记本，然后转换为 HTML</span>
-</span></span><span class="line"><span class="cl">jupyter nbconvert --execute --to html notebook.ipynb --output notebook.html
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 运行笔记本，忽略输入，然后转换为 HTML</span>
-</span></span><span class="line"><span class="cl">jupyter nbconvert --execute --no-input --to html notebook.ipynb --output notebook.html
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 运行笔记本，忽略输入，指定 Kernel，然后转换为 HTML</span>
-</span></span><span class="line"><span class="cl">jupyter nbconvert --execute --no-input --to html --ExecutePreprocessor.kernel_name<span class="o">=</span>python3 notebook.ipynb --output notebook.html
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 运行笔记本，直接覆盖原来的笔记本</span>
-</span></span><span class="line"><span class="cl">jupyter nbconvert --to notebook --execute  --inplace notebook.ipynb
-</span></span></code></pre></div><p>如果你不喜欢命令行，你还可以使用 nbconvert 的<a class="link" href="https://nbconvert.readthedocs.io/en/latest/nbconvert_library.html"  target="_blank" rel="noopener"
-    >类库</a>，这一刻，风和你都是自由的：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">nbformat</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nbconvert</span> <span class="kn">import</span> <span class="n">HTMLExporter</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">notebook</span> <span class="o">=</span> <span class="n">nbformat</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;notebook.ipynb&#39;</span><span class="err">，</span> <span class="n">as_version</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">html_exporter</span> <span class="o">=</span> <span class="n">HTMLExporter</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s2">&#34;classic&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="n">body</span><span class="err">，</span> <span class="n">resources</span><span class="p">)</span> <span class="o">=</span> <span class="n">html_exporter</span><span class="o">.</span><span class="n">from_notebook_node</span><span class="p">(</span><span class="n">notebook</span><span class="p">)</span>
-</span></span></code></pre></div><p>至此，整个 Jupyter 相关的处理流程便在逻辑上实现了闭环，只要我们生成 <code>.ipynb</code> 格式的笔记本并将其挂载到容器中，然后再通过 nbconvert 完成转换即可。考虑到我们未来需要在前端中展示 Jupyter 的运行结果，我们直接返回 HTML 即可。那么，接下来，就是见证奇迹的时刻：</p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101180151.png" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101180151.png"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101180151.png"
-			alt="执行 Jupyter 脚本并在前端展示结果-1">
-	</a>
-	
-	<figcaption>执行 Jupyter 脚本并在前端展示结果-1</figcaption>
-	
-</figure></p>
-<p><figure 
-	>
-	<a href="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241105170530.png" >
-		<img src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241105170530.png"
-			
-			
-			
-            data-src="/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241105170530.png"
-			alt="执行 Jupyter 脚本并在前端展示结果-2">
-	</a>
-	
-	<figcaption>执行 Jupyter 脚本并在前端展示结果-2</figcaption>
-	
-</figure></p>
-<h1 id="本文小结">本文小结</h1>
-<p>从 OpenAI 的 Code Interpreter 到 Canvas，从 Claude 的 Artifacts 到 Computer Use，我们一起见证了 AI 编程领域的快速发展。在此过程中，代码执行环境的安全性和隔离性成为了一个重要议题。本文探讨了基于容器技术的代码沙箱方案，这是对挑战的积极探索和实践。容器技术完美解决了代码执行的隔离问题，每个代码片段都在独立的容器中运行，拥有自己的运行时环境，不影响宿主系统。这种方案不仅确保了安全性，还提供了统一的环境管理能力。实践过程充满挑战、一波三折，可容器技术带来的便利性不容忽视。更重要的是，这种方案具有良好的可扩展性，支持多种编程语言，为 AI 运行代码提供了坚实的技术基础。展望未来，随着生成式 AI 技术的进步，代码沙箱的重要性将日益凸显，或许正如 OpenAI 研究主管所说的 “<strong>终极 AGI 界面是一张空白画布</strong>”，代码沙箱将会成为通向这个愿景的重要基础设施之一，生成代码、执行代码、可视化结果将成为AGI世界的标准能力。</p>
-<h1 id="参考链接">参考链接</h1>
-<ul>
-<li><a class="link" href="https://jtsang.me/posts/implements-your-own-chatgpt-interpreter/"  target="_blank" rel="noopener"
-    >如何实现自己的 ChatGPT Code Interpreter</a></li>
-<li><a class="link" href="https://github.com/xjq7/runcode/"  target="_blank" rel="noopener"
-    >https://github.com/xjq7/runcode</a></li>
-<li><a class="link" href="https://onecompiler.com/"  target="_blank" rel="noopener"
-    >Code online with One Compiler</a></li>
-</ul>
-
-</section>
-
-
-    <footer class="article-footer">
-
-    
-
-<div style="padding: 10px 0; margin: 20px auto; width: 100%; font-size:16px; text-align: center;">
-    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
-        <span>打赏</span></button>
-    <div id="QR" style="display: none;">
-        
-        <div id="wechat" style="display: inline-block">
-            <a class="fancybox" rel="group">
-                <img id="wechat_qr" src="/imgs/reward/wechat.jpg" alt="wechat"></a>
-            <p>微信打赏</p>
-        </div>
-        
-        <div id="wechat" style="display: inline-block">
-            <a class="fancybox" rel="group">
-                <img id="alipay_qr" src="/imgs/reward/alipay.jpg" alt="alipay"></a>
-            <p>支付宝打赏</p>
-        </div>
-        
-    </div>
-</div>
-
-
-    
-    <section class="article-tags">
-        
-            <a href="/tags/%E5%AE%B9%E5%99%A8/">容器</a>
-        
-            <a href="/tags/%E6%B2%99%E7%AE%B1/">沙箱</a>
-        
-            <a href="/tags/jupyter/">Jupyter</a>
-        
-            <a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%A3%E9%87%8A%E5%99%A8/">代码解释器</a>
-        
-    </section>
-
-
-    <div class="social-share"></div>
-    
-    <section class="article-footer-notes">
-
-        
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
-</svg>
-
-
-
-        <span>
-            BY-NC-SA 4.0
-        </span>
-        
-
-        
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <polyline points="12 7 12 12 15 15" />
-</svg>
-
-
-
-        <span>
-            最后更新 2024-11-08
-        </span>
-        
-    </section>
-</footer>
-
-
-    
-        <link 
-                rel="stylesheet" 
-                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
-            ><script 
-                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
-                defer
-                >
-            </script><script 
-                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
-                defer
-                >
-            </script><script>
-    window.addEventListener("DOMContentLoaded", () => {
-        renderMathInElement(document.querySelector(`.article-content`), {
-            delimiters: [
-                { left: "$$", right: "$$", display: true },
-                { left: "$", right: "$", display: false },
-                { left: "\\(", right: "\\)", display: false },
-                { left: "\\[", right: "\\]", display: true }
-            ]
-        });})
-</script>
-    
-</article>
-
-    
-
-    <aside class="related-contents--wrapper">
-    
-    
-    
-        <h2 class="section-title">相关文章</h2>
-        <div class="related-contents">
-            <div class="flex article-list--tile">
-                
-                    
-<article class="has-image">
-    <a href="/posts/progressive-thinking-about-docker-container-configuration-information/">
-        
-        
-            <div class="article-image">
-                
-                    <img src="/posts/progressive-thinking-about-docker-container-configuration-information/spiral-g6a266c317_1280.jpg" loading="lazy" data-key="Progressive-Thinking-About-Docker-Container-Configuration-Information" data-hash="/posts/progressive-thinking-about-docker-container-configuration-information/spiral-g6a266c317_1280.jpg"/>
-                
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">关于 Docker 容器配置信息的渐进式思考</h2>
-        </div>
-    </a>
-</article>
-                
-                    
-<article class="has-image">
-    <a href="/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/">
-        
-        
-            <div class="article-image">
-                
-                    <img src="/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/russian-gd53d0982f_1280.jpg" loading="lazy" data-key="Integrate-Crontab-Scheduled-Tasks-Inside-Docker-Containers" data-hash="/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/russian-gd53d0982f_1280.jpg"/>
-                
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">在 Docker 容器内集成 Crontab 定时任务</h2>
-        </div>
-    </a>
-</article>
-                
-                    
-<article class="has-image">
-    <a href="/posts/172025911/">
-        
-        
-            <div class="article-image">
-                
-                    <img src="https://i.loli.net/2021/08/15/fplPBvICiEOYsKR.jpg" loading="lazy" data-key="172025911" data-hash="https://i.loli.net/2021/08/15/fplPBvICiEOYsKR.jpg"/>
-                
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">你不可不知的容器编排进阶技巧</h2>
-        </div>
-    </a>
-</article>
-                
-                    
-<article class="has-image">
-    <a href="/posts/review-and-rethink-backend-universal-query-solutions/">
-        
-        
-            <div class="article-image">
-                
-                    <img src="/posts/review-and-rethink-backend-universal-query-solutions/sea-8948636_1280.jpg" loading="lazy" data-key="Review-and-Rethink-Backend-Universal-Query-Solutions" data-hash="/posts/review-and-rethink-backend-universal-query-solutions/sea-8948636_1280.jpg"/>
-                
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">温故而知新：后端通用查询方案的再思考</h2>
-        </div>
-    </a>
-</article>
-                
-                    
-<article class="has-image">
-    <a href="/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/">
-        
-        
-            <div class="article-image">
-                
-                    <img src="/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/cover.png" loading="lazy" data-key="Cancellation-Mechanism-CancellationToken-Cooperative-Scene" data-hash="/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/cover.png"/>
-                
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">浅议 CancellationToken 在前后端协同取消场景中的应用</h2>
-        </div>
-    </a>
-</article>
-                
-            </div>
-        </div>
-    
-</aside>
-
-     
-    
-        
-    <script src='//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js'></script>
-<div id="waline" class="waline-container"></div>
-<style>
-    .waline-container {
-        background-color: var(--card-background);
-        border-radius: var(--card-border-radius);
-        box-shadow: var(--shadow-l1);
-        padding: var(--card-padding);
-    }
-    .waline-container .vcount {
-        color: var(--card-text-color-main);
-    }
-</style>
-
-
-    <script>
-        
-        var waline = new Waline({
-            el: '#waline',
-            serverURL: 'https:\/\/waline.yuanpei.me\/',
-            lang: 'zh',
-            dark: 'auto',
-            path: window.location.href,
-            requiredMeta: ['nick','mail'],
-        });
-    </script>
-
-
-
-    
-
-    <footer class="site-footer">
-    <section class="copyright">
-        &copy; 
-        
-            2014 - 
-        
-        2024 元视角
-    </section>
-    
-    <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> v0.126.1 <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.7.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> <br />
-        已创作 274 篇文章，共计 1038468 字 <br />
-        
-    </section>
-    <section class="written-by">
-        <img src="/imgs/Written-By-Human-Not-By-AI-Badge-white.svg" />
-    </section>
-</footer>
-
-
-    
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-    
-    <div class="pswp__bg"></div>
-
-    
-    <div class="pswp__scroll-wrap">
-
-        
-        <div class="pswp__container">
-            <div class="pswp__item"></div>
-            <div class="pswp__item"></div>
-            <div class="pswp__item"></div>
-        </div>
-
-        
-        <div class="pswp__ui pswp__ui--hidden">
-
-            <div class="pswp__top-bar">
-
-                
-
-                <div class="pswp__counter"></div>
-
-                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-
-                <button class="pswp__button pswp__button--share" title="Share"></button>
-
-                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-
-                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-
-                
-                
-                <div class="pswp__preloader">
-                    <div class="pswp__preloader__icn">
-                        <div class="pswp__preloader__cut">
-                            <div class="pswp__preloader__donut"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-                <div class="pswp__share-tooltip"></div>
-            </div>
-
-            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-            </button>
-
-            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-            </button>
-
-            <div class="pswp__caption">
-                <div class="pswp__caption__center"></div>
-            </div>
-
-        </div>
-
-    </div>
-
-</div><script 
-                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
-                defer
-                >
-            </script><script 
-                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
-                defer
-                >
-            </script><link 
-                rel="stylesheet" 
-                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
-            ><link 
-                rel="stylesheet" 
-                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
-            >
-
-            </main>
-    
-    
-    <aside class="sidebar right-sidebar sticky">
-        
-            <form action="/search/" class="search-form widget" >
-        <p>
-            <label>搜索</label>
-            <input name="keyword" required placeholder="请输入关键词" />
-        
-            <button title="搜索">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="10" cy="10" r="7" />
-  <line x1="21" y1="21" x2="15" y2="15" />
-</svg>
-
-
-
-            </button>
-        </p>
-    </form>
-        
-            
-    <section class="widget archives">
-        
-        <h2 class="widget-title section-title">目录</h2>
-        
-        <div class="widget--toc">
-            <nav id="TableOfContents">
-  <ol>
-    <li><a href="#为什么需要代码解释器">为什么需要代码解释器？</a></li>
-    <li><a href="#容器技术驱动的代码沙箱">容器技术驱动的代码沙箱</a>
-      <ol>
-        <li><a href="#实践过程中遇到的挑战">实践过程中遇到的挑战</a></li>
-        <li><a href="#jupyter-与结果可视化">Jupyter 与结果可视化</a></li>
-      </ol>
-    </li>
-    <li><a href="#本文小结">本文小结</a></li>
-    <li><a href="#参考链接">参考链接</a></li>
-  </ol>
-</nav>
-        </div>
-    </section>
-
-        
-            <section class="widget archives">
-        
-        <h2 class="widget-title section-title">归档</h2>
-
-        
-        
-        
-        
-        
-        <div class="widget-archive--list">
-            <div class="archives-year">
-                    <a href="/archives/#2024">
-                        
-                            <span class="year">2024</span>
-                            <span class="count">14</span>
-                        
-                    </a> 
-                </div>
-            <div class="archives-year">
-                    <a href="/archives/#2023">
-                        
-                            <span class="year">2023</span>
-                            <span class="count">11</span>
-                        
-                    </a> 
-                </div>
-            <div class="archives-year">
-                    <a href="/archives/#2022">
-                        
-                            <span class="year">2022</span>
-                            <span class="count">27</span>
-                        
-                    </a> 
-                </div>
-            <div class="archives-year">
-                    <a href="/archives/#2021">
-                        
-                            <span class="year">2021</span>
-                            <span class="count">42</span>
-                        
-                    </a> 
-                </div>
-            <div class="archives-year">
-                    <a href="/archives/#2020">
-                        
-                            <span class="year">2020</span>
-                            <span class="count">26</span>
-                        
-                    </a> 
-                </div>
-            <div class="archives-year">
-                    <a href="/archives/#2019">
-                        
-                            <span class="year">更多</span>
-                        
-                    </a> 
-                </div>
-            
-        </div>
-    </section>
-        
-            <section class="widget archives">
-    
-    <h2 class="widget-title section-title">日历</h2>
-    <div class="widget--toc" style="background-color: white; border-radius: 15px; padding: 10px; margin: 20px auto; width: 300px; height: 480px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
-        <img id="calendar-cover" src="" style="object-fit: cover; width: 100%; height: 100%;" />
-    </div>
-</section>
-<script>
-    const getImageUrl = (date) => {
-        const currentYear = date.getFullYear();
-        const currentMonth = String(date.getMonth() + 1).padStart(2, '0');
-        const currentDate = String(date.getDate()).padStart(2, '0');
-        return `https://img.owspace.com/Public/uploads/Download/${currentYear}/${currentMonth}${currentDate}.jpg`
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const eleImg = document.querySelector("#calendar-cover");
-        if (document.location.pathname.startsWith('/posts')) {
-            let publishedTime = document.querySelector('meta[property="article:published_time"]').content;
-            publishedTime = publishedTime.substring(0, 10);
-            eleImg.src = getImageUrl(new Date(publishedTime))
-        } else {
-            eleImg.src = getImageUrl(new Date())
-        }
-    });
-    </script>
-        
-            <section class="widget tagCloud">
-    
-    <h2 class="widget-title section-title">标签云</h2>
-
-    <div class="tagCloud-tags">
-        
-            <a href="/tags/%E5%88%86%E9%A1%B5/" class="font_size_1">
-                分页
-            </a>
-        
-            <a href="/tags/%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/" class="font_size_1">
-                读写分离
-            </a>
-        
-            <a href="/tags/%E9%9C%8D%E9%87%91/" class="font_size_1">
-                霍金
-            </a>
-        
-            <a href="/tags/%E7%BE%8E%E6%9C%AF/" class="font_size_1">
-                美术
-            </a>
-        
-            <a href="/tags/%E8%A3%85%E9%A5%B0%E5%99%A8/" class="font_size_1">
-                装饰器
-            </a>
-        
-            <a href="/tags/%E7%BD%91%E5%85%B3/" class="font_size_1">
-                网关
-            </a>
-        
-            <a href="/tags/json/" class="font_size_1">
-                JSON
-            </a>
-        
-            <a href="/tags/%E9%82%AA%E4%B8%8D%E5%8E%8B%E6%AD%A3/" class="font_size_1">
-                邪不压正
-            </a>
-        
-            <a href="/tags/matplotlib/" class="font_size_1">
-                Matplotlib
-            </a>
-        
-            <a href="/tags/%E7%BD%91%E6%98%93/" class="font_size_1">
-                网易
-            </a>
-        
-            <a href="/tags/pwa/" class="font_size_1">
-                PWA
-            </a>
-        
-            <a href="/tags/mapreduce/" class="font_size_1">
-                MapReduce
-            </a>
-        
-            <a href="/tags/%E8%B5%84%E6%BA%90%E6%8F%90%E5%8F%96/" class="font_size_1">
-                资源提取
-            </a>
-        
-            <a href="/tags/trace/" class="font_size_1">
-                Trace
-            </a>
-        
-            <a href="/tags/ar/" class="font_size_3">
-                AR
-            </a>
-        
-            <a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" class="font_size_3">
-                中间件
-            </a>
-        
-            <a href="/tags/%E9%83%A8%E7%BD%B2/" class="font_size_1">
-                部署
-            </a>
-        
-            <a href="/tags/%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/" class="font_size_1">
-                单元测试
-            </a>
-        
-            <a href="/tags/%E5%A4%95%E9%9B%BE%E8%8A%B1%E5%9B%AD/" class="font_size_1">
-                夕雾花园
-            </a>
-        
-            <a href="/tags/%E5%8F%82%E5%B7%AE/" class="font_size_1">
-                参差
-            </a>
-        
-            <a href="/tags/%E4%BA%91%E5%8E%9F%E7%94%9F/" class="font_size_1">
-                云原生
-            </a>
-        
-            <a href="/tags/travis/" class="font_size_3">
-                Travis
-            </a>
-        
-            <a href="/tags/%E7%A9%BF%E6%90%AD/" class="font_size_1">
-                穿搭
-            </a>
-        
-            <a href="/tags/agent/" class="font_size_1">
-                Agent
-            </a>
-        
-            <a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%A3%E9%87%8A%E5%99%A8/" class="font_size_1">
-                代码解释器
-            </a>
-        
-
-        <a href="/tags" class="font_size_9999">
-            更多
-        </a>
-    </div>
-</section>
-        
-    </aside>
-
-
-        </div>
-        <script 
-                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
-                
-                >
-            </script>
-<script type="text/javascript" src="/ts/main.js" defer></script>
-<script type="text/javascript" src="/ts/badge.js"></script>
-    <script type="text/javascript">
-        let createBadge = window.createBadge;
-        createBadge('Git', '7f1e7a2', '#35495e', '#ffc107');
-        createBadge('Hugo', 'v0.126.1', '#35495e', '#41b883');
-        
-    </script><script type="text/javascript" src="/ts/chat-widget.js" defer></script>
-
-
-
-    </body>
-</html>
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=referrer content="no-referrer"><meta name=viewport content='width=device-width,initial-scale=1'><meta http-equiv=content-language content='zh-CN'><link rel=apple-touch-icon href=/imgs/avatar.jpg><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="black"><link rel=icon type=image/x-icon href=/imgs/favicon.ico><link rel=icon type=image/png href=/imgs/favicon.png><meta name=description content='本文探讨了容器技术在代码沙箱实践中的应用与思考。作者尝试复刻 OpenAI 的 Canvas 功能，并比较了 Canvas 与 Claude 的 Artifacts 在编程和写作领域的侧重点。文章强调了代码解释器在 AI 生成代码并执行代码中的重要性，并通过 Semantic Kernel 的 Code Interpreter 插件展示了其扩展 LLM 能力边界的潜力。同时，讨论了现有 Code Interpreter 的隔离性问题，并提出了基于容器技术的解决方案，详细描述了创建隔离代码沙箱的过程和遇到的挑战。最后，文章展望了代码沙箱在 AI 编程领域的重要性，并提出了通过 Jupyter 实现代码可视化的想法。'><meta name=keywords content='容器,沙箱,Jupyter,代码解释器'><meta name=author content="飞鸿踏雪"><title>容器技术驱动下的代码沙箱实践与思考 - 元视角</title>
+<link rel=canonical href=https://blog.yuanpei.me/posts/container-technology-driven-code-sandbox-practice-and-reflection/><link rel=stylesheet href=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/scss/style.min.b338d30a09f819f1dc51e12fd314da1531df7b4f8a23b7bb3b112a8a07eeaa0f.css><meta property='og:title' content='容器技术驱动下的代码沙箱实践与思考 - 元视角'><meta property='og:description' content='本文探讨了容器技术在代码沙箱实践中的应用与思考。作者尝试复刻 OpenAI 的 Canvas 功能，并比较了 Canvas 与 Claude 的 Artifacts 在编程和写作领域的侧重点。文章强调了代码解释器在 AI 生成代码并执行代码中的重要性，并通过 Semantic Kernel 的 Code Interpreter 插件展示了其扩展 LLM 能力边界的潜力。同时，讨论了现有 Code Interpreter 的隔离性问题，并提出了基于容器技术的解决方案，详细描述了创建隔离代码沙箱的过程和遇到的挑战。最后，文章展望了代码沙箱在 AI 编程领域的重要性，并提出了通过 Jupyter 实现代码可视化的想法。'><meta property='og:url' content='https://blog.yuanpei.me/posts/container-technology-driven-code-sandbox-practice-and-reflection/'><meta property='og:site_name' content='元视角'><meta property='og:type' content='article'><meta property='article:section' content='Posts'><meta property='article:tag' content='容器'><meta property='article:tag' content='沙箱'><meta property='article:tag' content='Jupyter'><meta property='article:tag' content='代码解释器'><meta property='article:published_time' content='2024-10-28T12:52:10+00:00'><meta property='article:modified_time' content='2024-11-08T10:21:22+08:00'><meta property='og:image' content='https://blog.yuanpei.me/posts/container-technology-driven-code-sandbox-practice-and-reflection/developer-8829709_1280.jpg'><meta name=twitter:title content="容器技术驱动下的代码沙箱实践与思考 - 元视角"><meta name=twitter:description content="本文探讨了容器技术在代码沙箱实践中的应用与思考。作者尝试复刻 OpenAI 的 Canvas 功能，并比较了 Canvas 与 Claude 的 Artifacts 在编程和写作领域的侧重点。文章强调了代码解释器在 AI 生成代码并执行代码中的重要性，并通过 Semantic Kernel 的 Code Interpreter 插件展示了其扩展 LLM 能力边界的潜力。同时，讨论了现有 Code Interpreter 的隔离性问题，并提出了基于容器技术的解决方案，详细描述了创建隔离代码沙箱的过程和遇到的挑战。最后，文章展望了代码沙箱在 AI 编程领域的重要性，并提出了通过 Jupyter 实现代码可视化的想法。"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://blog.yuanpei.me/posts/container-technology-driven-code-sandbox-practice-and-reflection/developer-8829709_1280.jpg'><meta name=msvalidate.01 content="713A48A3FE17D4841C292A6B3942EB4C"><meta name=baidu-site-verification content="c50FGqYOSh"><meta name=google-site-verification content="8AqkWAh0QNZqCYB2oKA5yIrqEA3sgxUvglVmtWkuU0s"><script src=//instant.page/5.1.0 type=module integrity=sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/misans@3.1.1/lib/misans-400-regular.min.css></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex
+on-phone--column extended"><div id=article-toolbar><a href=/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
+<span>返回</span></a></div><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header class=site-info><figure class=site-avatar><a href=/><img src=/img/default-avatar_hua3ac297279c484e6ad1f3f5acd3cb005_125342_300x0_resize_q75_box.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>👌</span></figure><h1 class=site-name><a href=/>元视角</a></h1><h2 class=site-description>起风了，唯有努力生存</h2><ol class=social-menu><li><a href=mailto:qinyuanpei@163.com rel=noreferrer target=_blank title=Mail><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg></a></li><li><a href=https://github.com/qinyuanpei rel=noreferrer target=_blank title=GitHub><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://www.zhihu.com/people/qinyuanpei rel=noreferrer target=_blank title=Zhihu><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-zhihu" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 6h6v12h-2l-2 2-1-2h-1z"/><path d="M4 12h6.5"/><path d="M10.5 6h-5"/><path d="M6 4c-.5 2.5-1.5 3.5-2.5 4.5"/><path d="M8 6v7c0 4.5-2 5.5-4 7"/><path d="M11 18l-3-5"/></svg></a></li><li><a href=https://www.douban.com/people/60029335 rel=noreferrer target=_blank title=Douban><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-douban" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h16"/><path d="M5 4h14"/><path d="M8 8h8a2 2 0 012 2v2a2 2 0 01-2 2H8a2 2 0 01-2-2v-2a2 2 0 012-2z"/><path d="M16 14l-2 6"/><path d="M8 17l1 3"/></svg></a></li><li><a href=https://weibo.com/1278609231/profile rel=noreferrer target=_blank title=Weibo><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-weibo" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 14.127C19 17.2 15.498 20 11 20c-4.126.0-8-2.224-8-5.565.0-1.78.984-3.737 2.7-5.567 2.362-2.51 5.193-3.687 6.551-2.238.415.44.752 1.39.749 2.062 2-1.615 4.308.387 3.5 2.693 1.26.557 2.5.538 2.5 2.742z"/><path d="M15 4h1a5 5 0 015 5v1"/></svg></a></li><li><a href=/index.xml rel=noreferrer target=_blank title=RSS><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-rss" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="5" cy="19" r="1"/><path d="M4 4a16 16 0 0116 16"/><path d="M4 11a9 9 0 019 9"/></svg></a></li></ol></header><ol class=menu id=main-menu><li><a href=/><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>首页</span></a></li><li><a href=/archives><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>归档</span></a></li><li><a href=/works><!doctype html><svg t="1643870079685" class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" p-id="1249" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><defs><style/></defs><path d="M843.093333 815.36l-189.44-294.826667A85.333333 85.333333.0 01640 474.453333V170.666667h21.333333a21.333333 21.333333.0 0021.333334-21.333334v-42.666666a21.333333 21.333333.0 00-21.333334-21.333334H362.666667a21.333333 21.333333.0 00-21.333334 21.333334v42.666666a21.333333 21.333333.0 0021.333334 21.333334H384V474.88a85.333333 85.333333.0 01-13.653333 46.08l-189.44 294.826667a64.426667 64.426667.0 000 66.56l13.653333 24.32a64.853333 64.853333.0 0055.466667 32h525.226666a64.853333 64.853333.0 0055.466667-32L844.8 881.92a63.573333 63.573333.0 00-1.706667-66.56zm-400.64-248.32a173.226667 173.226667.0 0026.88-92.16V170.666667h85.333334v303.786666a167.68 167.68.0 0027.306666 92.16l74.24 116.053334H367.786667z" p-id="1250" fill="#8a8a8a"/></svg>
+<span>作品</span></a></li><li><a href=/search><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>搜索</span></a></li><li><a href=/links><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572 12 20l-7.5-7.428A5 5 0 1112 6.006a5 5 0 117.5 6.572"/><path d="M12 6 8.707 9.293a1 1 0 000 1.414l.543.543c.69.69 1.81.69 2.5.0l1-1a3.182 3.182.0 014.5.0l2.25 2.25"/><path d="M12.5 15.5l2 2"/><path d="M15 13l2 2"/></svg>
+<span>友链</span></a></li><li class=current><a href=/about><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+<span>关于</span></a></li><li id=dark-mode-toggle><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14.828 14.828A4 4 0 109.172 9.172a4 4 0 005.656 5.656z"/><path d="M6.343 17.657l-1.414 1.414"/><path d="M6.343 6.343 4.929 4.929"/><path d="M17.657 6.343l1.414-1.414"/><path d="M17.657 17.657l1.414 1.414"/><path d="M4 12H2"/><path d="M12 4V2"/><path d="M20 12h2"/><path d="M12 20v2"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3c.132.0.263.0.393.0a7.5 7.5.0 007.92 12.446A9 9 0 1112 2.992z"/><path d="M17 4a2 2 0 002 2 2 2 0 00-2 2 2 2 0 00-2-2 2 2 0 002-2"/><path d="M19 11h2m-1-1v2"/></svg>
+<span id=dark-mode-text>夜间模式</span></li></ol></aside><main class="main full-width"><article class="has-image main-article"><header class=article-header><div class=article-image><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/developer-8829709_1280.jpg loading=lazy alt="Featured image of post 容器技术驱动下的代码沙箱实践与思考"></a></div><div class=article-details><header class=article-category><a href=/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/>编程语言</a></header><h2 class=article-title><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/>容器技术驱动下的代码沙箱实践与思考</a></h2><footer class=article-time><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>2024-10-28</time></div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 12 分钟</time></div></footer></div></header><div class=post-ai><div class=ai-title><i class=ai-title-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-robot-face" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/><path d="M9 16c1 .667 2 1 3 1s2-.333 3-1"/><path d="M9 7 8 3"/><path d="M15 7l1-4"/><path d="M9 12v-1"/><path d="M15 12v-1"/></svg></i><div class=ai-title-text>AI 摘要</div></div><div id=ai-explanation class=ai-explanation></div><div class="ai-explanation ai-explanation-content">本文探讨了容器技术在代码沙箱实践中的应用与思考。作者尝试复刻 OpenAI 的 Canvas 功能，并比较了 Canvas 与 Claude 的 Artifacts 在编程和写作领域的侧重点。文章强调了代码解释器在 AI 生成代码并执行代码中的重要性，并通过 Semantic Kernel 的 Code Interpreter 插件展示了其扩展 LLM 能力边界的潜力。同时，讨论了现有 Code Interpreter 的隔离性问题，并提出了基于容器技术的解决方案，详细描述了创建隔离代码沙箱的过程和遇到的挑战。最后，文章展望了代码沙箱在 AI 编程领域的重要性，并提出了通过 Jupyter 实现代码可视化的想法。</div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector(".ai-explanation-content").textContent;new TypeIt("#ai-explanation",{strings:e,speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><section class=article-content><p>最近，我一直在尝试复刻 OpenAI 的 <a class=link href=https://openai.com/index/introducing-canvas/ target=_blank rel=noopener>Canvas</a> 功能，它与 Claude 的 <a class=link href=https://www.anthropic.com/news/artifacts target=_blank rel=noopener>Artifacts</a> 功能非常相似。当然，两者在侧重点上有所不同——Artifacts 更注重于 “<strong>预览</strong>” 功能，而 Canvas 则专注于编程和写作领域。尽管 Artifacts 珠玉在前，可 Canvas 无疑为交互式体验带来更多可能性。对此，OpenAI 研究主管 Karina Nguyen 曾表示：<strong>我心目中的终极 AGI 界面是一张空白画布（Canvas）</strong>。在当前推崇 “<strong>慢思考</strong>” 的背景下，我有时会觉得下半年的大语言模型（LLM）发展 “<strong>不温不火</strong>”，给人一种即将停滞不前的的感觉。我想，这可能与四季更迭、万物枯荣的规律有关，正所谓 “<strong>环球同此凉热</strong>”。直到这两天，Claude 发布了 <a class=link href=https://docs.anthropic.com/en/docs/build-with-claude/computer-use target=_blank rel=noopener>Computer Use</a>，智谱发布了 <a class=link href="https://xiao9905.github.io/AutoGLM/?utm_source=ai-bot.cn" target=_blank rel=noopener>AutoGLM</a>，这个冬天再次变得热闹起来，为了不辜负这份幸运，我决定更新一篇博客，这次的主题是：容器技术驱动下的代码沙箱实践与思考。</p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101135250.png><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101135250.png data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101135250.png alt="LangChain 开源的 OpenCanvas"></a><figcaption>LangChain 开源的 OpenCanvas</figcaption></figure></p><h1 id=为什么需要代码解释器>为什么需要代码解释器？</h1><p>在当前生成式 AI 的浪潮中，代码生成首当其冲，从 <a class=link href=https://codegeex.cn/zh-CN target=_blank rel=noopener>CodeGeex</a> 到<a class=link href=https://tongyi.aliyun.com/lingma target=_blank rel=noopener>通义灵码</a>，从 <a class=link href=https://github.com/features/copilot target=_blank rel=noopener>Github Copilot</a> 到 <a class=link href>Cursor</a>，可谓是层出不穷，其交互方式亦从代码补全逐渐过渡到代码执行。你会注意到，在 OpenAI 的 Canvas 以及 Claude 的 Artifacts 中，都支持前端代码的实时预览，这意味着 AI 生成的不再是冷冰冰的代码，而是所见即所得的、可交互的成果。其实，早在 ChatGPT-3.5 中，OpenAI 就提供了 <a class=link href=https://platform.openai.com/docs/assistants/tools/code-interpreter target=_blank rel=noopener>Code Interpreter</a> 插件，可见让 AI 生成代码并执行代码的思路由来已久。究其本质，编程是一项持续改进的活动，必须根据反馈不断地完善代码。如果你使用过 Cursor 这个编辑器，相信你会对这一过程印象深刻，你可以实时地看到修改代码带来的变化，快速验证想法，加快调试和迭代的速度。毫无疑问，这种即时反馈的交互模式大大提高了编程的效率和趣味。</p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Canvas_Hero.webp><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Canvas_Hero.webp data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Canvas_Hero.webp alt="OpenAI 的 Canvas 功能"></a><figcaption>OpenAI 的 Canvas 功能</figcaption></figure></p><p>在实现 AI 智能体的过程中，我尝试为 <a class=link href=https://github.com/microsoft/semantic-kernel target=_blank rel=noopener>Semantic Kernel</a> 开发过一个 Code Interpreter 插件，我觉得这对于扩展（LLM）的能力边界意义重大。以 “<strong>9.11 和9.8 哪个大</strong>” 这一经典问题为例，在各路大模型普遍翻车的情况下，搭配 Code Interpreter 插件 Agent 表现稍好，因为它可以通过编写 Python 脚本来解决问题。同样地，像 “<strong>strawberry 中有多少个 r</strong>” 这样的问题，都可以通过该插件得到有效解决。或许有人觉得这种方式不够 “<strong>智能</strong>”，可如果使用工具是人类进步的体现，我们为什么要否认 AI 通过工具获得的答案呢？难道只有 o1 这种 “<strong>推理流”</strong> 才算思考，而 ReAct 这种 “<strong>规划流</strong>” 就不是思考？米兰·昆德拉说，“<strong>人类一思考，上帝就发笑</strong>”，人类的思想和行为，在宇宙或者更高存在的眼中可能微不足道，甚至有些可笑，以你我有限的认知去揣度智能，这本来就是一种虚妄。实际上，人类的思维过程并非总是纯粹的推理，我们同样依赖着工具、经验和试错。因此，我认为，无论是通过纯粹的推理还是借助工具，只要能有效地达成目标，都应该被视为智能的表现。</p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Python-Code-Interpreter.jpg><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Python-Code-Interpreter.jpg data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Python-Code-Interpreter.jpg alt="Code Interpreter 插件"></a><figcaption>Code Interpreter 插件</figcaption></figure></p><p>目前，这个 Code Interpreter 面临的问题是，它并未与宿主环境实现完全隔离。例如，在执行 C# 脚本时，可以选择 Roslyn、Mono、<a class=link href=https://github.com/oleg-shilo/cs-script target=_blank rel=noopener>CS-Script</a> 以及 <a class=link href=https://github.com/dotnet-script/dotnet-script target=_blank rel=noopener>dotnet-script</a>；运行 Python 脚本时，可以选择 <a class=link href=https://github.com/pythonnet/pythonnet target=_blank rel=noopener>Python.NET</a>；运行 JavaScript 时，可以选择 <a class=link href=https://github.com/sebastienros/jint target=_blank rel=noopener>Jint</a>。理论上，可以添加更多运行时环境，只要它们能嵌入.NET 框架。但这样做的风险是，一旦 AI 生成恶意代码，可能就会影响到整个 Agent 的运行。我曾考虑过 Python 的虚拟环境，但这个方案并不通用。更重要的是，Python.NET 依赖的是 Python 的动态链接库而非可执行文件，这意味着虚拟环境并未实现真正的隔离。此外，AI 生成的代码可能依赖第三方库，直接安装到宿主环境可能会引起版本冲突。在大量使用 AI 生成的代码时，我们不得不考虑这些代码的安全性。我的老板曾问我，“你敢在生产环境中直接使用大模型生成的SQL语句吗？”，基于这些考虑，我们必须寻找一种更优的代码沙箱方案。</p><h1 id=容器技术驱动的代码沙箱>容器技术驱动的代码沙箱</h1><p>我们的目标是：创建一个与宿主环境完全隔离的代码沙箱，它能够独立运行代码并管理依赖。此时，我们发现容器技术非常适合这一需求，因为 Docker 利用 Linux 的 Namespace 功能实现了资源隔离。具体来说，我们会为每一种语言准备一个镜像，这个镜像中通常包含了该语言的编译器或者解释器，例如，Java 使用 OpenJDK 镜像，C# 使用.NET SDK 镜像。运行代码时，首先将代码文件挂载到容器中，然后使用编译器或解释器处理该文件。以下是一个简化的流程说明图：</p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Docker-Based-SandBox-Flow.drawio.png><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Docker-Based-SandBox-Flow.drawio.png data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Docker-Based-SandBox-Flow.drawio.png alt=基于容器技术的代码沙箱流程示意图></a><figcaption>基于容器技术的代码沙箱流程示意图</figcaption></figure></p><p>以 Python 为例，假设我们有一个名为 <strong>code_runner/python3</strong> 的镜像，其对应的 Dockerfile 定义如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-Dockerfile data-lang=Dockerfile><span class=line><span class=cl><span class=k>FROM</span><span class=s> python:3.9.18</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> useradd --create-home --no-log-init --shell /bin/bash sandbox <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  <span class=o>&amp;&amp;</span> adduser sandbox sudo <span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>USER</span><span class=s> sandbox</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>WORKDIR</span><span class=s> /home/sandbox</span><span class=err>
+</span></span></span></code></pre></div><p>你会注意到，这里创建了一个名为 <strong>sandbox</strong> 的用户，同时指定了其工作目录为 <strong>/home/sandbox</strong>。 这一点非常重要，因为我们希望使用统一的方式来处理不同的镜像。接下来，对于每一个前端请求，我们将在后端生成一个目录，并在其中存放待执行的代码文件，这里我们将其命名为 <strong>code.py</strong>。此时，通过下面的命令就可以创建容器：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># runner_b8de2d4e-9b72-4e16-99ad-b0a4db6def7f 为后端自动生成的目录</span>
+</span></span><span class=line><span class=cl><span class=c1># 其中存放着待执行的代码文件 code.py</span>
+</span></span><span class=line><span class=cl>docker run -t -d <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  -v runner_b8de2d4e-9b72-4e16-99ad-b0a4db6def7f:/home/sandbox:rw <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  code_runner/python3 python code.py
+</span></span></code></pre></div><p>如果一切顺利的话，你会看到容器开始运行。至此，在容器中执行代码已成为现实。那么，如何得到代码的执行结果呢？通常情况下，你有下面这两种选择：</p><ul><li>容器日志：通过容器日志来捕获程序输出，即：docker logs &lt;容器Id></li><li>输出重定向：将标准输出重定向到文件，然后再通过读取该文件来捕获程序输出</li></ul><p>如果选择第二种方案，你需要将脚本修改为类似下面这样：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>docker run -t -d <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  -v runner_b8de2d4e-9b72-4e16-99ad-b0a4db6def7f:/home/sandbox:rw <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  code_runner/python3 python code.py &gt; output.txt
+</span></span></code></pre></div><p>这里，我们选择第一种方案，如图所示，程序输出的结果是：<strong>Hello World.</strong>：</p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241030174840.png><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241030174840.png data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241030174840.png alt=通过容器日志捕获程序输出></a><figcaption>通过容器日志捕获程序输出</figcaption></figure></p><p>接下来的流程就变得简单啦，因为我们只需要删除容器、清理目录、返回结果，这个过程非常简单不再赘述。在实际场景中，我们更希望将这一切自动化。当然，你可以使用类似 <code>os.system()</code> 的方案执行 docker 命令。但是，更好的选择是，直接使用 Docker 的 <a class=link href=https://docker-py.readthedocs.io/en/stable/index.html target=_blank rel=noopener>Python SDK</a>。此时，上述流程可以被简化为以下代码片段：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>import</span> <span class=nn>uuid</span><span class=err>，</span> <span class=n>docker</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>container_name</span> <span class=o>=</span> <span class=sa>f</span><span class=s2>&#34;./runner_</span><span class=si>{</span><span class=n>uuid</span><span class=o>.</span><span class=n>uuid4</span><span class=p>()</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=n>container</span> <span class=o>=</span> <span class=n>client</span><span class=o>.</span><span class=n>containers</span><span class=o>.</span><span class=n>run</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=n>image</span><span class=o>=</span><span class=s1>&#39;code_runner/python3&#39;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=n>command</span><span class=o>=</span><span class=s1>&#39;python code.py&#39;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=n>volumes</span><span class=o>=</span><span class=p>{</span><span class=n>os</span><span class=o>.</span><span class=n>path</span><span class=o>.</span><span class=n>abspath</span><span class=p>(</span><span class=n>container_name</span><span class=p>):</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;bind&#39;</span><span class=p>:</span> <span class=s1>&#39;/home/sandbox&#39;</span><span class=err>，</span> 
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;mode&#39;</span><span class=p>:</span> <span class=s1>&#39;rw&#39;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}}</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=n>tty</span><span class=o>=</span><span class=kc>True</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=n>detach</span><span class=o>=</span><span class=kc>True</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>container</span><span class=o>.</span><span class=n>wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=n>output</span> <span class=o>=</span> <span class=n>container</span><span class=o>.</span><span class=n>logs</span><span class=p>()</span><span class=o>.</span><span class=n>decode</span><span class=p>(</span><span class=s1>&#39;utf-8&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>container</span><span class=o>.</span><span class=n>stop</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=n>container</span><span class=o>.</span><span class=n>remove</span><span class=p>(</span><span class=n>force</span><span class=o>=</span><span class=kc>True</span><span class=p>)</span>
+</span></span></code></pre></div><p>基于这一原理，我们将镜像和命令与特定语言关联起来，从而得到一个配置文件。实际上，在设计的流程中，后端接收前端请求以后，首要任务是根据选定语言获取相应的镜像和命令。这使我们能够统一处理多种语言。如需支持新语言，只需准备相应的镜像和配置信息。以下配置文件展示了 Python、JavaScript、C# 和 C++ 的实现细节：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=s1>&#39;python3&#39;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;image&#39;</span><span class=p>:</span> <span class=s1>&#39;code_runner/python3&#39;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;command&#39;</span><span class=p>:</span> <span class=s1>&#39;python code.py&#39;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;extension&#39;</span><span class=p>:</span> <span class=s1>&#39;py&#39;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=s1>&#39;javascript&#39;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;image&#39;</span><span class=p>:</span> <span class=s1>&#39;code_runner/nodejs&#39;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;command&#39;</span><span class=p>:</span> <span class=s1>&#39;node code.js&#39;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;extension&#39;</span><span class=p>:</span> <span class=s1>&#39;js&#39;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=s1>&#39;csharp&#39;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;image&#39;</span><span class=p>:</span> <span class=s1>&#39;code_runner/dotnet&#39;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;command&#39;</span><span class=p>:</span> <span class=s1>&#39;dotnet script code.csx&#39;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;extension&#39;</span><span class=p>:</span> <span class=s1>&#39;csx&#39;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=s1>&#39;csharp-mono&#39;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;image&#39;</span><span class=p>:</span> <span class=s1>&#39;code_runner/mono&#39;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;command&#39;</span><span class=p>:</span> <span class=s2>&#34;sh -c &#39;mcs -out:code code.cs &amp;&amp; mono ./code&#39;&#34;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;extension&#39;</span><span class=p>:</span> <span class=s1>&#39;cs&#39;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=s1>&#39;cpp&#39;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;image&#39;</span><span class=p>:</span> <span class=s1>&#39;code_runner/cpp&#39;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;command&#39;</span><span class=p>:</span> <span class=s2>&#34;sh -c &#39;g++ code.cpp -o code &amp;&amp; ./code&#39;&#34;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s1>&#39;extension&#39;</span><span class=p>:</span> <span class=s1>&#39;cpp&#39;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如图所示，我们现在可以在代码沙箱中运行 C# 代码，这个沙箱目前利用 <a class=link href=https://github.com/mono/docker target=_blank rel=noopener>Mono</a> 来编译和执行程序：</p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031100019.png><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031100019.png data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031100019.png alt="通过代码沙箱运行 C# 代码"></a><figcaption>通过代码沙箱运行 C# 代码</figcaption></figure></p><h2 id=实践过程中遇到的挑战>实践过程中遇到的挑战</h2><p>到目前为止，一切都算顺利，可如果你认为这就是全部的话，那可就太天真啦！首当其冲的是各种编译型语言，以 C++ 为例，通常的编译命令如下，它实际上是将编译和运行两个步骤合二为一：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>g++ code.cpp -o code <span class=o>&amp;&amp;</span> ./code
+</span></span></code></pre></div><p>可如果你直接将这个命令应用到 Docker 上，你会发现这个 <strong>&&</strong> 无法被正确地识别。此时，你需要使用 <code>sh -c</code> 命令对当前命令进行包装，这样就可以完美地规避这个问题：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sh -c <span class=s1>&#39;g++ code.cpp -o code &amp;&amp; ./code&#39;</span>
+</span></span></code></pre></div><p>如果你运气不佳的话，你可能还会遇到 g++、mono、mcs 这些命令行工具在容器内找不到的情况，此时，你还需要添加必要的环境变量，以 <a class=link href=https://github.com/mono/docker target=_blank rel=noopener>Mono</a> 为例，你可以在 Dockerfile 中做如下处理：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>ENV <span class=nv>PATH</span><span class=o>=</span><span class=s2>&#34;/usr/bin:/usr/local/bin:</span><span class=si>${</span><span class=nv>PATH</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span></code></pre></div><p>继续探索，博主这里考虑了两种 C# 脚本化的方案，它们分别是 Mono 和 <a class=link href=https://github.com/dotnet-script/dotnet-script target=_blank rel=noopener>dotnet-script</a>，其中：Mono 使用的是标准的 C# 语法，这意味着它必须要有入口方法 Main()，而 <a class=link href=https://github.com/dotnet-script/dotnet-script target=_blank rel=noopener>dotnet-script</a> 使用的是顶级语句，所有代码会被放置在一个隐式的 Main() 方法中执行。如果说这种语法上的细微差异尚可接受，那么，接下来请你做好破防的准备：</p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031165405.png><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031165405.png data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241031165405.png alt=破防时刻，控制台乱码></a><figcaption>破防时刻，控制台乱码</figcaption></figure></p><p>当然，这并不是你的错，根本原因在于 Docker 输出的日志中包含特殊的 ANSI 转义序列，这些特殊字符通常用于控制终端输出时的颜色和样式，此刻变成了某种噪音。这里，博主介绍两种思路来解决这个问题：</p><ul><li>思路一：正则替换法，网络上广泛流传的正则表达式 r&rsquo;\x1b[[0-9;]*[mK]&rsquo;，经验证，无效！😹</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=k>def</span> <span class=nf>remove_ansi_sequences</span><span class=p>(</span><span class=n>input_string</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>    <span class=n>ansi_escape</span> <span class=o>=</span> <span class=n>re</span><span class=o>.</span><span class=n>compile</span><span class=p>(</span><span class=sa>r</span><span class=s1>&#39;\x1b\[([0-?]*[ -/]*[@-~])&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>ansi_escape</span><span class=o>.</span><span class=n>sub</span><span class=p>(</span><span class=s1>&#39;&#39;</span><span class=err>，</span> <span class=n>input_string</span><span class=p>)</span><span class=o>.</span><span class=n>replace</span><span class=p>(</span><span class=s1>&#39;</span><span class=se>\x1b</span><span class=s1>=&#39;</span><span class=err>，</span><span class=s1>&#39;&#39;</span><span class=p>)</span>
+</span></span></code></pre></div><ul><li>思路二：重定向法，将终端的标准输出重定向到一个文本文件。果然，大道至简！😂</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>dotnet script code.csx  &gt; ./output.txt
+</span></span></code></pre></div><p>个人更推荐这种方案，万一正则表达式再次失效了呢？到目前为止，这个代码沙箱里运行的都是代码片段，这意味着我们可以先暂时忘掉工程实践中的层级结构，你不必通过工程文件或者解决方案来描述各个文件之间的关系。可这样自然就会产生一个问题，代码中的依赖的第三方库该怎么办？此时你有两种策略可供选择：</p><ul><li>策略一：在镜像里通过包管理器提前安装好常用的第三方库，最典型的例子是 <a class=link href=https://www.anaconda.com/download target=_blank rel=noopener>Anaconda</a>，它预装了大量与科学计算相关的第三方库，如 <a class=link href=https://numpy.org/ target=_blank rel=noopener>NumPy</a>、<a class=link href=https://pandas.pydata.org/ target=_blank rel=noopener>Pandas</a> 等，可以做到一般意义上的开箱即用。</li><li>策略二：在代码沙箱运行时自动安装第三方库，如果你使用过 <a class=link href=https://jupyter.org/try-jupyter/lab/ target=_blank rel=noopener>Jupyter Notebook</a>，相信你会非常熟悉它管理依赖的方式。如下图所示，我们可以在 Jupyter Notebook 中使用 pip、NuGet 这类包管理器：</li></ul><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101085426.png><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101085426.png data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101085426.png alt="在 Jupyter Notebook 中使用 pip"></a><figcaption>在 Jupyter Notebook 中使用 pip</figcaption></figure></p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101091645.png><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101091645.png data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101091645.png alt="在 Jupyter Notebook 中使用 NuGet"></a><figcaption>在 Jupyter Notebook 中使用 NuGet</figcaption></figure></p><p>在这种情况下，虽然我们依然是在 Jupyter Notebook 的单元格里写代码，可工程化的思维早已深入人心，“<strong>代码即工程，工程即代码</strong>”。只要大模型可以同时生成代码和依赖项，那么，理论上这些代码上就可以通过 Jupyter Notebook 运行起来。所以，我接下来的想法是，在有了 dotnet-script 和 Mono 这两种 C# 的编译器以后，我想继续扩展出基于 Jupyter Notebook 的方案，至少现在解决了第三方库的依赖问题，对吧？</p><h2 id=jupyter-与结果可视化>Jupyter 与结果可视化</h2><p>你可能会疑惑，既然 dotnet-script 和 Mono 都能运行 C#，为什么还要考虑 Jupyter？除了处理第三方库依赖问题以外，Jupyter 的可视化功能是我最为看重的特性。比如，
+对于数据分析这类任务，如果我们能让大模型将分析结果以图表形式展示出来，这无疑会极大地提升产品的用户体验。再比如，我之前尝试 <a class=link href=/posts/semantic-kernel-driven-text2sql-practice/>Text2SQL</a> 的时候，如果 SQL 查询结果能以表格或 Excel 格式展现出来，效果会不会更佳？我认为，<strong>Code Interpreter 适用于两种场景，即：非展示类场景和展示类场景，前者是用程序执行的结果作为上下文，而后者是需要对程序执行的结果进行展示</strong>。显然，在后面这种场景中，Jupyter Notebook 表现上要更胜一筹。如下图所示，我们可以在 Jupyter Notebook 中绘制出各式各样的图表：</p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Visualization.jpg><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Visualization.jpg data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Visualization.jpg alt="通过 Jupyter 实现可视化"></a><figcaption>通过 Jupyter 实现可视化</figcaption></figure></p><p>好了，现在让我们来思考，如何将 Jupyter 与我们在前面收获到的经验结合起来。这里需要用到两个重要的工具: <a class=link href=https://nbformat.readthedocs.io/en/latest/ target=_blank rel=noopener>nbformat</a> 以及 <a class=link href=https://nbconvert.readthedocs.io/en/latest/ target=_blank rel=noopener>nbconvet</a>。其中，前者负责将代码片段转化为 <code>.ipynb</code> 格式的笔记本，后者负责执行笔记本、获取结果以及格式转换等。如图所示，下面是与 Jupyter 相关的流程示意图：</p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Notebook-Flow.drawio.png><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Notebook-Flow.drawio.png data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/Jupyter-Notebook-Flow.drawio.png alt="基于 Jupyter 的代码执行流程示意图"></a><figcaption>基于 Jupyter 的代码执行流程示意图</figcaption></figure></p><p>在整个流程中，第一步是从代码片段创建 <code>.ipynb</code> 格式的笔记本文件，而从 <a class=link href=https://nbformat.readthedocs.io/en/latest/format_description.html target=_blank rel=noopener>nbformat</a> 的文档中我们可以了解到，Jupyter 的笔记本文件其实是一个 JSON 文件，其标准结构通常类似于下面这样：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;metadata&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nt>&#34;kernel_info&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=err>#</span> <span class=err>if</span> <span class=err>kernel_info</span> <span class=err>is</span> <span class=err>defined，</span> <span class=err>its</span> <span class=err>name</span> <span class=err>field</span> <span class=err>is</span> <span class=err>required.</span>
+</span></span><span class=line><span class=cl>            <span class=nt>&#34;name&#34;</span><span class=p>:</span> <span class=s2>&#34;the name of the kernel&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;language_info&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=err>#</span> <span class=err>if</span> <span class=err>language_info</span> <span class=err>is</span> <span class=err>defined，</span> <span class=err>its</span> <span class=err>name</span> <span class=err>field</span> <span class=err>is</span> <span class=err>required.</span>
+</span></span><span class=line><span class=cl>            <span class=nt>&#34;name&#34;</span><span class=p>:</span> <span class=s2>&#34;the programming language of the kernel&#34;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;version&#34;</span><span class=p>:</span> <span class=s2>&#34;the version of the language&#34;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;codemirror_mode&#34;</span><span class=p>:</span> <span class=s2>&#34;The name of the codemirror mode to use [optional]&#34;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;nbformat&#34;</span><span class=p>:</span> <span class=mi>4</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;nbformat_minor&#34;</span><span class=p>:</span> <span class=mi>0</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;cells&#34;</span><span class=p>:</span> <span class=p>[</span>
+</span></span><span class=line><span class=cl>        <span class=err>#</span> <span class=err>list</span> <span class=err>of</span> <span class=err>cell</span> <span class=err>dictionaries，</span> <span class=err>see</span> <span class=err>below</span>
+</span></span><span class=line><span class=cl>    <span class=p>]</span><span class=err>，</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>对我们而言，这里最关键的是其中的 cells 节点，因为我们需要将代码片段放在这里，在 Jupyter 中通常有三种形式的单元格，即：Code、Markdown 以及 Raw，它们之间唯一的区别是 Code 类型的单元格可以有输出、执行次数等信息，这些细节均可以在文档中找到，这里不再赘述。通常，单元格的标准结构定义如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;cell_type&#34;</span><span class=p>:</span> <span class=s2>&#34;type&#34;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;metadata&#34;</span><span class=p>:</span> <span class=p>{}</span><span class=err>，</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;source&#34;</span><span class=p>:</span> <span class=s2>&#34;single string or [list， of， strings]&#34;</span><span class=err>，</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>不要紧张，我们不会愚蠢到要去手写这个文件的地步，相信我，通过 nbformat 包这一切会变得非常简单：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>import</span> <span class=nn>nbformat</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>code_to_ipynb</span><span class=p>(</span><span class=n>code_string</span><span class=err>，</span> <span class=n>notebook_name</span><span class=o>=</span><span class=s1>&#39;output_notebook.ipynb&#39;</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>    <span class=n>nb</span> <span class=o>=</span> <span class=n>nbformat</span><span class=o>.</span><span class=n>v4</span><span class=o>.</span><span class=n>new_notebook</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>code_cell</span> <span class=o>=</span> <span class=n>nbformat</span><span class=o>.</span><span class=n>v4</span><span class=o>.</span><span class=n>new_code_cell</span><span class=p>(</span><span class=n>code_string</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>nb</span><span class=p>[</span><span class=s1>&#39;cells&#39;</span><span class=p>]</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=n>code_cell</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=n>notebook_name</span><span class=err>，</span> <span class=s1>&#39;w&#39;</span><span class=err>，</span> <span class=n>encoding</span><span class=o>=</span><span class=s1>&#39;utf-8&#39;</span><span class=p>)</span> <span class=k>as</span> <span class=n>f</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=n>nbformat</span><span class=o>.</span><span class=n>write</span><span class=p>(</span><span class=n>nb</span><span class=err>，</span> <span class=n>f</span><span class=p>)</span>
+</span></span></code></pre></div><p>现在，我们拥有了一个 <code>.ipynb</code> 格式的笔记本文件，你可以直接通过 Jupyter Notebook 或者 JupyterLab 打开它。当然，我们这里更希望它可以在后台静默执行，因为我们并不需要用到 Jupyter 的可视化界面。此时，我们可以使用 <a class=link href=https://nbconvert.readthedocs.io/en/latest/ target=_blank rel=noopener>nbconvert</a> 这个工具，它可以将 <code>.ipynb</code> 格式的笔记本文件转换为 HTML、LateX、PDF、Markdown 等常见格式，在指定 Kernel 的情况下，你甚至可以运行整个笔记本文件中的代码，下面是部分命令示例：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 将笔记本转换为 HTML</span>
+</span></span><span class=line><span class=cl>jupyter nbconvert --to html notebook.ipynb --output notebook.html
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 运行笔记本，然后转换为 HTML</span>
+</span></span><span class=line><span class=cl>jupyter nbconvert --execute --to html notebook.ipynb --output notebook.html
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 运行笔记本，忽略输入，然后转换为 HTML</span>
+</span></span><span class=line><span class=cl>jupyter nbconvert --execute --no-input --to html notebook.ipynb --output notebook.html
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 运行笔记本，忽略输入，指定 Kernel，然后转换为 HTML</span>
+</span></span><span class=line><span class=cl>jupyter nbconvert --execute --no-input --to html --ExecutePreprocessor.kernel_name<span class=o>=</span>python3 notebook.ipynb --output notebook.html
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 运行笔记本，直接覆盖原来的笔记本</span>
+</span></span><span class=line><span class=cl>jupyter nbconvert --to notebook --execute  --inplace notebook.ipynb
+</span></span></code></pre></div><p>如果你不喜欢命令行，你还可以使用 nbconvert 的<a class=link href=https://nbconvert.readthedocs.io/en/latest/nbconvert_library.html target=_blank rel=noopener>类库</a>，这一刻，风和你都是自由的：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>import</span> <span class=nn>nbformat</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>nbconvert</span> <span class=kn>import</span> <span class=n>HTMLExporter</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>notebook</span> <span class=o>=</span> <span class=n>nbformat</span><span class=o>.</span><span class=n>read</span><span class=p>(</span><span class=s1>&#39;notebook.ipynb&#39;</span><span class=err>，</span> <span class=n>as_version</span><span class=o>=</span><span class=mi>4</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>html_exporter</span> <span class=o>=</span> <span class=n>HTMLExporter</span><span class=p>(</span><span class=n>template_name</span><span class=o>=</span><span class=s2>&#34;classic&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>(</span><span class=n>body</span><span class=err>，</span> <span class=n>resources</span><span class=p>)</span> <span class=o>=</span> <span class=n>html_exporter</span><span class=o>.</span><span class=n>from_notebook_node</span><span class=p>(</span><span class=n>notebook</span><span class=p>)</span>
+</span></span></code></pre></div><p>至此，整个 Jupyter 相关的处理流程便在逻辑上实现了闭环，只要我们生成 <code>.ipynb</code> 格式的笔记本并将其挂载到容器中，然后再通过 nbconvert 完成转换即可。考虑到我们未来需要在前端中展示 Jupyter 的运行结果，我们直接返回 HTML 即可。那么，接下来，就是见证奇迹的时刻：</p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101180151.png><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101180151.png data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241101180151.png alt="执行 Jupyter 脚本并在前端展示结果-1"></a><figcaption>执行 Jupyter 脚本并在前端展示结果-1</figcaption></figure></p><p><figure><a href=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241105170530.png><img src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241105170530.png data-src=/posts/container-technology-driven-code-sandbox-practice-and-reflection/20241105170530.png alt="执行 Jupyter 脚本并在前端展示结果-2"></a><figcaption>执行 Jupyter 脚本并在前端展示结果-2</figcaption></figure></p><h1 id=本文小结>本文小结</h1><p>从 OpenAI 的 Code Interpreter 到 Canvas，从 Claude 的 Artifacts 到 Computer Use，我们一起见证了 AI 编程领域的快速发展。在此过程中，代码执行环境的安全性和隔离性成为了一个重要议题。本文探讨了基于容器技术的代码沙箱方案，这是对挑战的积极探索和实践。容器技术完美解决了代码执行的隔离问题，每个代码片段都在独立的容器中运行，拥有自己的运行时环境，不影响宿主系统。这种方案不仅确保了安全性，还提供了统一的环境管理能力。实践过程充满挑战、一波三折，可容器技术带来的便利性不容忽视。更重要的是，这种方案具有良好的可扩展性，支持多种编程语言，为 AI 运行代码提供了坚实的技术基础。展望未来，随着生成式 AI 技术的进步，代码沙箱的重要性将日益凸显，或许正如 OpenAI 研究主管所说的 “<strong>终极 AGI 界面是一张空白画布</strong>”，代码沙箱将会成为通向这个愿景的重要基础设施之一，生成代码、执行代码、可视化结果将成为AGI世界的标准能力。</p><h1 id=参考链接>参考链接</h1><ul><li><a class=link href=https://jtsang.me/posts/implements-your-own-chatgpt-interpreter/ target=_blank rel=noopener>如何实现自己的 ChatGPT Code Interpreter</a></li><li><a class=link href=https://github.com/xjq7/runcode/ target=_blank rel=noopener>https://github.com/xjq7/runcode</a></li><li><a class=link href=https://onecompiler.com/ target=_blank rel=noopener>Code online with One Compiler</a></li></ul></section><footer class=article-footer><div style="padding:10px 0;margin:20px auto;width:100%;font-size:16px;text-align:center"><button id=rewardButton disable=enable onclick='var qr=document.getElementById("QR");qr.style.display==="none"?qr.style.display="block":qr.style.display="none"'>
+<span>打赏</span></button><div id=QR style=display:none><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=wechat_qr src=/imgs/reward/wechat.jpg alt=wechat></a><p>微信打赏</p></div><div id=wechat style=display:inline-block><a class=fancybox rel=group><img id=alipay_qr src=/imgs/reward/alipay.jpg alt=alipay></a><p>支付宝打赏</p></div></div></div><section class=article-tags><a href=/tags/%E5%AE%B9%E5%99%A8/>容器</a>
+<a href=/tags/%E6%B2%99%E7%AE%B1/>沙箱</a>
+<a href=/tags/jupyter/>Jupyter</a>
+<a href=/tags/%E4%BB%A3%E7%A0%81%E8%A7%A3%E9%87%8A%E5%99%A8/>代码解释器</a></section><div class=social-share></div><section class=article-footer-notes><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>BY-NC-SA 4.0
+</span><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新 2024-11-08</span></section></footer><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css integrity=sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn crossorigin=anonymous><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js integrity=sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8 crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js integrity=sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl crossorigin=anonymous defer></script><script>window.addEventListener("DOMContentLoaded",()=>{renderMathInElement(document.querySelector(`.article-content`),{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}]})})</script></article><aside class=related-contents--wrapper><h2 class=section-title>相关文章</h2><div class=related-contents><div class="flex article-list--tile"><article class=has-image><a href=/posts/progressive-thinking-about-docker-container-configuration-information/><div class=article-image><img src=/posts/progressive-thinking-about-docker-container-configuration-information/spiral-g6a266c317_1280.jpg loading=lazy data-key=Progressive-Thinking-About-Docker-Container-Configuration-Information data-hash=/posts/progressive-thinking-about-docker-container-configuration-information/spiral-g6a266c317_1280.jpg></div><div class=article-details><h2 class=article-title>关于 Docker 容器配置信息的渐进式思考</h2></div></a></article><article class=has-image><a href=/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/><div class=article-image><img src=/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/russian-gd53d0982f_1280.jpg loading=lazy data-key=Integrate-Crontab-Scheduled-Tasks-Inside-Docker-Containers data-hash=/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/russian-gd53d0982f_1280.jpg></div><div class=article-details><h2 class=article-title>在 Docker 容器内集成 Crontab 定时任务</h2></div></a></article><article class=has-image><a href=/posts/172025911/><div class=article-image><img src=https://i.loli.net/2021/08/15/fplPBvICiEOYsKR.jpg loading=lazy data-key=172025911 data-hash=https://i.loli.net/2021/08/15/fplPBvICiEOYsKR.jpg></div><div class=article-details><h2 class=article-title>你不可不知的容器编排进阶技巧</h2></div></a></article><article class=has-image><a href=/posts/review-and-rethink-backend-universal-query-solutions/><div class=article-image><img src=/posts/review-and-rethink-backend-universal-query-solutions/sea-8948636_1280.jpg loading=lazy data-key=Review-and-Rethink-Backend-Universal-Query-Solutions data-hash=/posts/review-and-rethink-backend-universal-query-solutions/sea-8948636_1280.jpg></div><div class=article-details><h2 class=article-title>温故而知新：后端通用查询方案的再思考</h2></div></a></article><article class=has-image><a href=/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/><div class=article-image><img src=/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/cover.png loading=lazy data-key=Cancellation-Mechanism-CancellationToken-Cooperative-Scene data-hash=/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/cover.png></div><div class=article-details><h2 class=article-title>浅议 CancellationToken 在前后端协同取消场景中的应用</h2></div></a></article></div></div></aside><script src=//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js></script><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}</style><script>var waline=new Waline({el:"#waline",serverURL:"https://waline.yuanpei.me/",lang:"zh",dark:"auto",path:window.location.href,requiredMeta:["nick","mail"]})</script><footer class=site-footer><section class=copyright>&copy;
+2014 -
+2024 元视角</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> v0.126.1<br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.7.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a><br>已创作 274 篇文章，共计 1038468 字<br></section><section class=written-by><img src=/imgs/Written-By-Human-Not-By-AI-Badge-white.svg></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous></main><aside class="sidebar right-sidebar sticky"><form action=/search/ class="search-form widget"><p><label>搜索</label>
+<input name=keyword required placeholder=请输入关键词>
+<button title=搜索><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></button></p></form><section class="widget archives"><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#为什么需要代码解释器>为什么需要代码解释器？</a></li><li><a href=#容器技术驱动的代码沙箱>容器技术驱动的代码沙箱</a><ol><li><a href=#实践过程中遇到的挑战>实践过程中遇到的挑战</a></li><li><a href=#jupyter-与结果可视化>Jupyter 与结果可视化</a></li></ol></li><li><a href=#本文小结>本文小结</a></li><li><a href=#参考链接>参考链接</a></li></ol></nav></div></section><section class="widget archives"><h2 class="widget-title section-title">归档</h2><div class=widget-archive--list><div class=archives-year><a href=/archives/#2024><span class=year>2024</span>
+<span class=count>14</span></a></div><div class=archives-year><a href=/archives/#2023><span class=year>2023</span>
+<span class=count>11</span></a></div><div class=archives-year><a href=/archives/#2022><span class=year>2022</span>
+<span class=count>27</span></a></div><div class=archives-year><a href=/archives/#2021><span class=year>2021</span>
+<span class=count>42</span></a></div><div class=archives-year><a href=/archives/#2020><span class=year>2020</span>
+<span class=count>26</span></a></div><div class=archives-year><a href=/archives/#2019><span class=year>更多</span></a></div></div></section><section class="widget archives"><h2 class="widget-title section-title">日历</h2><div class=widget--toc style="background-color:#fff;border-radius:15px;padding:10px;margin:20px auto;width:300px;height:480px;display:flex;justify-content:center;align-items:center;overflow:hidden"><img id=calendar-cover src style=object-fit:cover;width:100%;height:100%></div></section><script>const getImageUrl=e=>{const t=e.getFullYear(),n=String(e.getMonth()+1).padStart(2,"0"),s=String(e.getDate()).padStart(2,"0");return`https://img.owspace.com/Public/uploads/Download/${t}/${n}${s}.jpg`};document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector("#calendar-cover");if(document.location.pathname.startsWith("/posts")){let t=document.querySelector('meta[property="article:published_time"]').content;t=t.substring(0,10),e.src=getImageUrl(new Date(t))}else e.src=getImageUrl(new Date)})</script><section class="widget tagCloud"><h2 class="widget-title section-title">标签云</h2><div class=tagCloud-tags><a href=/tags/postsharp/ class=font_size_1>PostSharp
+</a><a href=/tags/rpg/ class=font_size_1>RPG
+</a><a href=/tags/%E8%B5%84%E6%BA%90%E6%8F%90%E5%8F%96/ class=font_size_1>资源提取
+</a><a href=/tags/%E5%BB%BA%E7%AD%91/ class=font_size_1>建筑
+</a><a href=/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/ class=font_size_1>脚本语言
+</a><a href=/tags/vue/ class=font_size_6>Vue
+</a><a href=/tags/%E7%86%B5%E5%A2%9E%E5%AE%9A%E5%BE%8B/ class=font_size_1>熵增定律
+</a><a href=/tags/%E7%94%9F%E6%B4%BB/ class=font_size_10>生活
+</a><a href=/tags/%E6%99%BA%E8%83%BD%E5%AE%B6%E5%B1%85/ class=font_size_1>智能家居
+</a><a href=/tags/ide/ class=font_size_1>IDE
+</a><a href=/tags/%E6%97%B6%E9%97%B4/ class=font_size_3>时间
+</a><a href=/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/ class=font_size_1>图形学
+</a><a href=/tags/%E5%8D%95%E6%9C%BA%E6%B8%B8%E6%88%8F/ class=font_size_1>单机游戏
+</a><a href=/tags/2019/ class=font_size_1>2019
+</a><a href=/tags/ugui/ class=font_size_5>UGUI
+</a><a href=/tags/nlog/ class=font_size_1>NLog
+</a><a href=/tags/%E5%9B%9E%E9%A6%96/ class=font_size_1>回首
+</a><a href=/tags/ef/ class=font_size_5>EF
+</a><a href=/tags/streaming/ class=font_size_2>Streaming
+</a><a href=/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/ class=font_size_1>大模型
+</a><a href=/tags/ci/ class=font_size_2>CI
+</a><a href=/tags/%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF/ class=font_size_2>贝塞尔曲线
+</a><a href=/tags/%E5%AE%B9%E5%99%A8/ class=font_size_5>容器
+</a><a href=/tags/swagger/ class=font_size_2>Swagger
+</a><a href=/tags/cts/ class=font_size_1>CTS
+</a><a href=/tags class=font_size_9999>更多</a></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous></script><script type=text/javascript src=//gcore.jsdelivr.net/gh/qinyuanpei/blog.yuanpei.me@master/ts/main.js defer></script><script type=text/javascript src=/ts/badge.js></script><script type=text/javascript>let createBadge=window.createBadge;createBadge("Git","7f1e7a2","#35495e","#ffc107"),createBadge("Hugo","v0.126.1","#35495e","#41b883")</script><script type=text/javascript src=/ts/chat-widget.js defer></script></body></html>
