@@ -1,4 +1,4 @@
-本文档由脚本自动生成，最后更新时间：2024-11-20 11:41:04，最后部署版本：[95e9685](https://github.com/qinyuanpei/hugo-blog/commit/95e9685112f0cff3bb6ec2dd58447684263fdb78
+本文档由脚本自动生成，最后更新时间：2024-12-09 13:41:33，最后部署版本：[1fa652b](https://github.com/qinyuanpei/hugo-blog/commit/1fa652bef55e4d311c30b2264143c3fa7cccd099
 )
 
 如果想订阅我的博客，请使用 Github 的 Watch 功能，**请不要 fork 此项目**
