@@ -1,11 +1,12 @@
-本文档由脚本自动生成，最后更新时间：2025-02-24 09:15:04，最后部署版本：[6752e72](https://github.com/qinyuanpei/hugo-blog/commit/6752e7277a353759d4473c2c4dfdb763769ef55b
+本文档由脚本自动生成，最后更新时间：2025-03-21 09:25:03，最后部署版本：[e0d1c8e](https://github.com/qinyuanpei/hugo-blog/commit/e0d1c8e23b0954c919eda74b168db158d702098a
 )
 
 如果想订阅我的博客，请使用 Github 的 Watch 功能，**请不要 fork 此项目**
 
-Hi, Payne. 从 2014-12-30 至今，你撰写博客共计 276 篇，请继续努力！
+Hi, Payne. 从 2014-12-30 至今，你撰写博客共计 277 篇，请继续努力！
 
-# 2025 年，共 2 篇
+# 2025 年，共 3 篇
+* 2025-03-09 - [Semantic Kernel × MCP：智能体的上下文增强探索](https://blog.yuanpei.me/posts/semantic-kernel-mcp-agent-context-enhanced-exploration/)
 * 2025-02-06 - [命运、偏见与自由：《魔童之哪吒闹海》的终极抗争](https://blog.yuanpei.me/posts/ne-zha-2/)
 * 2025-01-14 - [基于 K-Means 聚类分析实现人脸照片的快速分类](https://blog.yuanpei.me/posts/face-photo-fast-classification-using-k-means-clustering/)
 # 2024 年，共 14 篇

@@ -816,6 +816,26 @@
       "url": "https://blog.yuanpei.me/tags/大模型/"
     },
     {
+      "id": "Semantic Kernel × MCP：智能体的上下文增强探索",
+      "type": "post",
+      "url": "https://blog.yuanpei.me/posts/semantic-kernel-mcp-agent-context-enhanced-exploration"
+    },
+    {
+      "id": "MCP",
+      "type": "tag",
+      "url": "https://blog.yuanpei.me/tags/MCP/"
+    },
+    {
+      "id": "Semantic Kernel",
+      "type": "tag",
+      "url": "https://blog.yuanpei.me/tags/Semantic Kernel/"
+    },
+    {
+      "id": "Function Calling",
+      "type": "tag",
+      "url": "https://blog.yuanpei.me/tags/Function Calling/"
+    },
+    {
       "id": "SnowNLP 使用自定义语料进行模型训练",
       "type": "post",
       "url": "https://blog.yuanpei.me/posts/1772340994"
@@ -4603,6 +4623,26 @@
     },
     {
       "source": "Semantic Kernel 视角下的 Text2SQL 实践与思考",
+      "target": "编程语言"
+    },
+    {
+      "source": "Semantic Kernel × MCP：智能体的上下文增强探索",
+      "target": "MCP"
+    },
+    {
+      "source": "Semantic Kernel × MCP：智能体的上下文增强探索",
+      "target": "Agent"
+    },
+    {
+      "source": "Semantic Kernel × MCP：智能体的上下文增强探索",
+      "target": "Semantic Kernel"
+    },
+    {
+      "source": "Semantic Kernel × MCP：智能体的上下文增强探索",
+      "target": "Function Calling"
+    },
+    {
+      "source": "Semantic Kernel × MCP：智能体的上下文增强探索",
       "target": "编程语言"
     },
     {
