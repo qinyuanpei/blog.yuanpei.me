@@ -2501,6 +2501,16 @@
       "url": "https://blog.yuanpei.me/tags/封神/"
     },
     {
+      "id": "四点钟海棠花未眠",
+      "type": "post",
+      "url": "https://blog.yuanpei.me/posts/four-o-clock-hibiscus-awake"
+    },
+    {
+      "id": "DAG",
+      "type": "tag",
+      "url": "https://blog.yuanpei.me/tags/DAG/"
+    },
+    {
       "id": "在 Docker 容器内集成 Crontab 定时任务",
       "type": "post",
       "url": "https://blog.yuanpei.me/posts/integrate-crontab-scheduled-tasks-inside-docker-containers"
@@ -6691,6 +6701,26 @@
     },
     {
       "source": "命运、偏见与自由：《魔童之哪吒闹海》的终极抗争",
+      "target": "生活感悟"
+    },
+    {
+      "source": "四点钟海棠花未眠",
+      "target": "随笔"
+    },
+    {
+      "source": "四点钟海棠花未眠",
+      "target": "历史"
+    },
+    {
+      "source": "四点钟海棠花未眠",
+      "target": "DAG"
+    },
+    {
+      "source": "四点钟海棠花未眠",
+      "target": "Agent"
+    },
+    {
+      "source": "四点钟海棠花未眠",
       "target": "生活感悟"
     },
     {
