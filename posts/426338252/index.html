@@ -1,0 +1,459 @@
+<!doctype html><html lang=zh-cn><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=referrer content="no-referrer"><meta content="飞鸿踏雪" name=author><title>使用 Love2D 引擎开发贪吃蛇游戏 - 元视角</title>
+<meta name=description content="本文介绍了博主最近使用Love2D游戏引擎开发的贪吃蛇游戏，涉及贪吃蛇的移动算法、Lua编程和游戏状态判断等内容。通过演示贪吃蛇移动规律和判断吃食物的方法，以及通过代码展示蛇的移动和游戏状态的判断逻辑。最后给出完整的程序代码和游戏效果展示，同时提供GitHub链接获取源代码。"><link rel=icon type=image/png href=/images/favicons/favicon-96x96.png sizes=96x96><link rel=icon type=image/svg+xml href=/images/favicons/favicon.svg><link rel="shortcut icon" href=/images/favicons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/images/favicons/apple-touch-icon.png><meta name=apple-mobile-web-app-title content="元视角"><link rel=manifest href=site.webmanifest><meta name=keywords content="Love2D,游戏开发,贪吃蛇"><meta property="og:title" content="使用 Love2D 引擎开发贪吃蛇游戏 - 元视角"><meta property="og:description" content="本文介绍了博主最近使用Love2D游戏引擎开发的贪吃蛇游戏，涉及贪吃蛇的移动算法、Lua编程和游戏状态判断等内容。通过演示贪吃蛇移动规律和判断吃食物的方法，以及通过代码展示蛇的移动和游戏状态的判断逻辑。最后给出完整的程序代码和游戏效果展示，同时提供GitHub链接获取源代码。"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.yuanpei.me/posts/426338252/"><meta property='og:site_name' content='元视角'><meta property="og:image" content="/images/avatar.jpg"><meta property="twitter:image" content="/images/avatar.jpg"><meta property='article:section' content='Posts'><meta property='article:tag' content='Love2D'><meta property='article:tag' content='游戏开发'><meta property='article:tag' content='贪吃蛇'><meta property='article:published_time' content='2015-03-10T10:51:19+00:00'><meta property='article:modified_time' content='2015-03-10T10:51:19+00:00'><meta property="twitter:domain" content="https://blog.yuanpei.me/"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.yuanpei.me/posts/426338252/"><meta property="twitter:title" content="使用 Love2D 引擎开发贪吃蛇游戏 - 元视角"><meta property="twitter:description" content="本文介绍了博主最近使用Love2D游戏引擎开发的贪吃蛇游戏，涉及贪吃蛇的移动算法、Lua编程和游戏状态判断等内容。通过演示贪吃蛇移动规律和判断吃食物的方法，以及通过代码展示蛇的移动和游戏状态的判断逻辑。最后给出完整的程序代码和游戏效果展示，同时提供GitHub链接获取源代码。"><meta name=twitter:site content="飞鸿踏雪"><meta name=twitter:creator content="飞鸿踏雪"><link rel=stylesheet href=/styles/main.min.bb9e9eadbf718b0c91c89c85c701c072a4eaa3846575271b714abf3bc7bb8210.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css><link rel=stylesheet href=/styles/iconfont.css><link rel=stylesheet href=/styles/iconfont-patch.css><script defer src=https://umami.yuanpei.me/JXOS5H5V data-website-id=445bd2eb-68f9-47fd-b93a-5dfa92be333d></script></head><body><div class="background patterns"><div class=bg-mask></div></div><style>.background{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:-2;&.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23494849' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } &.dark { &.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23fcfcfc' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } .cover { filter: brightness(0.6); } } .cover { width: auto; height: auto; min-height: 100%; opacity: 0; transition: filter 0.3s, opacity 0.3s; &.loaded { opacity: 1; } }}</style><header class=main-header><nav class="main-nav up top"><div class=nav-all><div class=left-nav><div class=site-name onclick='location.href="/"'>元视角</div></div><div class=nav-center><div class=site-menu><div class=site-menu><div class=menu-item><span class=link-btn>文库</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+文章归档
+</span><span class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+全部分类
+</span><span class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+全部标签</span></div></div><div class=menu-item><span class=link-btn>书影音</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+读书
+</span><span class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+观影
+</span><span class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+听歌</span></div></div><div class=menu-item><span class=link-btn>页面</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+友情链接
+</span><span class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+个人作品
+</span><span class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+站点统计</span></div></div><div class=menu-item><span class=link-btn>更多</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+留言
+</span><span class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+关于本站</span></div></div></div></div><span class=site-title>使用 Love2D 引擎开发贪吃蛇游戏</span></div><div class=right-nav><a class="menu-btn nav-btn travellings" title=开往-友链接力 href=https://www.travellings.cn/go.html target=_blank><i class="iconfont icon-subway"></i></a><div class="menu-btn nav-btn" title=随机前往一篇文章 id=randomToggle><i class="iconfont icon-shuffle"></i></div><div class="menu-btn nav-btn" title=全站搜索><i class="iconfont icon-search"></i></div><div class="menu-btn nav-btn" id=themeToggle title=切换主题模式><i class="iconfont icon-sun" id=themeIcon></i></div><div id=open-control class="menu-btn nav-btn pc" title=打开中控台><i class="iconfont icon-dashboard"></i></div><div class="to-top menu-btn hidden" title=返回顶部><div class=to-top-btn><span class=num>0</span>
+<i class="iconfont icon-up"></i></div></div><div class="menu-btn nav-btn mobile" title=打开菜单><i class="iconfont icon-toc"></i></div></div></div></nav><div class=mobile-menu id=mobileMenu><div class=menu-mask></div><div class="menu-content s-card"><div class=close-control><i class="iconfont icon-close"></i></div><div class=menu-list><div class=menu-item><span class=link-title>文库</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+<span class=name>文章归档</span></div><div class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+<span class=name>全部分类</span></div><div class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+<span class=name>全部标签</span></div></div></div><div class=menu-item><span class=link-title>书影音</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+<span class=name>读书</span></div><div class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+<span class=name>观影</span></div><div class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+<span class=name>听歌</span></div></div></div><div class=menu-item><span class=link-title>页面</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+<span class=name>友情链接</span></div><div class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+<span class=name>个人作品</span></div><div class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+<span class=name>站点统计</span></div></div></div><div class=menu-item><span class=link-title>更多</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+<span class=name>留言</span></div><div class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+<span class=name>关于本站</span></div></div></div></div></div></div><style>.mobile-menu{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;display:none}.mobile-menu .menu-mask{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;background-color:var(--main-mask-background)}.mobile-menu .menu-content{position:absolute;top:0;right:0;height:100%;width:100%;max-width:300px;border-radius:12px 0 0 12px;padding:20px;overflow:auto}.mobile-menu .close-control{position:absolute;top:10px;right:20px;display:flex;align-items:center;justify-content:center;width:35px;height:35px;padding:0;transition:background-color .3s,opacity .3s;border-radius:50%;cursor:pointer}.mobile-menu .close-control .iconfont{font-size:18px;line-height:1;color:var(--main-font-second-color);transition:color .3s,opacity .3s}.mobile-menu .close-control:hover{background-color:var(--main-color)}.mobile-menu .close-control:hover .iconfont{color:var(--main-card-background)}.mobile-menu .menu-list{margin-top:40px}.mobile-menu .menu-item{margin-bottom:12px}.mobile-menu .menu-item .link-title{font-size:14px;margin-bottom:12px;display:inline-block;color:var(--main-font-second-color)}.mobile-menu .menu-item .link-child{display:grid;gap:12px;grid-template-columns:1fr 1fr}.mobile-menu .menu-item .link-child-btn{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;border-radius:8px;padding:10px 12px;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);font-size:15px;cursor:pointer;transition:all .3s}.mobile-menu .menu-item .link-child-btn:hover{background-color:var(--main-color);color:var(--main-card-background)}.mobile-menu .menu-item .link-child-btn .iconfont{margin-right:6px;opacity:.6}.mobile-menu .menu-item .link-child-btn .name{max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><script>function toggleMobileMenu(){const e=document.getElementById("mobileMenu");e&&(e.style.display=e.style.display==="none"?"block":"none")}</script><div class=modal id=search-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:800px><div class=title><div class=title-left><i class="iconfont icon-search"></i>
+<span class=title-text>全局搜索</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=search-modal><div class=search-input><input type=text id=search-input placeholder=今天你想搜点什么？ autocomplete=off></div><div class=search-results><div class=search-list></div><div class=search-empty><i class="iconfont icon-search"></i><p>输入关键字，开始搜索</p></div></div><div class=search-hint><span class=text id=search-hint-text></span>
+<span class=text><a class=powered_by href=https://www.fusejs.io/ target=_blank>Fuse.js</a></span></div></div></div></div></div></header><main class=main-layout><div class=post><div class=post-meta><div class=meta><div class=categories><a href=/categories/%e6%b8%b8%e6%88%8f%e5%bc%80%e5%8f%91/ class=cat-item><i class="iconfont icon-folder"></i>
+<span class=name>游戏开发</span></a></div><div class=tags><a href=/tags/love2d/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>Love2D</span>
+</a><a href=/tags/%e6%b8%b8%e6%88%8f%e5%bc%80%e5%8f%91/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>游戏开发</span>
+</a><a href=/tags/%e8%b4%aa%e5%90%83%e8%9b%87/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>贪吃蛇</span></a></div></div><h1 class=title>使用 Love2D 引擎开发贪吃蛇游戏</h1><div class=other-meta><span class="meta date"><i class="iconfont icon-date"></i>
+2015-03-10
+</span><span class="update meta"><i class="iconfont icon-time"></i>
+2015-03-10
+</span><span class="hot meta"><i class="iconfont icon-fire"></i>
+<span id=twikoo_visitors class=artalk-pv-count id=umami_value_page_pv>0</span>
+</span><span class="chat meta hover" data-scroll-to=comments><i class="iconfont icon-chat"></i>
+<span id=twikoo_comments class=artalk-comment-count>0</span></span></div></div><div class=post-content><article class="post-article s-card"><div class="expired s-card">本文发表于 <strong>3767</strong> 天前，其中的信息可能已经事过境迁</div><div class="article-gpt s-card"><div class=title><span class=name><i class="iconfont icon-robot"></i>
+文章摘要
+<i class="iconfont icon-up"></i>
+</span><span class=logo>FakeGPT</span></div><div class="content s-card"><span class=text></span></div><div class=meta></div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){new TypeIt(".article-gpt .content .text",{strings:"本文介绍了博主最近使用Love2D游戏引擎开发的贪吃蛇游戏，涉及贪吃蛇的移动算法、Lua编程和游戏状态判断等内容。通过演示贪吃蛇移动规律和判断吃食物的方法，以及通过代码展示蛇的移动和游戏状态的判断逻辑。最后给出完整的程序代码和游戏效果展示，同时提供GitHub链接获取源代码。",speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><div id=page-content class=markdown-main-style><p>今天来介绍博主最近捣腾的一个小游戏“贪吃蛇”。“贪吃蛇”这个游戏相信大家都不会感到陌生吧。今天博主将通过<a href=http://love2d.org/>Love2D</a>这款游戏引擎来为大家实现一个简单的贪吃蛇游戏,在本篇文章当中我们将会涉及到“贪吃蛇”的基本算法、Lua 语言编程等基本的内容，希望能够对大家开发类似的游戏提供借鉴和思考，文章中如有不足之处，还希望大家能够谅解，因为博主的游戏开发基本就是这样慢慢摸索着学习，所以难免会有不足的地方。</p><h2 id=游戏算法>游戏算法</h2><p>我们首先来看看贪吃蛇是怎么移动的？
+<a class=img-fancybox href=https://ww1.sinaimg.cn/large/4c36074fly1fz05nhb62pj205m05lq33.jpg data-fancybox=gallery data-src=https://ww1.sinaimg.cn/large/4c36074fly1fz05nhb62pj205m05lq33.jpg data-caption=贪吃蛇游戏算法演示1><img src=https://ww1.sinaimg.cn/large/4c36074fly1fz05nhb62pj205m05lq33.jpg alt=贪吃蛇游戏算法演示1 class=post-img loading=lazy>
+<span class=post-img-tip>贪吃蛇游戏算法演示1</span>
+</a><a class=img-fancybox href=https://ww1.sinaimg.cn/large/4c36074fly1fz05k1yzipj205m05lq33.jpg data-fancybox=gallery data-src=https://ww1.sinaimg.cn/large/4c36074fly1fz05k1yzipj205m05lq33.jpg data-caption=贪吃蛇游戏算法演示2><img src=https://ww1.sinaimg.cn/large/4c36074fly1fz05k1yzipj205m05lq33.jpg alt=贪吃蛇游戏算法演示2 class=post-img loading=lazy>
+<span class=post-img-tip>贪吃蛇游戏算法演示2</span>
+</a><a class=img-fancybox href=https://ww1.sinaimg.cn/large/4c36074fly1fz05dugbchj205m05lq33.jpg data-fancybox=gallery data-src=https://ww1.sinaimg.cn/large/4c36074fly1fz05dugbchj205m05lq33.jpg data-caption=贪吃蛇游戏算法演示3><img src=https://ww1.sinaimg.cn/large/4c36074fly1fz05dugbchj205m05lq33.jpg alt=贪吃蛇游戏算法演示3 class=post-img loading=lazy>
+<span class=post-img-tip>贪吃蛇游戏算法演示3</span>
+</a><a class=img-fancybox href=https://ww1.sinaimg.cn/large/4c36074fly1fz01zh5qn2j205m05lq33.jpg data-fancybox=gallery data-src=https://ww1.sinaimg.cn/large/4c36074fly1fz01zh5qn2j205m05lq33.jpg data-caption=贪吃蛇游戏算法演示4><img src=https://ww1.sinaimg.cn/large/4c36074fly1fz01zh5qn2j205m05lq33.jpg alt=贪吃蛇游戏算法演示4 class=post-img loading=lazy>
+<span class=post-img-tip>贪吃蛇游戏算法演示4</span>
+</a>通过这四张图的演示，我们可以发现这样一个规律：</p><blockquote><p>蛇的移动其实是将蛇身体的最后一个元素移动到第一个元素的位置</p></blockquote><p>那么完成这样一个工作需要两个步骤：</p><blockquote><p>1、将在蛇头位置插入一个新的元素
+2、移除蛇尾位置的最后一个元素</p></blockquote><p>好了，了解了蛇的移动后我们再来考虑一个问题，怎样判断蛇吃到了食物？思路和蛇的移动类似，主要考虑在蛇头插入的这个元素和食物的关系，如果这个元素的坐标和食物的坐标是相同的，那么就可以认为蛇吃到了食物，此时蛇的身体应该是变长的，所以只要在蛇头位置插入一个元素就可以了。反之，如果蛇没有吃到食物，那么蛇应该是移动的，所以就可以按照移动的方法来处理了。那么在蛇头位置插入的这个元素该如何确定呢？我们来看下面这段程序：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-Lua data-lang=Lua><span class=line><span class=cl><span class=c1>--计算下一个目标点</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>getNextPoint</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--计算下一个目标点</span>
+</span></span><span class=line><span class=cl>  <span class=n>snake</span> <span class=o>=</span> <span class=p>{}</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>dir</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.x</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.y</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span> <span class=o>-</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>dir</span> <span class=o>==</span> <span class=mi>1</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.x</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.y</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span> <span class=o>+</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>dir</span> <span class=o>==</span> <span class=mi>2</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.x</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span> <span class=o>-</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.y</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>dir</span> <span class=o>==</span> <span class=mi>3</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.x</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span> <span class=o>+</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.y</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kr>return</span> <span class=n>snake</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span></code></pre></div><p>这里定义了 getNextPoint()的方法，目的是计算在蛇头位置添加的下一个元素，这里我们注意到根据蛇的移动方向(dir)的不同，其中 0 表示上、1 表示下、2 表示左、3 表示右，计算出下一个元素的位置，因为在这个游戏中网格大小是 20，所以这里可以直接根据坐标来计算一个元素的位置。snakes 是一个 table，保存的是当前的蛇的全部元素的坐标。通过维护这个 table，我们就可以利用绘图的函数绘制出蛇的身体，这样蛇就可以移动起来了。我们来看看蛇是怎样移动的：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-Lua data-lang=Lua><span class=line><span class=cl><span class=c1>--核心算法——蛇的移动</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>SnakeUpdate</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--获取元素个数</span>
+</span></span><span class=line><span class=cl>  <span class=kd>local</span> <span class=n>n</span> <span class=o>=</span> <span class=n>table.maxn</span><span class=p>(</span><span class=n>snakes</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>table.maxn</span><span class=p>(</span><span class=n>snakes</span><span class=p>)</span> <span class=o>&gt;</span> <span class=mi>0</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=kr>if</span> <span class=p>(</span><span class=n>getNextPoint</span><span class=p>().</span><span class=n>x</span> <span class=o>==</span> <span class=n>foodX</span> <span class=ow>and</span> <span class=n>getNextPoint</span><span class=p>().</span><span class=n>y</span> <span class=o>==</span> <span class=n>foodY</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>      <span class=c1>--将下一个目标点的位置插入表中</span>
+</span></span><span class=line><span class=cl>      <span class=n>table.insert</span><span class=p>(</span><span class=n>snakes</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=n>getNextPoint</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>      <span class=c1>--将食物状态设置为BeEated</span>
+</span></span><span class=line><span class=cl>      <span class=n>foodState</span><span class=o>=</span><span class=s2>&#34;BeEated&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=kr>else</span>
+</span></span><span class=line><span class=cl>      <span class=c1>--将下一个目标点的位置插入表中</span>
+</span></span><span class=line><span class=cl>      <span class=n>table.insert</span><span class=p>(</span><span class=n>snakes</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=n>getNextPoint</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>      <span class=c1>--移除最后一个元素</span>
+</span></span><span class=line><span class=cl>      <span class=n>table.remove</span><span class=p>(</span><span class=n>snakes</span><span class=p>,</span><span class=n>n</span><span class=o>+</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span> 
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span></code></pre></div><p>在这里我们定义了一个 foodState 变量以保存食物的状态，当食物的状态为 BeEated 的时候表示食物被蛇吃掉了，此时应该重新生成一个食物的坐标，此时事物的状态将变成 WaitToEat。食物的坐标保存在 foodX 和 foodY 这两个变量中，大家可以到完整的代码中去查看。</p><h2 id=游戏状态>游戏状态</h2><p>我们知道蛇碰到四周墙壁的时候就会死亡，此时游戏结束。这个比较简单，只要判断蛇头的坐标和屏幕的关系就可以了。因为在这个游戏中屏幕的尺寸为 640X640，所以判断游戏是否结束的代码可以这样写：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-Lua data-lang=Lua><span class=line><span class=cl><span class=c1>--判断游戏状态</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span><span class=p>(</span><span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span> <span class=o>&lt;=</span> <span class=mi>0</span> <span class=ow>or</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span> <span class=o>&gt;=</span> <span class=mi>640</span> <span class=ow>or</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span> <span class=o>&lt;=</span> <span class=mi>0</span> <span class=ow>or</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span> <span class=o>&gt;=</span> <span class=mi>640</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>gameState</span> <span class=o>=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>  <span class=kr>else</span>
+</span></span><span class=line><span class=cl>    <span class=n>gameState</span> <span class=o>=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span></code></pre></div><p>这里 gameState 为 0 表示游戏结束，gameState 为 1 表示游戏正常进行。</p><h2 id=完整代码>完整代码</h2><p>在完成了这些核心的算法以后，剩下的事情就交给 Love2D 引擎来绘制吧，最后给出完整的程序代码：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-Lua data-lang=Lua><span class=line><span class=cl><span class=c1>--定义窗口宽度和高度</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>w</span>	<span class=o>=</span> <span class=mi>640</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>h</span>	<span class=o>=</span> <span class=mi>640</span>
+</span></span><span class=line><span class=cl><span class=c1>--定义网格单元大小</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>unitSize</span> <span class=o>=</span> <span class=mi>20</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--方块的初始位置</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>initX</span>	<span class=o>=</span> <span class=mi>320</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>initY</span>	<span class=o>=</span> <span class=mi>320</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--移动方向</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>dir</span> <span class=o>=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--贪吃蛇集合</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>snakes</span> <span class=o>=</span> <span class=p>{}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--食物状态</span>
+</span></span><span class=line><span class=cl><span class=c1>--WaitToEat：绘制食物</span>
+</span></span><span class=line><span class=cl><span class=c1>--BeEated：随机生成食物</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>foodState</span> <span class=o>=</span> <span class=s2>&#34;WaitToEat&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--游戏状态</span>
+</span></span><span class=line><span class=cl><span class=c1>--0：游戏结束</span>
+</span></span><span class=line><span class=cl><span class=c1>--1：游戏正常</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>gameState</span> <span class=o>=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--食物的位置</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>foodX</span> <span class=o>=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>foodY</span> <span class=o>=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--Love2D加载事件</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nc>love</span><span class=p>.</span><span class=nf>load</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--设置窗口标题</span>
+</span></span><span class=line><span class=cl>  <span class=n>love.window</span><span class=p>.</span><span class=n>setTitle</span><span class=p>(</span><span class=s2>&#34;Love2D-贪吃蛇游戏&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--设置窗口大小</span>
+</span></span><span class=line><span class=cl>  <span class=n>love.window</span><span class=p>.</span><span class=n>setMode</span><span class=p>(</span><span class=n>w</span><span class=p>,</span><span class=n>h</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--定义字体</span>
+</span></span><span class=line><span class=cl>  <span class=kd>local</span> <span class=n>myFont</span> <span class=o>=</span> <span class=n>love.graphics</span><span class=p>.</span><span class=n>newFont</span><span class=p>(</span><span class=mi>30</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--设置字体</span>
+</span></span><span class=line><span class=cl>  <span class=n>love.graphics</span><span class=p>.</span><span class=n>setFont</span><span class=p>(</span><span class=n>myFont</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--设置背景色</span>
+</span></span><span class=line><span class=cl>  <span class=n>love.graphics</span><span class=p>.</span><span class=n>setBackgroundColor</span><span class=p>(</span><span class=mi>255</span><span class=p>,</span><span class=mi>255</span><span class=p>,</span><span class=mi>255</span><span class=p>,</span><span class=mi>255</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--设置线条类型为平滑</span>
+</span></span><span class=line><span class=cl>  <span class=n>love.graphics</span><span class=p>.</span><span class=n>setLineStyle</span><span class=p>(</span><span class=s2>&#34;smooth&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--设置线宽</span>
+</span></span><span class=line><span class=cl>  <span class=n>love.graphics</span><span class=p>.</span><span class=n>setLineWidth</span><span class=p>(</span><span class=mf>0.1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>--蛇的初始化(蛇的长度为5)</span>
+</span></span><span class=line><span class=cl>  <span class=kr>for</span> <span class=n>i</span><span class=o>=</span><span class=mi>1</span><span class=p>,</span><span class=mi>5</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>    <span class=kd>local</span> <span class=n>snake</span> <span class=o>=</span> <span class=p>{</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.x</span> <span class=o>=</span> <span class=n>initX</span> <span class=o>+</span> <span class=p>(</span><span class=n>i</span><span class=o>-</span><span class=mi>1</span><span class=p>)</span> <span class=o>*</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.y</span> <span class=o>=</span> <span class=n>initY</span>
+</span></span><span class=line><span class=cl>    <span class=n>snakes</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=o>=</span> <span class=n>snake</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>--食物初始化</span>
+</span></span><span class=line><span class=cl>  <span class=n>foodX</span> <span class=o>=</span> <span class=n>love.math</span><span class=p>.</span><span class=n>random</span><span class=p>(</span><span class=mi>32</span><span class=o>-</span><span class=mi>1</span><span class=p>)</span><span class=o>*</span><span class=mi>20</span>
+</span></span><span class=line><span class=cl>  <span class=n>foodY</span> <span class=o>=</span> <span class=n>love.math</span><span class=p>.</span><span class=n>random</span><span class=p>(</span><span class=mi>32</span><span class=o>-</span><span class=mi>1</span><span class=p>)</span><span class=o>*</span><span class=mi>20</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--Love2D绘制事件</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nc>love</span><span class=p>.</span><span class=nf>draw</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--绘制竖线</span>
+</span></span><span class=line><span class=cl>  <span class=n>love.graphics</span><span class=p>.</span><span class=n>setColor</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>255</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=kr>for</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>,</span> <span class=n>w</span><span class=p>,</span> <span class=n>unitSize</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>    <span class=n>love.graphics</span><span class=p>.</span><span class=n>line</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span><span class=n>i</span><span class=p>,</span><span class=n>h</span><span class=p>,</span><span class=n>i</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--绘制横线</span>
+</span></span><span class=line><span class=cl>  <span class=kr>for</span> <span class=n>j</span> <span class=o>=</span> <span class=mi>0</span><span class=p>,</span> <span class=n>h</span><span class=p>,</span> <span class=n>unitSize</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>    <span class=n>love.graphics</span><span class=p>.</span><span class=n>line</span><span class=p>(</span><span class=n>j</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=n>j</span><span class=p>,</span><span class=n>w</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>--绘制蛇</span>
+</span></span><span class=line><span class=cl>  <span class=kr>for</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>1</span><span class=p>,</span><span class=n>table.maxn</span><span class=p>(</span><span class=n>snakes</span><span class=p>)</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>    <span class=n>love.graphics</span><span class=p>.</span><span class=n>setColor</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>255</span><span class=p>,</span><span class=mi>255</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>love.graphics</span><span class=p>.</span><span class=n>rectangle</span><span class=p>(</span><span class=s2>&#34;fill&#34;</span><span class=p>,</span><span class=n>snakes</span><span class=p>[</span><span class=n>i</span><span class=p>].</span><span class=n>x</span><span class=p>,</span><span class=n>snakes</span><span class=p>[</span><span class=n>i</span><span class=p>].</span><span class=n>y</span><span class=p>,</span><span class=mi>20</span><span class=p>,</span><span class=mi>20</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>--绘制食物</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span><span class=p>(</span><span class=n>foodState</span> <span class=o>==</span> <span class=s2>&#34;WaitToEat&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>love.graphics</span><span class=p>.</span><span class=n>setColor</span><span class=p>(</span><span class=mi>255</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>255</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>love.graphics</span><span class=p>.</span><span class=n>rectangle</span><span class=p>(</span><span class=s2>&#34;fill&#34;</span><span class=p>,</span><span class=n>foodX</span><span class=p>,</span><span class=n>foodY</span><span class=p>,</span><span class=mi>20</span><span class=p>,</span><span class=mi>20</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>--如果游戏结束则显示GameOver</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span><span class=p>(</span><span class=n>gameState</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>love.graphics</span><span class=p>.</span><span class=n>setColor</span><span class=p>(</span><span class=mi>255</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>255</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>love.graphics</span><span class=p>.</span><span class=n>print</span><span class=p>(</span><span class=s2>&#34;Game Over&#34;</span><span class=p>,</span><span class=mi>250</span><span class=p>,</span><span class=mi>300</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span> 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nc>love</span><span class=p>.</span><span class=nf>update</span><span class=p>(</span><span class=n>dt</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--判断游戏状态</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span> <span class=o>&lt;=</span> <span class=mi>0</span> <span class=ow>or</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span> <span class=o>&gt;=</span> <span class=mi>640</span> <span class=ow>or</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span> <span class=o>&lt;=</span> <span class=mi>0</span> <span class=ow>or</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span> <span class=o>&gt;=</span> <span class=mi>640</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>gameState</span> <span class=o>=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>  <span class=kr>else</span>
+</span></span><span class=line><span class=cl>    <span class=n>gameState</span> <span class=o>=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>--如果游戏状态为正常</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>gameState</span> <span class=o>==</span> <span class=mi>1</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>SnakeUpdate</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=n>FoodUpdate</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--核心算法——蛇的移动</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>SnakeUpdate</span><span class=p>(</span><span class=n>dt</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--获取元素个数</span>
+</span></span><span class=line><span class=cl>  <span class=kd>local</span> <span class=n>n</span> <span class=o>=</span> <span class=n>table.maxn</span><span class=p>(</span><span class=n>snakes</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span><span class=p>(</span><span class=n>table.maxn</span><span class=p>(</span><span class=n>snakes</span><span class=p>)</span> <span class=o>&gt;</span> <span class=mi>0</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=kr>if</span><span class=p>(</span><span class=n>getNextPoint</span><span class=p>().</span><span class=n>x</span> <span class=o>==</span> <span class=n>foodX</span> <span class=ow>and</span> <span class=n>getNextPoint</span><span class=p>().</span><span class=n>y</span> <span class=o>==</span> <span class=n>foodY</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>      <span class=c1>--将下一个目标点的位置插入表中</span>
+</span></span><span class=line><span class=cl>      <span class=n>table.insert</span><span class=p>(</span><span class=n>snakes</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=n>getNextPoint</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>      <span class=c1>--将食物状态设置为BeEated</span>
+</span></span><span class=line><span class=cl>      <span class=n>foodState</span><span class=o>=</span><span class=s2>&#34;BeEated&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=kr>else</span>
+</span></span><span class=line><span class=cl>      <span class=c1>--将下一个目标点的位置插入表中</span>
+</span></span><span class=line><span class=cl>      <span class=n>table.insert</span><span class=p>(</span><span class=n>snakes</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=n>getNextPoint</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>      <span class=c1>--移除最后一个元素</span>
+</span></span><span class=line><span class=cl>      <span class=n>table.remove</span><span class=p>(</span><span class=n>snakes</span><span class=p>,</span><span class=n>n</span><span class=o>+</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span> 
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--随机生成食物</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>FoodUpdate</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--如果食物被蛇吃掉则重新生成食物</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span><span class=p>(</span><span class=n>foodState</span> <span class=o>==</span> <span class=s2>&#34;BeEated&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>foodX</span><span class=o>=</span><span class=n>love.math</span><span class=p>.</span><span class=n>random</span><span class=p>(</span><span class=mi>32</span><span class=o>-</span><span class=mi>1</span><span class=p>)</span><span class=o>*</span><span class=mi>20</span>
+</span></span><span class=line><span class=cl>    <span class=n>foodY</span><span class=o>=</span><span class=n>love.math</span><span class=p>.</span><span class=n>random</span><span class=p>(</span><span class=mi>32</span><span class=o>-</span><span class=mi>1</span><span class=p>)</span><span class=o>*</span><span class=mi>20</span>
+</span></span><span class=line><span class=cl>    <span class=n>foodState</span> <span class=o>=</span> <span class=s2>&#34;WaitToEat&#34;</span>
+</span></span><span class=line><span class=cl>   <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--根据玩家按下的键位定义不同的方向</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nc>love</span><span class=p>.</span><span class=nf>keypressed</span><span class=p>(</span><span class=n>key</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>key</span> <span class=o>==</span> <span class=s2>&#34;a&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>dir</span> <span class=o>=</span> <span class=mi>2</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>key</span> <span class=o>==</span> <span class=s2>&#34;d&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>dir</span> <span class=o>=</span> <span class=mi>3</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>key</span> <span class=o>==</span> <span class=s2>&#34;w&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>dir</span> <span class=o>=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span> <span class=p>(</span><span class=n>key</span><span class=o>==</span><span class=s2>&#34;s&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>dir</span> <span class=o>=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>--计算下一个目标点</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>getNextPoint</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>  <span class=c1>--计算下一个目标点</span>
+</span></span><span class=line><span class=cl>  <span class=kd>local</span> <span class=n>snake</span> <span class=o>=</span> <span class=p>{}</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span><span class=p>(</span><span class=n>dir</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.x</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.y</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span> <span class=o>-</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span><span class=p>(</span><span class=n>dir</span> <span class=o>==</span> <span class=mi>1</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.x</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.y</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span> <span class=o>+</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span><span class=p>(</span><span class=n>dir</span> <span class=o>==</span> <span class=mi>2</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.x</span><span class=o>=</span><span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span> <span class=o>-</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.y</span><span class=o>=</span><span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>  <span class=kr>if</span><span class=p>(</span><span class=n>dir</span> <span class=o>==</span> <span class=mi>3</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.x</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>x</span> <span class=o>+</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>    <span class=n>snake.y</span> <span class=o>=</span> <span class=n>snakes</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=n>y</span>
+</span></span><span class=line><span class=cl>  <span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kr>return</span> <span class=n>snake</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span></code></pre></div><p>将代码压缩成.love 文件后就可以运行了，我们来看看最终的效果：</p><p><a class=img-fancybox href=https://i.loli.net/2021/10/25/BC4KqmDbRtdj8he.png data-fancybox=gallery data-src=https://i.loli.net/2021/10/25/BC4KqmDbRtdj8he.png data-caption="Love2D 贪吃蛇游戏示例1"><img src=https://i.loli.net/2021/10/25/BC4KqmDbRtdj8he.png alt="Love2D 贪吃蛇游戏示例1" class=post-img loading=lazy>
+<span class=post-img-tip>Love2D 贪吃蛇游戏示例1</span></a></p><p><a class=img-fancybox href=https://i.loli.net/2021/10/25/xmTubKXEdM8lZoP.png data-fancybox=gallery data-src=https://i.loli.net/2021/10/25/xmTubKXEdM8lZoP.png data-caption="Love2D 贪吃蛇游戏示例2"><img src=https://i.loli.net/2021/10/25/xmTubKXEdM8lZoP.png alt="Love2D 贪吃蛇游戏示例2" class=post-img loading=lazy>
+<span class=post-img-tip>Love2D 贪吃蛇游戏示例2</span></a></p><p>本文的项目作为开源项目托管在 Github 上，可以通过<a href=https://github.com/qinyuanpei/Love2D_Snake>Github</a>来获取项目源代码。谢谢大家，今天的内容就是这样了。</p></div><div class="copyright s-card"><div class=title><span class=post-name>使用 Love2D 引擎开发贪吃蛇游戏</span>
+<a :href=https://blog.yuanpei.me/posts/426338252/ class=post-link target=_blank>https://blog.yuanpei.me/posts/426338252/</a></div><div class=post-meta><div class=meta-item><span class=tip>作者</span>
+<span class=name>飞鸿踏雪</span></div><div class=meta-item><span class=tip>发布于</span>
+<span class=name>2015-03-10</span></div><div class=meta-item><span class=tip>更新于</span>
+<span class=name>2015-03-10</span></div><div class="meta-item cc"><span class=tip>许可协议</span>
+<a class=name href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank>CC BY-NC-SA 4.0</a></div></div><span class=meta-tip>署名-非商业性使用-相同方式共享 4.0 国际</span></div><div class=other-meta><div class=all-tags><a href=/tags/love2d class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>Love2D</span>
+</a><a href=/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91 class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>游戏开发</span>
+</a><a href=/tags/%E8%B4%AA%E5%90%83%E8%9B%87 class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>贪吃蛇</span></a></div><a href=https://eqnxweimkr5.feishu.cn/share/base/form/shrcnCXCPmxCKKJYI3RKUfefJre class=report target=_blank><i class="iconfont icon-report"></i>
+反馈与投诉</a></div><div class=reward><div class=reward-btn onclick='window.$Modal.show("reward-modal")'><i class="iconfont icon-reward"></i>
+<span class=text>赞赏博主</span></div></div><div class=modal id=reward-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:430px><div class=title><div class=title-left><i class="iconfont icon-reward"></i>
+<span class=title-text>赞赏博主</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=reward-card><div class=thank>🙏 请博主喝一杯咖啡</div><div class=qr><a class=qr-img href=/images/reward/alipay.jpg target=_blank><img src=/images/reward/alipay.jpg alt=支付宝赞赏码><div class=tip><i class="iconfont icon-alipay"></i>
+<span>支付宝</span></div></a><a class=qr-img href=/images/reward/wechat.jpg target=_blank><img src=/images/reward/wechat.jpg alt=微信赞赏码><div class=tip><i class="iconfont icon-wechat"></i>
+<span>微信</span></div></a></div><div class="all-list s-card hover"><div class=title>赞赏记录</div><div class=tip>赞赏金额将全部用于开源项目维护，以及服务器、域名及各类云服务的开销</div></div></div></div></div></div><div class=related-post><div class=title><span class=name><i class="iconfont icon-star"></i>
+相关推荐
+</span><span class=shuffle onclick='window.location.href="/posts/3995512051/"'>随便逛逛</span></div><div class=post-lists><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/887585917/"'><div class=post-content><span class=post-title>Unity3D 游戏开发游戏读/存档在 Unity3D 中的实现</span>
+<span class=post-desc>在这篇博客中，作者秦元培分享了关于在RPG游戏中实现游戏存档的内容。他介绍了游戏存档机制的重要性以及存档所需包含的信息，然后讨论了在Unity3D中使用PlayerPrefs进行数据持久化的局限性，提出了转向JSON数据序列化的思路。文章还包括了关于加密/解密算法的介绍和代码示例，以及一个完整的Unity3D数据持久化辅助类的实现。最后，作者展示了一个简单的测试脚本来演示存档的保存和读取过程。文章内容丰富，为读者提供了实用的游戏开发技巧和思路。</span></div></article><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/2799263488/"'><div class=post-content><span class=post-title>Unity3D 游戏开发之反编译 AssetBundle 提取游戏资源</span>
+<span class=post-desc>本文介绍了如何通过反编译 Unity3D 的 AssetBundle 来提取游戏资源，并强调了保护游戏资源的重要性。AssetBundle 是 Unity3D 中用于资源打包和动态加载的解决方法，有助于减少游戏容量。作者以《轩辕剑 6 外传穹之扉》和《新仙剑 OL》为例，探讨了 AssetBundle 的应用和注意事项，包括打包和加载 AssetBundle 的方法以及通过反编译观察游戏资源。最后总结了在使用 AssetBundle 时应注意的几点：打包多个资源到一个 AssetBundle 中、分割预制件、动态加载场景等。文章强调了细致研究 AssetBundle 打包的重要性。</span></div></article></div><style>.post-lists{width:100%}.post-lists .post-item{padding:0!important;display:flex;margin-bottom:1rem;animation:fade-up .6s backwards;cursor:pointer;overflow:hidden;height:200px}.post-lists .post-item .post-cover{flex:0 0 35%;overflow:hidden;transform:translateZ(0)}.post-lists .post-item .post-cover img{width:100%;height:100%;object-fit:cover;transform-origin:center center;transition:transform .5s ease-out,filter .5s ease-out;backface-visibility:hidden}.post-lists .post-item .post-content{flex:1;padding:1.6rem 2rem;display:flex;flex-direction:column;justify-content:space-between}.post-lists .post-item .post-category{display:flex;flex-wrap:wrap;width:100%;color:var(--main-font-second-color);font-size:14px}.post-lists .post-item .post-category .cat-name{display:flex;flex-direction:row;align-items:center}.post-lists .post-item .post-category .cat-name .iconfont{opacity:.8;margin-right:6px;color:var(--main-font-second-color)}.post-lists .post-item .post-category .top{margin-left:12px;color:var(--main-color)}.post-lists .post-item .post-category .top .iconfont{opacity:.8;color:var(--main-color)}.post-lists .post-item .post-title{font-size:20px;line-height:30px;font-weight:700;margin:.6rem 0;transition:color .3s;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-desc{margin-top:-.4rem;margin-bottom:.8rem;opacity:.8;line-height:30px;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-meta{display:flex;flex-direction:row;align-items:center;justify-content:space-between;color:var(--main-font-second-color)}.post-lists .post-item .post-tags{display:flex;flex-wrap:wrap;opacity:.8;margin-right:20px;overflow:hidden;mask:linear-gradient(90deg,#fff 0,#fff 90%,hsla(0,0%,100%,.6) 95%,hsla(0,0%,100%,0) 100%)}.post-lists .post-item .post-tags .tags-name{display:flex;flex-direction:row;align-items:center;margin-right:12px;white-space:nowrap;transition:color .3s}.post-lists .post-item .post-time{opacity:.6;font-size:13px;white-space:nowrap}.post-lists .post-item:hover .post-cover img{filter:brightness(.8);transform:scale(1.05)}.post-lists .post-item:hover .post-title{color:var(--main-color)}.post-lists .post-item:active{transform:scale(.98)}.post-lists .post-item.cover-left{flex-direction:row}.post-lists .post-item.cover-right{flex-direction:row-reverse}.post-lists .post-item.cover-both:nth-child(odd){flex-direction:row}.post-lists .post-item.cover-both:nth-child(even){flex-direction:row-reverse}.post-lists.layout-grid{display:grid;grid-template-columns:repeat(var(--grid-columns,2),1fr);gap:var(--grid-gap,1rem)}.post-lists.layout-grid .post-item{margin:0;flex-direction:column;height:auto}.post-lists.layout-grid .post-item .post-cover{flex:none;width:100%;height:225px}@media(max-width:768px){.post-lists .post-item{flex-direction:column;height:auto}.post-lists .post-item .post-cover{flex:none;width:100%;height:200px}.post-lists .post-item.cover-left,.post-lists .post-item.cover-right,.post-lists .post-item.cover-both{flex-direction:column!important}.post-lists.layout-grid{grid-template-columns:1fr}.post-lists .post-item .post-tags{flex-wrap:nowrap}}.post-lists .post-item .simple{animation:none;padding:.5rem 1.4rem!important;background-color:var(--main-card-second-background);height:auto;margin-bottom:.5rem}.post-lists .post-item .simple .post-content{padding:.5rem 0}.post-lists .post-item .simple .post-title{margin:0;font-size:16px}.post-lists .post-item .simple .post-desc{margin:.3rem 0 0;font-size:14px;opacity:.6}</style></div><style>.related-post{margin-top:1rem}.related-post .title{display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;margin:3rem 0 1rem;padding:0 6px}.related-post .title .name{display:flex;align-items:center;font-size:24px;font-weight:700}.related-post .title .name .iconfont{font-size:26px;font-weight:400;margin-right:8px}.related-post .title .shuffle{opacity:.6;font-size:14px;transition:color .3s,opacity .3s;cursor:pointer}.related-post .title .shuffle:hover{opacity:1;color:var(--main-color)}</style><div id=comments><div id=main-comment class=comment style=padding-left:1.5rem;padding-right:1.5rem><div v-if=!fill class=title><span class=name><i class="iconfont icon-chat"></i>
+评论
+</span><span class=tool>隐私政策</span></div><link rel=stylesheet href=https://unpkg.com/@waline/client@v3/dist/waline.css><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}.waline-container .wl-content img{width:unset!important;max-width:unset!important;max-height:unset!important;border-radius:unset!important}.waline-container .wl-content p{font-size:.9rem!important}.wl-header label{font-size:.8em}.wl-sort li{font-size:.8em}</style><script type=module>
+        import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+        init({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+            emoji: [
+                '//unpkg.com/@waline/emojis@1.2.0/weibo'
+            ],
+            reaction: false,
+        });
+      </script></div></div><div class="next-post s-card" id=next-post data-is-next=true><a href=/posts/3449402269/ class=next-post-link><span class=post-tip>下一篇阅读
+</span><span class=post-title>使用 Unity3D 创建一个幸运转盘</span></a></div></article><aside class=main-aside><div class="hello s-card weidgets"><span class=tip id=hello-weidget-tip>好久不见</span><div class=content><div class=site-logo><div class=avatar><img src=/images/avatar.jpg alt=avatar loading=lazy></div></div><span class=site-desc>谢谢你，在这世界的角落，找到我。我是一位穿梭于数字与人文领域交界处的观察者，热衷于在数字迷雾中剖析谜题背后的真相，同时在人文星河中重拾温暖和光明。我期待，在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点。</span></div><div class=info><div class=name><span class=author>飞鸿踏雪</span>
+<span class=desc>纵有疾风起，人生不言弃</span></div><div class=link><a href=https://github.com/qinyuanpei target=_blank class=social-link><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuapei@163.com target=_blank class=social-link><i class="iconfont icon-email"></i></a></div></div></div><div class=sticky><div class="toc s-card weidgets" id=weidget-toc><div class=toc-title><i class="iconfont icon-toc"></i>
+<span class=name>目录</span></div><div id=toc-all class=toc-list></div></div><script>document.addEventListener("DOMContentLoaded",function(){const o=[];let e=null,t=null,n=0;const s=document.getElementById("toc-all"),i=()=>{try{if(e=document.getElementById("page-content"),!e)return!1;const t=Array.from(e.querySelectorAll("h1, h2, h3, h4")).filter(e=>e.parentElement.tagName.toLowerCase()==="div");return t}catch(e){console.error("获取所有目录数据出错：",e)}},r=()=>{const e=i();if(!e)return!1;s.innerHTML="",e.forEach((e,t)=>{const n={id:e.id,type:e.tagName,text:e.textContent?.replace(/\u200B/g,"").trim()},i=document.createElement("span");i.id="toc-"+n.id,i.className=`toc-item ${n.type} ${t===0?"active":""}`,i.textContent=n.text,i.addEventListener("click",()=>d(n.id)),s.appendChild(i),o.push(n)}),e&&e.length>0&&(t=e[0].id)},c=(e,t)=>{let n;return function(){const s=arguments,o=this;n||(e.apply(o,s),n=!0,setTimeout(()=>n=!1,t))}},l=c(()=>{if(!o.length)return!1;const e=i();if(!e)return!1;const s=120;if(window.scrollY===0){n=0,t=e[0]?.id,a();return}for(let n of e){const o=n.getBoundingClientRect();o.top-s<=0&&o.bottom+s>=0&&t!==n.id&&(t=n.id,a())}},100),a=()=>{document.querySelectorAll(".toc-item.active").forEach(e=>{e.classList.remove("active")});const e=document.getElementById("toc-"+t);if(!e)return!1;e.classList.add("active"),n=e.offsetTop-2||0,s.style.setProperty("--height",n+"px"),s.scrollTo({top:n-80,behavior:"smooth"})},d=t=>{try{const n=document.getElementById(t);if(!n||!e)return!1;const s=n.offsetTop,o=s+e.offsetTop-80;window.scroll({top:o,behavior:"smooth"})}catch(e){console.error("目录滚动失败：",e)}};r(),window.addEventListener("scroll",l)})</script><style lang=scss scoped>.toc{position:relative;padding:0!important;overflow:hidden;.toc-title { display: flex; flex-direction: row; align-items: center; padding: 18px; height: 58px; .iconfont { margin-right: 8px; font-weight: bold; opacity: 0.6; } .name { font-weight: bold; } } .toc-list { position: relative; padding: 20px; padding-top: 0; padding-left: 24px; display: flex; flex-direction: column; max-height: calc(70vh - 58px); overflow: auto; .toc-item { margin: 4px 0; padding: 6px 12px; border-radius: 8px; opacity: 0.6; transition: color 0.3s, opacity 0.3s, font-size 0.3s, background-color 0.3s; cursor: pointer; &:first-child { margin-top: 0; } &:last-child { margin-bottom: 0; } &.H1 { font-weight: bold; } &.H2 { font-size: 14px; margin-left: 15px; font-weight: normal; } &.H3 { font-size: 12px; margin-left: 25px; } &.active { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); &.H2 { font-size: 14px; } &.H3 { font-size: 12px; } } &:hover { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); } } &::after { content: ""; position: absolute; left: 12px; top: var(--height); width: 4px; height: 20px; margin: 8px 0; background-color: var(--main-color); border-radius: 8px; transition: top 0.3s; } } &::before { content: ""; position: absolute; left: 12px; bottom: 20px; width: 4px; height: calc(100% - 78px); background-color: var(--main-card-border); border-radius: 8px; }}</style><div class="tags-cloud s-card weidgets"><div class=title><i class="iconfont icon-hashtag"></i>
+<span class=title-name>热门标签</span></div><div class=all-tags><a href=/tags/windows/ class=tags><span class=name>Windows</span>
+<sup class=num>1</sup>
+</a><a href=/tags/sourcetree/ class=tags><span class=name>SourceTree</span>
+<sup class=num>1</sup>
+</a><a href=/tags/apache/ class=tags><span class=name>Apache</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%8A%80%E6%9C%AF/ class=tags><span class=name>技术</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E4%BA%BA%E6%96%87/ class=tags><span class=name>人文</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%93%AA%E5%90%92/ class=tags><span class=name>哪吒</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%8D%83%E5%AF%BB%E5%B0%8F%E5%A7%90/ class=tags><span class=name>千寻小姐</span>
+<sup class=num>1</sup>
+</a><a href=/tags/channel/ class=tags><span class=name>Channel</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%89%88%E6%9D%83/ class=tags><span class=name>版权</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%9C%9D%E5%9C%A3/ class=tags><span class=name>朝圣</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%B4%AA%E5%90%83%E8%9B%87/ class=tags><span class=name>贪吃蛇</span>
+<sup class=num>1</sup>
+</a><a href=/tags/valine/ class=tags><span class=name>Valine</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%AB%A5%E8%AF%9D/ class=tags><span class=name>童话</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%80%A7%E8%83%BD/ class=tags><span class=name>性能</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%B8%89%E4%BD%93/ class=tags><span class=name>三体</span>
+<sup class=num>1</sup>
+</a><a href=/tags/chatgpt/ class=tags><span class=name>ChatGPT</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E9%9D%A2%E8%AF%95/ class=tags><span class=name>面试</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E4%BA%8C%E7%BB%B4%E7%A0%81/ class=tags><span class=name>二维码</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%BC%95%E6%93%8E/ class=tags><span class=name>引擎</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%BD%91%E6%98%93/ class=tags><span class=name>网易</span>
+<sup class=num>1</sup>
+</a><a href=/tags/printdocument/ class=tags><span class=name>PrintDocument</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%9B%9E%E5%BF%86/ class=tags><span class=name>回忆</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%89%A9%E5%B1%95/ class=tags><span class=name>扩展</span>
+<sup class=num>4</sup>
+</a><a href=/tags/%E4%BA%92%E8%81%94%E7%BD%91/ class=tags><span class=name>互联网</span>
+<sup class=num>2</sup>
+</a><a href=/tags/kindle/ class=tags><span class=name>Kindle</span>
+<sup class=num>3</sup>
+</a><a href=/tags/keycloak/ class=tags><span class=name>Keycloak</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%B0%83%E4%BC%98/ class=tags><span class=name>调优</span>
+<sup class=num>1</sup>
+</a><a href=/tags/2014/ class=tags><span class=name>2014</span>
+<sup class=num>1</sup>
+</a><a href=/tags/oracle/ class=tags><span class=name>Oracle</span>
+<sup class=num>1</sup>
+</a><a href=/tags/envoy/ class=tags><span class=name>Envoy</span>
+<sup class=num>8</sup>
+</a><a href=/tags/%E5%92%8C%E5%B9%B3/ class=tags><span class=name>和平</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%AA%8C%E8%AF%81/ class=tags><span class=name>验证</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%AF%95%E4%B8%9A%E5%AD%A3/ class=tags><span class=name>毕业季</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%87%92%E5%8A%A0%E8%BD%BD/ class=tags><span class=name>懒加载</span>
+<sup class=num>1</sup>
+</a><a href=/tags/form/ class=tags><span class=name>Form</span>
+<sup class=num>1</sup>
+</a><a href=/tags/script/ class=tags><span class=name>Script</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/ class=tags><span class=name>负载均衡</span>
+<sup class=num>1</sup>
+</a><a href=/tags/grafana/ class=tags><span class=name>Grafana</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%8F%96%E6%B6%88/ class=tags><span class=name>取消</span>
+<sup class=num>1</sup>
+</a><a href=/tags/echarts/ class=tags><span class=name>ECharts</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/ class=tags><span class=name>自动化</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%BC%93%E5%AD%98/ class=tags><span class=name>缓存</span>
+<sup class=num>5</sup>
+</a><a href=/tags/mysql/ class=tags><span class=name>MySQL</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%A4%95%E9%9B%BE%E8%8A%B1%E5%9B%AD/ class=tags><span class=name>夕雾花园</span>
+<sup class=num>1</sup>
+</a><a href=/tags/fp/ class=tags><span class=name>FP</span>
+<sup class=num>1</sup>
+</a><a href=/tags/java/ class=tags><span class=name>Java</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%9F%A5%E8%AF%A2/ class=tags><span class=name>查询</span>
+<sup class=num>1</sup>
+</a><a href=/tags/jexus/ class=tags><span class=name>Jexus</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%B1%B3%E8%8A%B1%E4%B9%8B%E5%91%B3/ class=tags><span class=name>米花之味</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%BA%91%E5%8E%9F%E7%94%9F/ class=tags><span class=name>云原生</span>
+<sup class=num>1</sup></a></div><a href=/tags class=more-tags>查看全部</a></div><div class="site-data s-card weidgets"><div class=title><i class="iconfont icon-chart"></i>
+<span class=title-name>站点数据</span></div><div class=all-data><div class=data-item><span class=name><i class="iconfont icon-article"></i>
+文章总数
+</span><span class=num>279 篇</span></div><div class=data-item><span class=name><i class="iconfont icon-date"></i>
+建站天数
+</span><span class=num>3837 天</span></div><div class=data-item><span class=name><i class="iconfont icon-words"></i>
+全站字数
+</span><span class=num>108143 字</span></div><div class=data-item><span class=name><i class="iconfont icon-visibility"></i>
+总访问量
+</span><span class=num id=umami_value_site_pv></span></div><div class=data-item><span class=name><i class="iconfont icon-account"></i>
+总访客数
+</span><span class=num id=umami_value_site_uv></span></div></div></div></div></aside><style>.main-aside{padding-left:1rem;display:flex;flex-direction:column;animation:fade-up .6s .3s backwards;.weidgets { padding: 18px; margin-bottom: 1rem; :deep(.title) { margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; opacity: 0.75; .iconfont { opacity: 0.6; margin-right: 6px; } .title-name { opacity: 0.8; } } } .sticky { position: sticky; top: calc(60px + 1rem); .weidgets { animation: fade-up 0.6s 0.4s backwards; &:last-child { margin-bottom: 0; } } }}</style></div></div></main><div class=footer-link><div class=footer-bar><span class=site-title>元视角</span>
+<span class=site-desc>纵有疾风起，人生不言弃</span>
+<a href=/ class=to-home>了解更多</a></div><div class=footer-social><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuanpei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i>
+</a><a href=/index.xml target=_blank class=social-link aria-label=RSS><i class="iconfont icon-rss"></i></a><div class=logo title=返回顶部 onclick='window.scrollTo({top:0,behavior:"smooth"})'><img src=/images/icons8-stellar-128.png alt=author class=author></div><a href=https://weibo.com/1278609231 target=_blank class=social-link aria-label=微博><i class="iconfont icon-weibo"></i>
+</a><a href=https://www.douban.com/people/60029335/ target=_blank class=social-link aria-label=豆瓣><i class="iconfont icon-douban"></i>
+</a><a href=https://www.zhihu.com/people/qinyuanpei target=_blank class=social-link aria-label=知乎><i class="iconfont icon-zhihu"></i></a></div><div class=footer-sitemap><div class=sitemap-item><span class=title>博客</span><div class=links><a href=/archives class=link-text>文章归档
+</a><a href=/categories class=link-text>全部分类
+</a><a href=/tags class=link-text>全部标签</a></div></div><div class=sitemap-item><span class=title>项目</span><div class=links><a href=https://github.com/qinyuanpei/mcp-server-weibo target=_blank class=link-text>mcp-server-weibo</a></div></div><div class=sitemap-item><span class=title>专栏</span><div class=links><a href=https://blog.csdn.net/qinyuanpei/category_10852603.html target=_blank class=link-text>.NET 源代码探案系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_7444699.html target=_blank class=link-text>Python 数据挖掘系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_11484903.html target=_blank class=link-text>分布式丛林探险系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_1708629.html target=_blank class=link-text>Unity3D 游戏开发系列</a></div></div><div class=sitemap-item><span class=title>页面</span><div class=links><a href=/comments class=link-text>留言
+</a><a href=/books class=link-text>读书
+</a><a href=/movies class=link-text>观影
+</a><a href=/musics class=link-text>听歌</a></div></div><div class=sitemap-item><span class=title>友情链接</span><div class=links><a href=https://gudong.site/ target=_blank class=link-text>咕咚同学
+</a><a href=https://coolshell.cn/ target=_blank class=link-text>酷壳
+</a><a href=https://blog.zhheo.com/ target=_blank class=link-text>张洪
+</a><a href=/links class=link-text>更多</a></div></div></div></div><footer id=main-footer class=main-footer><div class=footer-content><div class=footer-copyright><span class=time data-v-6001e979>@ 2014 - 2025 </span><a href=/ class="author link" target=_blank>飞鸿踏雪</a></div><div class=meta><a class="power link" href=https://gohugo.io/ target=_blank><span class=by>Powered by</span>
+<span class=name>Hugo</span>
+</a><a class="theme link" href=https://github.com/imsyy/vitepress-theme-curve><span class=name>主题</span>
+</a><a class="rss link" href=/index.xml target=_blank><i class="iconfont icon-rss"></i>
+<span class=name data-v-6001e979>订阅</span>
+</a><a class="cc link" href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank><i class="iconfont icon-line"></i>
+<i class="iconfont icon-by-line"></i>
+<i class="iconfont icon-nc-line"></i><i class="iconfont icon-nd-line"></i></a></div></div></footer><script type=module src=/scripts/main.js></script><script src=https://cdn.jsdelivr.net/npm/fuse.js@7.1.0></script><script src=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js></script><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css media="(prefers-color-scheme: dark)"><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css media="(prefers-color-scheme: light)"><link rel=preload href=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css as=style><script src=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js></script></body></html>
