@@ -1,0 +1,304 @@
+<!doctype html><html lang=zh-cn><head><meta name=generator content="Hugo 0.126.1"><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=referrer content="no-referrer"><meta content="飞鸿踏雪" name=author><title>元视角</title>
+<meta name=description content="分享技术思维与人文感悟，希望在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点"><link rel=icon type=image/png href=/images/favicons/favicon-96x96.png sizes=96x96><link rel=icon type=image/svg+xml href=/images/favicons/favicon.svg><link rel="shortcut icon" href=/images/favicons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/images/favicons/apple-touch-icon.png><meta name=apple-mobile-web-app-title content="元视角"><link rel=manifest href=/site.webmanifest><meta name=keywords content="元视角,元培的元视角,飞鸿踏雪,全栈工程师,Python,AI"><meta property="og:title" content="元视角"><meta property="og:description" content="分享技术思维与人文感悟，希望在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点"><meta property="og:type" content="website"><meta property="og:url" content="https://blog.yuanpei.me/"><meta property='og:site_name' content='元视角'><meta property="og:image" content="/images/avatar.jpg"><meta property="twitter:image" content="/images/avatar.jpg"><meta property='og:updated_time' content=' 2026-01-13T22:00:00+00:00 '><meta property="twitter:domain" content="https://blog.yuanpei.me/"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:title" content="元视角"><meta property="twitter:description" content="分享技术思维与人文感悟，希望在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点"><meta name=twitter:site content="飞鸿踏雪"><meta name=twitter:creator content="飞鸿踏雪"><link rel=stylesheet href=/styles/main.min.bb9e9eadbf718b0c91c89c85c701c072a4eaa3846575271b714abf3bc7bb8210.css><link rel=alternate type=application/rss+xml href=https://blog.yuanpei.me/index.xml title=元视角><link rel=alternate type=application/json href=https://blog.yuanpei.me/index.json title=元视角><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css><link rel=stylesheet href=/styles/iconfont.css><link rel=stylesheet href=/styles/iconfont-patch.css><script defer src=https://umami.yuanpei.me/JXOS5H5V data-website-id=445bd2eb-68f9-47fd-b93a-5dfa92be333d></script></head><body><div class="background patterns"><div class=bg-mask></div></div><style>.background{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:-2;&.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23494849' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } &.dark { &.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23fcfcfc' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } .cover { filter: brightness(0.6); } } .cover { width: auto; height: auto; min-height: 100%; opacity: 0; transition: filter 0.3s, opacity 0.3s; &.loaded { opacity: 1; } }}</style><header class=main-header><nav class="main-nav up top"><div class=nav-all><div class=left-nav><div class=site-name onclick='location.href="/"'>元视角</div></div><div class=nav-center><div class=site-menu><div class=site-menu><div class=menu-item><span class=link-btn>文库</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+文章归档
+</span><span class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+全部分类
+</span><span class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+全部标签</span></div></div><div class=menu-item><span class=link-btn>书影音</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+读书
+</span><span class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+观影
+</span><span class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+听歌</span></div></div><div class=menu-item><span class=link-btn>页面</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+友情链接
+</span><span class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+个人作品
+</span><span class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+站点统计</span></div></div><div class=menu-item><span class=link-btn>更多</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+留言
+</span><span class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+关于本站</span></div></div></div></div><span class=site-title>纵有疾风起，人生不言弃</span></div><div class=right-nav><a class="menu-btn nav-btn travellings" title=开往-友链接力 href=https://www.travellings.cn/go.html target=_blank><i class="iconfont icon-subway"></i></a><div class="menu-btn nav-btn" title=随机前往一篇文章 id=randomToggle><i class="iconfont icon-shuffle"></i></div><div class="menu-btn nav-btn" title=全站搜索><i class="iconfont icon-search"></i></div><div class="menu-btn nav-btn" id=themeToggle title=切换主题模式><i class="iconfont icon-sun" id=themeIcon></i></div><div id=open-control class="menu-btn nav-btn pc" title=打开中控台><i class="iconfont icon-dashboard"></i></div><div class="to-top menu-btn hidden" title=返回顶部><div class=to-top-btn><span class=num>0</span>
+<i class="iconfont icon-up"></i></div></div><div class="menu-btn nav-btn mobile" title=打开菜单><i class="iconfont icon-toc"></i></div></div></div></nav><div class=mobile-menu id=mobileMenu><div class=menu-mask></div><div class="menu-content s-card"><div class=close-control><i class="iconfont icon-close"></i></div><div class=menu-list><div class=menu-item><span class=link-title>文库</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+<span class=name>文章归档</span></div><div class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+<span class=name>全部分类</span></div><div class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+<span class=name>全部标签</span></div></div></div><div class=menu-item><span class=link-title>书影音</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+<span class=name>读书</span></div><div class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+<span class=name>观影</span></div><div class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+<span class=name>听歌</span></div></div></div><div class=menu-item><span class=link-title>页面</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+<span class=name>友情链接</span></div><div class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+<span class=name>个人作品</span></div><div class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+<span class=name>站点统计</span></div></div></div><div class=menu-item><span class=link-title>更多</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+<span class=name>留言</span></div><div class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+<span class=name>关于本站</span></div></div></div></div></div></div><style>.mobile-menu{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;display:none}.mobile-menu .menu-mask{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;background-color:var(--main-mask-background)}.mobile-menu .menu-content{position:absolute;top:0;right:0;height:100%;width:100%;max-width:300px;border-radius:12px 0 0 12px;padding:20px;overflow:auto}.mobile-menu .close-control{position:absolute;top:10px;right:20px;display:flex;align-items:center;justify-content:center;width:35px;height:35px;padding:0;transition:background-color .3s,opacity .3s;border-radius:50%;cursor:pointer}.mobile-menu .close-control .iconfont{font-size:18px;line-height:1;color:var(--main-font-second-color);transition:color .3s,opacity .3s}.mobile-menu .close-control:hover{background-color:var(--main-color)}.mobile-menu .close-control:hover .iconfont{color:var(--main-card-background)}.mobile-menu .menu-list{margin-top:40px}.mobile-menu .menu-item{margin-bottom:12px}.mobile-menu .menu-item .link-title{font-size:14px;margin-bottom:12px;display:inline-block;color:var(--main-font-second-color)}.mobile-menu .menu-item .link-child{display:grid;gap:12px;grid-template-columns:1fr 1fr}.mobile-menu .menu-item .link-child-btn{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;border-radius:8px;padding:10px 12px;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);font-size:15px;cursor:pointer;transition:all .3s}.mobile-menu .menu-item .link-child-btn:hover{background-color:var(--main-color);color:var(--main-card-background)}.mobile-menu .menu-item .link-child-btn .iconfont{margin-right:6px;opacity:.6}.mobile-menu .menu-item .link-child-btn .name{max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><script>function toggleMobileMenu(){const e=document.getElementById("mobileMenu");e&&(e.style.display=e.style.display==="none"?"block":"none")}</script><div class=modal id=search-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:800px><div class=title><div class=title-left><i class="iconfont icon-search"></i>
+<span class=title-text>全局搜索</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=search-modal><div class=search-input><input type=text id=search-input placeholder=今天你想搜点什么？ autocomplete=off></div><div class=search-results><div class=search-list></div><div class=search-empty><i class="iconfont icon-search"></i><p>输入关键字，开始搜索</p></div></div><div class=search-hint><span class=text id=search-hint-text></span>
+<span class=text><a class=powered_by href=https://www.fusejs.io/ target=_blank>Fuse.js</a></span></div></div></div></div></div></header><main class=main-layout><div class=home><div class="banner half" id=main-banner><h1 class=title>你好，欢迎来到元视角</h1><div class=subtitle><span class=text>纵有疾风起，人生不言弃</span></div></div><div class=home-content><div class=posts-content><div class="type-bar s-card hover"><div class=all-type><a href=/ class="type-item choose">首页</a>
+<a href=/categories/unity3d/ class=type-item>unity3d
+</a><a href=/categories/%e5%89%8d%e7%ab%af%e5%bc%80%e5%8f%91/ class=type-item>前端开发
+</a><a href=/categories/%e5%8d%95%e6%9c%ba%e6%b8%b8%e6%88%8f/ class=type-item>单机游戏
+</a><a href=/categories/%e5%bc%80%e5%8f%91%e5%b7%a5%e5%85%b7/ class=type-item>开发工具
+</a><a href=/categories/%e6%95%b0%e6%8d%ae%e5%88%86%e6%9e%90/ class=type-item>数据分析
+</a><a href=/categories/%e6%95%b0%e6%8d%ae%e5%ad%98%e5%82%a8/ class=type-item>数据存储
+</a><a href=/categories/%e6%b8%b8%e6%88%8f%e5%bc%80%e5%8f%91/ class=type-item>游戏开发
+</a><a href=/categories/%e7%8b%ac%e7%ab%8b%e5%8d%9a%e5%ae%a2/ class=type-item>独立博客
+</a><a href=/categories/%e7%94%9f%e6%b4%bb%e6%84%9f%e6%82%9f/ class=type-item>生活感悟
+</a><a href=/categories/%e7%bc%96%e7%a8%8b%e8%af%ad%e8%a8%80/ class=type-item>编程语言
+</a><a href=/categories/%e8%af%bb%e4%b9%a6%e7%ac%94%e8%ae%b0/ class=type-item>读书笔记</a></div><a href=/categories class=more-type><i class="iconfont icon-arrow-right"></i>
+更多</a></div><div class=post-lists><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/2676125676/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+生活感悟</span></div><span class=post-title>2017，在驻足间回首</span>
+<span class=post-desc>朋友圈集体缅怀18岁，进入00后时代，怀旧失去缅怀中，习惯性期盼更好的明天，新年前让记忆狂欢。作者回顾2017年，裴武刚离开西安，怀念旅途中的相处，离别后感情淡漠，思考爱情和人性。回顾学习做饭、读书、看电影，展望2018年的技术和生活目标，包括学习前端框架、Python数据分析、认真谈恋爱等。愿2018期望实现，被温柔对待，生活安稳。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E6%80%BB%E7%BB%93",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+总结
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%9B%9E%E9%A6%96",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+回首
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%B1%95%E6%9C%9B",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+展望
+</span><span class=tags-name onclick='window.location.href="/tags/%E9%9A%8F%E7%AC%94",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+随笔</span></div><span class=post-time>2017-12-31</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/1386017461/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+数据分析</span></div><span class=post-title>基于新浪微博的男女性择偶观数据分析(上)</span>
+<span class=post-desc>这篇文章通过一个程序员的视角，探讨了现代择偶标准与个人情感挫折之间的联系。作者首先表达了自己在感情上的不顺利，随后通过朋友在社交媒体上的互动，引发了对人际关系和外表重要性的思考。文章接着详细介绍了作者如何利用 Python 进行新浪微博数据抓取、数据清洗、中文分词以及最终通过词云展示男女在择偶标准上的差异。分析结果显示，外表特征如身高和相貌在择偶中的重要性，这使得作者感到失望。最后，作者反思了数据分析的意义，并认识到每个人都有其独特之处，应自信地面对他人的看法。文章以一种个人化且情感丰富的方式，将技术实践与对生活的深刻思考相结合。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E5%BE%AE%E5%8D%9A",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+微博
+</span><span class=tags-name onclick='window.location.href="/tags/%E8%AF%8D%E4%BA%91",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+词云
+</span><span class=tags-name onclick='window.location.href="/tags/python",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Python</span></div><span class=post-time>2017-12-23</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/3111375079/"'><div class=post-cover><img src=/posts/3111375079/cover.jpg alt=冬天来了，春天还会远吗？ loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+生活感悟</span></div><span class=post-title>冬天来了，春天还会远吗？</span>
+<span class=post-desc>本文是作者对于个人生活和职业挑战的深刻反思。在接到母亲的电话后，作者感到了家庭的温暖和支持，尽管身处没有暖气的寒冷出租屋中，但家人的关心让他相信冬天终将过去，春天必将到来。文章通过历史人物和事件的引用，比喻了个人命运与历史兴衰的相似性，同时反思了自身的性格和面试技巧。作者分享了自己在技术领域的追求和成长，以及对人生和职业发展的乐观态度。文章以对读者的鼓励结束，表达了无论现在多么艰难，总有希望和改变在前方等待</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E5%B7%A5%E4%BD%9C",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+工作
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%94%9F%E6%B4%BB",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+生活
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%84%9F%E6%82%9F",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+感悟
+</span><span class=tags-name onclick='window.location.href="/tags/%E9%9A%8F%E7%AC%94",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+随笔</span></div><span class=post-time>2017-11-19</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/450254281/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+独立博客</span></div><span class=post-title>迁移 Hexo 博客到 Google 渐进式 Web 应用(PWA)</span>
+<span class=post-desc>本文讨论了渐进式网络应用(PWA)的概念及其关键技术，以及作者将 Hexo 静态博客改造成PWA的过程和结果。文章首先提出，知识更新速度快，技术人应如何适应变化。随后，介绍了 PWA 的核心技术，如 ServiceWorker、Web App Manifest 以及 Push API 和 Notification API，旨在解决传统Web应用的网络依赖和用户体验问题。ServiceWorker 通过拦截网络请求和提供离线缓存能力，实现应用的离线工作；Web App Manifest 允许应用有图标、启动页等原生应用特性；Push API 和 Notification API 提高了应用与操作系统的集成度。作者在改造 Hexo 博客时，加入了 manifest.json 文件和服务工作线程，通过使用 hexo-offline 插件简化 Service Worker 的生成。然而，实际操作中遇到了 Service Worker 导致页面加载延迟和 Web App Manifest 在 Android 设备上的支持问题，最终未能在离线状态下访问博客。尽管尝试失败，作者认为过程中的思考和学习是有价值的，并强调开发人员应具备跨语言和平台的开发能力。最后，作者对 Web 技术的未来发展持乐观态度，希望其能继续进步。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/hexo",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Hexo
+</span><span class=tags-name onclick='window.location.href="/tags/pwa",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+PWA
+</span><span class=tags-name onclick='window.location.href="/tags/web",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Web</span></div><span class=post-time>2017-10-24</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/3521618732/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+开发工具</span></div><span class=post-title>持续集成在 Hexo 自动化部署上的实践</span>
+<span class=post-desc>本文探讨了持续集成相关话题，将战略和战术比作抽象类和具体类，将面向对象设计映射到现实等级制度。重点讨论了DevOps概念，以及持续集成(CI)和持续部署(CD)在其中的关键性。详细介绍了通过Hexo和TravisCI实现自动化部署的实践，旨在提高代码质量和加速迭代过程。讨论了持续集成的概念和重要性，以及通过TravisCI配置和关联Github实现自动化构建的流程。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/hexo",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Hexo
+</span><span class=tags-name onclick='window.location.href="/tags/travis",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Travis
+</span><span class=tags-name onclick='window.location.href="/tags/ci",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+CI</span></div><span class=post-time>2017-10-21</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/720539850/"'><div class=post-cover><img src=/posts/720539850/cover.jpg alt=不如归去 loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+生活感悟</span></div><span class=post-title>不如归去</span>
+<span class=post-desc>这段文字主要描述了作者对回家与家人之间的情感纠葛和思考。作者在火车上回家的途中，回忆起与家人的关系，表达了对家人的思念和珍惜，以及对家的向往和渴望。作者感叹时间的流逝，意识到家人的年迈与等待，表达了对家人的爱和责任感。同时，作者也反思了自己对家人的陪伴和关怀，以及对成熟和人生意义的思考。整体表达了对家庭、亲情和归属感的珍视和思考。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E5%9B%9E%E5%AE%B6",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+回家
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%88%90%E9%95%BF",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+成长
+</span><span class=tags-name onclick='window.location.href="/tags/%E4%BA%B2%E6%83%85",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+亲情</span></div><span class=post-time>2017-10-21</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/2617501472/"'><div class=post-cover><img src=/posts/2617501472/cover.png alt=秋风劲似去年时 loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+生活感悟</span></div><span class=post-title>秋风劲似去年时</span>
+<span class=post-desc>这段文字描述了作者在连续阴雨天中的感慨和回忆，提及对过去的爱情和错过的时光的反思。他谈及对自己喜欢的女孩子的感受和变化，表达了对时间流逝和人生的深沉思考。同时，他探讨了关于成熟、感情和人生选择的思考。最后，他展示了对爱情和人生的美好幻想。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E5%9B%9E%E5%BF%86",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+回忆
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%84%9F%E6%82%9F",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+感悟
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%B9%B4%E5%8D%8E",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+年华</span></div><span class=post-time>2017-09-25</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/1166840790/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+生活感悟</span></div><span class=post-title>从 React 专利事件看开源软件许可</span>
+<span class=post-desc>Payne在其博客中讨论了React专利事件引发的开源软件许可和商业化之间的平衡问题。他回顾了React专利事件的发展历程，指出了主流开源软件许可证（如GPL、BSD、MIT、MPL、Apache和LGPL）的特点。他认为React专利事件受到关注的原因在于专利许可的不对等性和对开源社区的负面影响。最终，Facebook宣布将React的开源协议修改为MIT，引发了社区的一次胜利。Payne鼓励人们在选择开源软件许可证时找到商业化和开源之间的平衡点，并强调了技术的不断变化和努力打好基础的重要性。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E5%89%8D%E7%AB%AF",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+前端
+</span><span class=tags-name onclick='window.location.href="/tags/react",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+React
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%BC%80%E6%BA%90",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+开源</span></div><span class=post-time>2017-09-20</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/4197961431/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+数据存储</span></div><span class=post-title>Redis 缓存技术学习系列之 Lua 脚本</span>
+<span class=post-desc>Payne在他的博客中分享了关于Redis中Lua脚本的学习，探讨了如何通过Redis内置的Lua解释器执行脚本，以及为什么选择脚本语言进行开发。他介绍了Redis中处理脚本的Eval系列和Script系列命令的用法，以及如何在Redis中使用Lua脚本进行交互。此外，他展示了如何通过具体案例演示Redis与Lua脚本的交互，并讨论了Lua数据结构与Redis数据结构之间的转换。最后，他分享了为什么使用Lua脚本以及在处理类型转换时的一些原则。整体而言，他强调了Lua脚本在Redis中的应用和重要性。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/redis",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Redis
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%BC%93%E5%AD%98",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+缓存
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+数据库
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%AC%94%E8%AE%B0",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+笔记</span></div><span class=post-time>2017-09-17</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/3873710624/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>基于特性(Attribute)的实体属性验证方案设计</span>
+<span class=post-desc>Payne在博客中探讨了数据校验的问题，介绍了对该话题的兴趣源自最近工作需求，并分享了关于Attribute和Property的区别。他讨论了.NET中的Attribute的概念和使用方式，展示了一个数据校验方案的设计思路和实现技术要点，以及如何通过示例对实体属性进行验证。最后，他总结了特性和属性的概念差异，Attribute在.NET中的应用以及验证方案的设计思路，鼓励大家努力提高业务代码质量。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/c",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+C#
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%A0%A1%E9%AA%8C",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+校验
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%89%B9%E6%80%A7",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+特性</span></div><span class=post-time>2017-08-21</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:1.4s onclick='window.location.href="/posts/1684318907/"'><div class=post-cover><img src=/posts/1684318907/cover.jpg alt=《大护法》：花生镇里的成人童话 loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+生活感悟</span></div><span class=post-title>《大护法》：花生镇里的成人童话</span>
+<span class=post-desc>《大护法》是一部反乌托邦式的成人童话电影，通过讲述花生人觉醒和反抗压迫者的故事，探讨了人类历史的永恒话题。影片中，主角“红冬瓜”（大护法）在花生镇寻找太子的过程中，逐渐揭示了统治者欧阳吉安利用恐惧和谎言来控制花生人的真相。电影中的太子、小姜、庖卯等角色分别代表了不同的人性面貌，展示了觉醒、反抗、理想与现实的冲突。导演不思凡通过独特的视角和怪诞的画风，创造了一个充满哲学思考的作品，引发观众对自我、社会和道德的反思。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E7%94%B5%E5%BD%B1",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+电影
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%A4%A7%E6%8A%A4%E6%B3%95",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+大护法
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%AB%A5%E8%AF%9D",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+童话
+</span><span class=tags-name onclick='window.location.href="/tags/%E9%9A%8F%E7%AC%94",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+随笔</span></div><span class=post-time>2017-07-30</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:1.4s onclick='window.location.href="/posts/570888918/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>基于过滤器实现异常处理的探索</span>
+<span class=post-desc>本文讨论了异常处理的概念和实践，作者分享了自己对异常处理的理解和经验，以及在项目中引入 AOP 后，从 try-catch 转向 Interceptor 的处理方式。文章首先区分了异常和错误，强调了软件工程中测试和错误处理的重要性，并提出统一的异常处理入口，避免代码中到处都是 try-catch 和日志记录的混乱。接着，文章介绍了 CheckedException 的概念，讨论了 Java 和 C# 中对异常处理的不同策略，并提出了基于过滤器的异常处理方案，通过定义异常基类和过滤器，利用 Attribute 关联异常和过滤器，达到代码解耦和增强可维护性的效果。作者通过实际案例展示了如何将异常处理代码重构为更优雅的形式，并通过多态和过滤器的概念简化异常处理流程，最后强调了程序员应追求代码设计的优雅，以适应不断变化的需求。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E5%BC%82%E5%B8%B8",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+异常
+</span><span class=tags-name onclick='window.location.href="/tags/%E8%AE%BE%E8%AE%A1",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+设计
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%9E%B6%E6%9E%84",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+架构</span></div><span class=post-time>2017-05-20</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:1.4s onclick='window.location.href="/posts/187480982/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>异步 Lambda 表达式问题的探索</span>
+<span class=post-desc>Payne在博客中讨论了.NET中异步Lambda表达式的问题，强调架构设计应由一线开发人员提炼和抽象，指出异步方法在ICommand接口中的历史遗留问题。他还探讨了异步编程中的异常处理机制，指出使用async void容易导致未处理异常终止程序。最后总结指出异步委托在IL层面无差别，建议使用Func而非Action来生成异步方法，对待async void应注意异常处理，强调处理各种异常的必要性。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/lambda",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Lambda
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%BC%82%E6%AD%A5",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+异步
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%BC%96%E7%A8%8B",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+编程</span></div><span class=post-time>2017-04-15</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:1.4s onclick='window.location.href="/posts/1444577573/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+数据存储</span></div><span class=post-title>Redis 缓存技术学习系列之发布订阅</span>
+<span class=post-desc>本文讨论了Redis中的发布-订阅模式，首先介绍了观察者模式及其实现，包括抽象主题、具体主题、抽象观察者和具体观察者的角色和功能。接着详细介绍了如何在C#中实现观察者模式。随后，文章引入Redis中的发布-订阅模式，解释了其概念，与观察者模式的联系以及相关的Redis命令，如PSUBSCRIBE、PUBLISH等。最后通过示例展示了Redis发布-订阅模式的实际操作过程。整体强调了设计模式的重要性以及Redis的发布-订阅模式与观察者模式的关联。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/redis",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Redis
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%BC%93%E5%AD%98",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+缓存
+</span><span class=tags-name onclick='window.location.href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+设计模式
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%AC%94%E8%AE%B0",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+笔记</span></div><span class=post-time>2017-04-15</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:1.4s onclick='window.location.href="/posts/335366821/"'><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+数据存储</span></div><span class=post-title>Redis 缓存技术学习系列之事务处理</span>
+<span class=post-desc>本文讨论了Redis中的事务处理技术。在数据库事务部分解释了事务概念，ACID属性以及事务处理的重要性。在Redis中，事务可以看作是一个命令队列，通过MULTI开始一个事务，然后逐条向Redis提交命令，最后通过EXEC执行事务。Redis中的事务与传统事务类似，具有原子性和一致性。文章还介绍了悲观锁和乐观锁的概念，以及Redis中的check-and-set机制。另外，文章提及了如何管理Redis的键，包括惰性删除和定期删除策略，以及一些建议如临时键和普通键的使用等。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/redis",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Redis
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%BC%93%E5%AD%98",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+缓存
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+数据库
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%AC%94%E8%AE%B0",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+笔记</span></div><span class=post-time>2017-04-08</span></div></div></article></div><style>.post-lists{width:100%}.post-lists .post-item{padding:0!important;display:flex;margin-bottom:1rem;animation:fade-up .6s backwards;cursor:pointer;overflow:hidden;height:200px}.post-lists .post-item .post-cover{flex:0 0 35%;overflow:hidden;transform:translateZ(0)}.post-lists .post-item .post-cover img{width:100%;height:100%;object-fit:cover;transform-origin:center center;transition:transform .5s ease-out,filter .5s ease-out;backface-visibility:hidden}.post-lists .post-item .post-content{flex:1;padding:1.6rem 2rem;display:flex;flex-direction:column;justify-content:space-between}.post-lists .post-item .post-category{display:flex;flex-wrap:wrap;width:100%;color:var(--main-font-second-color);font-size:14px}.post-lists .post-item .post-category .cat-name{display:flex;flex-direction:row;align-items:center}.post-lists .post-item .post-category .cat-name .iconfont{opacity:.8;margin-right:6px;color:var(--main-font-second-color)}.post-lists .post-item .post-category .top{margin-left:12px;color:var(--main-color)}.post-lists .post-item .post-category .top .iconfont{opacity:.8;color:var(--main-color)}.post-lists .post-item .post-title{font-size:20px;line-height:30px;font-weight:700;margin:.6rem 0;transition:color .3s;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-desc{margin-top:-.4rem;margin-bottom:.8rem;opacity:.8;line-height:30px;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-meta{display:flex;flex-direction:row;align-items:center;justify-content:space-between;color:var(--main-font-second-color)}.post-lists .post-item .post-tags{display:flex;flex-wrap:wrap;opacity:.8;margin-right:20px;overflow:hidden;mask:linear-gradient(90deg,#fff 0,#fff 90%,hsla(0,0%,100%,.6) 95%,hsla(0,0%,100%,0) 100%)}.post-lists .post-item .post-tags .tags-name{display:flex;flex-direction:row;align-items:center;margin-right:12px;white-space:nowrap;transition:color .3s}.post-lists .post-item .post-time{opacity:.6;font-size:13px;white-space:nowrap}.post-lists .post-item:hover .post-cover img{filter:brightness(.8);transform:scale(1.05)}.post-lists .post-item:hover .post-title{color:var(--main-color)}.post-lists .post-item:active{transform:scale(.98)}.post-lists .post-item.cover-left{flex-direction:row}.post-lists .post-item.cover-right{flex-direction:row-reverse}.post-lists .post-item.cover-both:nth-child(odd){flex-direction:row}.post-lists .post-item.cover-both:nth-child(even){flex-direction:row-reverse}.post-lists.layout-grid{display:grid;grid-template-columns:repeat(var(--grid-columns,2),1fr);gap:var(--grid-gap,1rem)}.post-lists.layout-grid .post-item{margin:0;flex-direction:column;height:auto}.post-lists.layout-grid .post-item .post-cover{flex:none;width:100%;height:225px}@media(max-width:768px){.post-lists .post-item{flex-direction:column;height:auto}.post-lists .post-item .post-cover{flex:none;width:100%;height:200px}.post-lists .post-item.cover-left,.post-lists .post-item.cover-right,.post-lists .post-item.cover-both{flex-direction:column!important}.post-lists.layout-grid{grid-template-columns:1fr}.post-lists .post-item .post-tags{flex-wrap:nowrap}}.post-lists .post-item .simple{animation:none;padding:.5rem 1.4rem!important;background-color:var(--main-card-second-background);height:auto;margin-bottom:.5rem}.post-lists .post-item .simple .post-content{padding:.5rem 0}.post-lists .post-item .simple .post-title{margin:0;font-size:16px}.post-lists .post-item .simple .post-desc{margin:.3rem 0 0;font-size:14px;opacity:.6}</style><div class=pagination><div class="page-item prev" onclick='window.location.href="/page/13/"'><i class="iconfont icon-page-right"></i>
+<span class=page-text>上页</span></div><div class=page-number><div class=page-item onclick='window.location.href="/"'><span class=page-num>1</span></div><div class=point>...</div><div class=page-item onclick='window.location.href="/page/12/"'><span class=page-num>12</span></div><div class=page-item onclick='window.location.href="/page/13/"'><span class=page-num>13</span></div><div class="page-item choose" onclick='window.location.href="/page/14/"'><span class=page-num>14</span></div><div class=page-item onclick='window.location.href="/page/15/"'><span class=page-num>15</span></div><div class=page-item onclick='window.location.href="/page/16/"'><span class=page-num>16</span></div><div class=point>...</div><div class=page-item onclick='window.location.href="/page/20/"'><span class=page-num>20</span></div><div class=fast-jump title=快速跳转><input type=number id=pageJumpInput min=1 max=20 onfocus='this.parentElement.classList.add("focus")' onblur='this.parentElement.classList.remove("focus")' onkeydown='event.key==="Enter"&&jumpToPage(this.value,20)' aria-label=jump>
+<i class="iconfont icon-arrow-right" onclick='jumpToPage(document.getElementById("pageJumpInput").value,20)'></i></div></div><div class="page-item next" onclick='window.location.href="/page/15/"'><span class=page-text>下页</span>
+<i class="iconfont icon-page-right"></i></div></div><style>.pagination{position:relative;display:flex;flex-direction:row;align-items:center;justify-content:center;margin-top:20px;width:100%;height:40px;animation:fade-up .6s .4s backwards}.page-item{position:relative;display:flex;justify-content:center;align-items:center;width:40px;height:40px;border-radius:8px;overflow:hidden;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);transition:border-color .3s,box-shadow .3s;cursor:pointer}.page-item.prev,.page-item.next{position:absolute;width:80px;left:0}.page-item.prev .iconfont{transform:rotate(180deg)}.page-item.next{left:auto;right:0}.page-item:hover{border-color:var(--main-color);box-shadow:0 8px 16px -4px var(--main-color-bg)}.page-item.choose{color:var(--main-card-background);border-color:var(--main-color);background-color:var(--main-color);box-shadow:0 8px 16px -4px var(--main-color-bg)}.page-text{opacity:0;transition:opacity .3s}.page-item:hover .page-text{opacity:1}.page-number{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:center}.page-number .page-item{margin:0 6px}.point{margin:0 4px;transform:translateY(-8px);font-size:22px}.fast-jump{position:relative;margin:0 6px}.fast-jump input{width:40px;height:40px;border-radius:8px;padding:0 8px;font-size:16px;color:var(--main-font-color);background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);transition:all .3s}.fast-jump.focus input,.fast-jump:hover input{width:100px;border-color:var(--main-color);box-shadow:0 8px 16px -4px var(--main-color-bg)}@media(max-width:768px){.page-number{display:none}.page-item:first-child{margin-right:10px}.page-item:last-child{margin-left:10px}}</style><script>function jumpToPage(e,t){e=parseInt(e),(!e||e<1)&&(e=1),e>t&&(e=t);let n=window.location.pathname;e===1?n=n.replace(/\/page\/\d+/,""):n.includes("/page/")?n=n.replace(/\/page\/\d+/,`/page/${e}`):n=n.replace(/\/$/,"")+`/page/${e}`,window.location.href=n}</script></div><aside class=main-aside><div class="hello s-card weidgets"><span class=tip id=hello-weidget-tip>好久不见</span><div class=content><div class=site-logo><div class=avatar><img src=/images/avatar.jpg alt=avatar loading=lazy></div></div><span class=site-desc>谢谢你，在这世界的角落，找到我。我是一位穿梭于数字与人文领域交界处的观察者，热衷于在数字迷雾中剖析谜题背后的真相，同时在人文星河中重拾温暖和光明。我期待，在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点。</span></div><div class=info><div class=name><span class=author>飞鸿踏雪</span>
+<span class=desc>纵有疾风起，人生不言弃</span></div><div class=link><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuapei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i></a></div></div></div><div class=sticky><div class="tags-cloud s-card weidgets"><div class=title><i class="iconfont icon-hashtag"></i>
+<span class=title-name>热门标签</span></div><div class=all-tags><a href=/tags/%E8%BD%AF%E4%BB%B6/ class=tags><span class=name>软件</span>
+<sup class=num>1</sup>
+</a><a href=/tags/python/ class=tags><span class=name>Python</span>
+<sup class=num>22</sup>
+</a><a href=/tags/printdocument/ class=tags><span class=name>PrintDocument</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%9C%8D%E5%8A%A1/ class=tags><span class=name>服务</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%B4%BE%E7%BB%B4%E6%96%AF/ class=tags><span class=name>贾维斯</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%BA%A4%E4%BA%92/ class=tags><span class=name>交互</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%AD%BE%E5%90%8D/ class=tags><span class=name>签名</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%A4%A7%E6%8A%A4%E6%B3%95/ class=tags><span class=name>大护法</span>
+<sup class=num>1</sup>
+</a><a href=/tags/fody/ class=tags><span class=name>Fody</span>
+<sup class=num>1</sup>
+</a><a href=/tags/ldap/ class=tags><span class=name>LDAP</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%BC%93%E5%AD%98/ class=tags><span class=name>缓存</span>
+<sup class=num>5</sup>
+</a><a href=/tags/%E8%A3%85%E9%A5%B0%E5%99%A8/ class=tags><span class=name>装饰器</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%B1%95%E6%9C%9B/ class=tags><span class=name>展望</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AE%BF%E9%97%AE%E9%87%8F/ class=tags><span class=name>访问量</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%87%AA%E6%88%91%E5%92%8C%E8%A7%A3/ class=tags><span class=name>自我和解</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2/ class=tags><span class=name>计算机图形</span>
+<sup class=num>2</sup>
+</a><a href=/tags/rasa/ class=tags><span class=name>Rasa</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%B7%E8%AE%B0%E4%BD%8F%E6%88%91/ class=tags><span class=name>请记住我</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%99%9A%E6%8B%9F%E6%91%87%E6%9D%86/ class=tags><span class=name>虚拟摇杆</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%9A%8F%E7%AC%94/ class=tags><span class=name>随笔</span>
+<sup class=num>18</sup>
+</a><a href=/tags/%E9%AA%8C%E8%AF%81/ class=tags><span class=name>验证</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/ class=tags><span class=name>图形学</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%A0%BC%E5%BC%8F%E5%8C%96/ class=tags><span class=name>格式化</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%83%85%E6%84%9F/ class=tags><span class=name>情感</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E4%BB%B7%E5%80%BC/ class=tags><span class=name>价值</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%89%A9%E5%B1%95/ class=tags><span class=name>扩展</span>
+<sup class=num>4</sup>
+</a><a href=/tags/%E6%9C%8D%E5%8A%A1%E7%BC%96%E6%8E%92/ class=tags><span class=name>服务编排</span>
+<sup class=num>1</sup>
+</a><a href=/tags/lfs/ class=tags><span class=name>LFS</span>
+<sup class=num>1</sup>
+</a><a href=/tags/git/ class=tags><span class=name>Git</span>
+<sup class=num>4</sup>
+</a><a href=/tags/%E8%BF%81%E7%A7%BB/ class=tags><span class=name>迁移</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%81%E4%B9%A6/ class=tags><span class=name>证书</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%AD%A4%E7%8B%AC/ class=tags><span class=name>孤独</span>
+<sup class=num>1</sup>
+</a><a href=/tags/2014/ class=tags><span class=name>2014</span>
+<sup class=num>1</sup>
+</a><a href=/tags/orm/ class=tags><span class=name>ORM</span>
+<sup class=num>1</sup>
+</a><a href=/tags/serverless/ class=tags><span class=name>Serverless</span>
+<sup class=num>1</sup>
+</a><a href=/tags/html5/ class=tags><span class=name>HTML5</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E8%B0%83%E4%BC%98/ class=tags><span class=name>调优</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF/ class=tags><span class=name>贝塞尔曲线</span>
+<sup class=num>2</sup>
+</a><a href=/tags/ide/ class=tags><span class=name>IDE</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%AE%B9%E5%99%A8/ class=tags><span class=name>容器</span>
+<sup class=num>5</sup>
+</a><a href=/tags/dbeaver/ class=tags><span class=name>DBeaver</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%BE%AE%E5%8D%9A/ class=tags><span class=name>微博</span>
+<sup class=num>4</sup>
+</a><a href=/tags/web-api/ class=tags><span class=name>Web API</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E/ class=tags><span class=name>模板引擎</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%85%AC%E4%BC%97%E5%8F%B7/ class=tags><span class=name>公众号</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/ class=tags><span class=name>图像处理</span>
+<sup class=num>3</sup>
+</a><a href=/tags/jsonp/ class=tags><span class=name>JSONP</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%89%91%E6%8C%87offer/ class=tags><span class=name>剑指Offer</span>
+<sup class=num>1</sup>
+</a><a href=/tags/gdi+/ class=tags><span class=name>GDI+</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%BD%B1%E8%AF%84/ class=tags><span class=name>影评</span>
+<sup class=num>15</sup></a></div><a href=/tags class=more-tags>查看全部</a></div><div class="site-data s-card weidgets"><div class=title><i class="iconfont icon-chart"></i>
+<span class=title-name>站点数据</span></div><div class=all-data><div class=data-item><span class=name><i class="iconfont icon-article"></i>
+文章总数
+</span><span class=num>282 篇</span></div><div class=data-item><span class=name><i class="iconfont icon-date"></i>
+建站天数
+</span><span class=num>4033 天</span></div><div class=data-item><span class=name><i class="iconfont icon-words"></i>
+全站字数
+</span><span class=num>109213 字</span></div><div class=data-item><span class=name><i class="iconfont icon-visibility"></i>
+总访问量
+</span><span class=num id=umami_value_site_pv></span></div><div class=data-item><span class=name><i class="iconfont icon-account"></i>
+总访客数
+</span><span class=num id=umami_value_site_uv></span></div></div></div></div></aside><style>.main-aside{padding-left:1rem;display:flex;flex-direction:column;animation:fade-up .6s .3s backwards;.weidgets { padding: 18px; margin-bottom: 1rem; :deep(.title) { margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; opacity: 0.75; .iconfont { opacity: 0.6; margin-right: 6px; } .title-name { opacity: 0.8; } } } .sticky { position: sticky; top: calc(60px + 1rem); .weidgets { animation: fade-up 0.6s 0.4s backwards; &:last-child { margin-bottom: 0; } } }}</style></div></div><script>document.addEventListener("DOMContentLoaded",function(){const e=localStorage.getItem("lastScrollY");e&&(window.scrollTo({top:parseInt(e),behavior:"smooth"}),localStorage.removeItem("lastScrollY"))}),window.addEventListener("beforeunload",function(){localStorage.setItem("lastScrollY",window.scrollY.toString())})</script></main><div class=footer-link><div class=footer-bar><span class=site-title>元视角</span>
+<span class=site-desc>纵有疾风起，人生不言弃</span>
+<a href=/ class=to-home>了解更多</a></div><div class=footer-social><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuanpei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i>
+</a><a href=/index.xml target=_blank class=social-link aria-label=RSS><i class="iconfont icon-rss"></i></a><div class=logo title=返回顶部 onclick='window.scrollTo({top:0,behavior:"smooth"})'><img src=/images/icons8-stellar-128.png alt=author class=author></div><a href=https://weibo.com/1278609231 target=_blank class=social-link aria-label=微博><i class="iconfont icon-weibo"></i>
+</a><a href=https://www.douban.com/people/60029335/ target=_blank class=social-link aria-label=豆瓣><i class="iconfont icon-douban"></i>
+</a><a href=https://www.zhihu.com/people/qinyuanpei target=_blank class=social-link aria-label=知乎><i class="iconfont icon-zhihu"></i></a></div><div class=footer-sitemap><div class=sitemap-item><span class=title>博客</span><div class=links><a href=/archives class=link-text>文章归档
+</a><a href=/categories class=link-text>全部分类
+</a><a href=/tags class=link-text>全部标签</a></div></div><div class=sitemap-item><span class=title>项目</span><div class=links><a href=https://github.com/qinyuanpei/mcp-server-weibo target=_blank class=link-text>mcp-server-weibo</a></div></div><div class=sitemap-item><span class=title>专栏</span><div class=links><a href=https://blog.csdn.net/qinyuanpei/category_10852603.html target=_blank class=link-text>.NET 源代码探案系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_7444699.html target=_blank class=link-text>Python 数据挖掘系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_11484903.html target=_blank class=link-text>分布式丛林探险系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_1708629.html target=_blank class=link-text>Unity3D 游戏开发系列</a></div></div><div class=sitemap-item><span class=title>页面</span><div class=links><a href=/comments class=link-text>留言
+</a><a href=/books class=link-text>读书
+</a><a href=/movies class=link-text>观影
+</a><a href=/musics class=link-text>听歌</a></div></div><div class=sitemap-item><span class=title>友情链接</span><div class=links><a href=https://gudong.site/ target=_blank class=link-text>咕咚同学
+</a><a href=https://coolshell.cn/ target=_blank class=link-text>酷壳
+</a><a href=https://blog.zhheo.com/ target=_blank class=link-text>张洪
+</a><a href=/links class=link-text>更多</a></div></div></div></div><footer id=main-footer class=main-footer><div class=footer-content><div class=footer-copyright><span class=time data-v-6001e979>@ 2014 - 2025 </span><a href=/ class="author link" target=_blank>飞鸿踏雪</a></div><div class=meta><a class="power link" href=https://gohugo.io/ target=_blank><span class=by>Powered by</span>
+<span class=name>Hugo</span>
+</a><a class="theme link" href=https://github.com/imsyy/vitepress-theme-curve><span class=name>主题</span>
+</a><a class="rss link" href=/index.xml target=_blank><i class="iconfont icon-rss"></i>
+<span class=name data-v-6001e979>订阅</span>
+</a><a class="cc link" href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank aria-label="Creative Commons"><i class="iconfont icon-line"></i>
+<i class="iconfont icon-by-line"></i>
+<i class="iconfont icon-nc-line"></i>
+<i class="iconfont icon-nd-line"></i></a></div></div></footer><script type=module src=/scripts/main.js></script><script src=https://cdn.jsdelivr.net/npm/fuse.js@7.1.0></script><script src=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js></script><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css media="(prefers-color-scheme: dark)"><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css media="(prefers-color-scheme: light)"><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css><script src=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js></script><script src=https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js></script><script type=text/javascript src=/scripts/modules/badge.js></script><script type=text/javascript>window.createBadge("Hugo","v0.126.1","#35495e","#41b883"),window.createBadge("Github","1ae5ebb","#35495e","#ffc107")</script></body></html>

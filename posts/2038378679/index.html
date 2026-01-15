@@ -1,0 +1,421 @@
+<!doctype html><html lang=zh-cn><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=referrer content="no-referrer"><meta content="飞鸿踏雪" name=author><title>HTML5 游戏开发技术基础整理 - 元视角</title>
+<meta name=description content="随着HTML5标准的确立，HTML5游戏开发逐渐兴起，可跨平台运行，本文基于《HML5 Canvas游戏开发实战》整理了HTML5游戏开发基础，强调了JavaScript中的面向对象编程和Canvas绘图基础，包括属性、方法的实现，继承机制，静态类实现，以及Canvas绘制线、矩形、圆等基本图形，文字、图片绘制，平移、旋转、伸缩操作，以及线性渐变、径向渐变、颜色反转和灰度等高级特效。"><link rel=icon type=image/png href=/images/favicons/favicon-96x96.png sizes=96x96><link rel=icon type=image/svg+xml href=/images/favicons/favicon.svg><link rel="shortcut icon" href=/images/favicons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/images/favicons/apple-touch-icon.png><meta name=apple-mobile-web-app-title content="元视角"><link rel=manifest href=/site.webmanifest><meta name=keywords content="游戏,HTML5,技术,笔记"><meta property="og:title" content="HTML5 游戏开发技术基础整理 - 元视角"><meta property="og:description" content="随着HTML5标准的确立，HTML5游戏开发逐渐兴起，可跨平台运行，本文基于《HML5 Canvas游戏开发实战》整理了HTML5游戏开发基础，强调了JavaScript中的面向对象编程和Canvas绘图基础，包括属性、方法的实现，继承机制，静态类实现，以及Canvas绘制线、矩形、圆等基本图形，文字、图片绘制，平移、旋转、伸缩操作，以及线性渐变、径向渐变、颜色反转和灰度等高级特效。"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.yuanpei.me/posts/2038378679/"><meta property='og:site_name' content='元视角'><meta property="og:image" content="/images/avatar.jpg"><meta property="twitter:image" content="/images/avatar.jpg"><meta property='article:section' content='Posts'><meta property='article:tag' content='游戏'><meta property='article:tag' content='HTML5'><meta property='article:tag' content='技术'><meta property='article:tag' content='笔记'><meta property='article:published_time' content='2015-03-08T19:14:44+00:00'><meta property='article:modified_time' content='2015-03-08T19:14:44+00:00'><meta property="twitter:domain" content="https://blog.yuanpei.me/"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.yuanpei.me/posts/2038378679/"><meta property="twitter:title" content="HTML5 游戏开发技术基础整理 - 元视角"><meta property="twitter:description" content="随着HTML5标准的确立，HTML5游戏开发逐渐兴起，可跨平台运行，本文基于《HML5 Canvas游戏开发实战》整理了HTML5游戏开发基础，强调了JavaScript中的面向对象编程和Canvas绘图基础，包括属性、方法的实现，继承机制，静态类实现，以及Canvas绘制线、矩形、圆等基本图形，文字、图片绘制，平移、旋转、伸缩操作，以及线性渐变、径向渐变、颜色反转和灰度等高级特效。"><meta name=twitter:site content="飞鸿踏雪"><meta name=twitter:creator content="飞鸿踏雪"><link rel=stylesheet href=/styles/main.min.bb9e9eadbf718b0c91c89c85c701c072a4eaa3846575271b714abf3bc7bb8210.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css><link rel=stylesheet href=/styles/iconfont.css><link rel=stylesheet href=/styles/iconfont-patch.css><script defer src=https://umami.yuanpei.me/JXOS5H5V data-website-id=445bd2eb-68f9-47fd-b93a-5dfa92be333d></script></head><body><div class="background patterns"><div class=bg-mask></div></div><style>.background{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:-2;&.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23494849' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } &.dark { &.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23fcfcfc' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } .cover { filter: brightness(0.6); } } .cover { width: auto; height: auto; min-height: 100%; opacity: 0; transition: filter 0.3s, opacity 0.3s; &.loaded { opacity: 1; } }}</style><header class=main-header><nav class="main-nav up top"><div class=nav-all><div class=left-nav><div class=site-name onclick='location.href="/"'>元视角</div></div><div class=nav-center><div class=site-menu><div class=site-menu><div class=menu-item><span class=link-btn>文库</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+文章归档
+</span><span class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+全部分类
+</span><span class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+全部标签</span></div></div><div class=menu-item><span class=link-btn>书影音</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+读书
+</span><span class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+观影
+</span><span class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+听歌</span></div></div><div class=menu-item><span class=link-btn>页面</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+友情链接
+</span><span class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+个人作品
+</span><span class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+站点统计</span></div></div><div class=menu-item><span class=link-btn>更多</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+留言
+</span><span class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+关于本站</span></div></div></div></div><span class=site-title>HTML5 游戏开发技术基础整理</span></div><div class=right-nav><a class="menu-btn nav-btn travellings" title=开往-友链接力 href=https://www.travellings.cn/go.html target=_blank><i class="iconfont icon-subway"></i></a><div class="menu-btn nav-btn" title=随机前往一篇文章 id=randomToggle><i class="iconfont icon-shuffle"></i></div><div class="menu-btn nav-btn" title=全站搜索><i class="iconfont icon-search"></i></div><div class="menu-btn nav-btn" id=themeToggle title=切换主题模式><i class="iconfont icon-sun" id=themeIcon></i></div><div id=open-control class="menu-btn nav-btn pc" title=打开中控台><i class="iconfont icon-dashboard"></i></div><div class="to-top menu-btn hidden" title=返回顶部><div class=to-top-btn><span class=num>0</span>
+<i class="iconfont icon-up"></i></div></div><div class="menu-btn nav-btn mobile" title=打开菜单><i class="iconfont icon-toc"></i></div></div></div></nav><div class=mobile-menu id=mobileMenu><div class=menu-mask></div><div class="menu-content s-card"><div class=close-control><i class="iconfont icon-close"></i></div><div class=menu-list><div class=menu-item><span class=link-title>文库</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+<span class=name>文章归档</span></div><div class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+<span class=name>全部分类</span></div><div class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+<span class=name>全部标签</span></div></div></div><div class=menu-item><span class=link-title>书影音</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+<span class=name>读书</span></div><div class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+<span class=name>观影</span></div><div class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+<span class=name>听歌</span></div></div></div><div class=menu-item><span class=link-title>页面</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+<span class=name>友情链接</span></div><div class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+<span class=name>个人作品</span></div><div class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+<span class=name>站点统计</span></div></div></div><div class=menu-item><span class=link-title>更多</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+<span class=name>留言</span></div><div class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+<span class=name>关于本站</span></div></div></div></div></div></div><style>.mobile-menu{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;display:none}.mobile-menu .menu-mask{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;background-color:var(--main-mask-background)}.mobile-menu .menu-content{position:absolute;top:0;right:0;height:100%;width:100%;max-width:300px;border-radius:12px 0 0 12px;padding:20px;overflow:auto}.mobile-menu .close-control{position:absolute;top:10px;right:20px;display:flex;align-items:center;justify-content:center;width:35px;height:35px;padding:0;transition:background-color .3s,opacity .3s;border-radius:50%;cursor:pointer}.mobile-menu .close-control .iconfont{font-size:18px;line-height:1;color:var(--main-font-second-color);transition:color .3s,opacity .3s}.mobile-menu .close-control:hover{background-color:var(--main-color)}.mobile-menu .close-control:hover .iconfont{color:var(--main-card-background)}.mobile-menu .menu-list{margin-top:40px}.mobile-menu .menu-item{margin-bottom:12px}.mobile-menu .menu-item .link-title{font-size:14px;margin-bottom:12px;display:inline-block;color:var(--main-font-second-color)}.mobile-menu .menu-item .link-child{display:grid;gap:12px;grid-template-columns:1fr 1fr}.mobile-menu .menu-item .link-child-btn{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;border-radius:8px;padding:10px 12px;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);font-size:15px;cursor:pointer;transition:all .3s}.mobile-menu .menu-item .link-child-btn:hover{background-color:var(--main-color);color:var(--main-card-background)}.mobile-menu .menu-item .link-child-btn .iconfont{margin-right:6px;opacity:.6}.mobile-menu .menu-item .link-child-btn .name{max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><script>function toggleMobileMenu(){const e=document.getElementById("mobileMenu");e&&(e.style.display=e.style.display==="none"?"block":"none")}</script><div class=modal id=search-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:800px><div class=title><div class=title-left><i class="iconfont icon-search"></i>
+<span class=title-text>全局搜索</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=search-modal><div class=search-input><input type=text id=search-input placeholder=今天你想搜点什么？ autocomplete=off></div><div class=search-results><div class=search-list></div><div class=search-empty><i class="iconfont icon-search"></i><p>输入关键字，开始搜索</p></div></div><div class=search-hint><span class=text id=search-hint-text></span>
+<span class=text><a class=powered_by href=https://www.fusejs.io/ target=_blank>Fuse.js</a></span></div></div></div></div></div></header><main class=main-layout><div class=post><div class=post-meta><div class=meta><div class=categories><a href=/categories/%e8%af%bb%e4%b9%a6%e7%ac%94%e8%ae%b0/ class=cat-item><i class="iconfont icon-folder"></i>
+<span class=name>读书笔记</span></a></div><div class=tags><a href=/tags/%e6%b8%b8%e6%88%8f/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>游戏</span>
+</a><a href=/tags/html5/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>HTML5</span>
+</a><a href=/tags/%e6%8a%80%e6%9c%af/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>技术</span>
+</a><a href=/tags/%e7%ac%94%e8%ae%b0/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>笔记</span></a></div></div><h1 class=title>HTML5 游戏开发技术基础整理</h1><div class=other-meta><span class="meta date"><i class="iconfont icon-date"></i>
+2015-03-08
+</span><span class="update meta"><i class="iconfont icon-time"></i>
+2015-03-08
+</span><span class="hot meta"><i class="iconfont icon-fire"></i>
+<span class=artalk-pv-count id=umami_value_page_pv>0</span>
+</span><span class="chat meta hover" data-scroll-to=comments><i class="iconfont icon-chat"></i>
+<span id=waline_comments_count class=artalk-comment-count>0</span></span></div></div><div class=post-content><article class="post-article s-card"><div class="expired s-card">本文发表于 <strong>3965</strong> 天前，其中的信息可能已经事过境迁</div><div class="article-gpt s-card"><div class=title><span class=name><i class="iconfont icon-robot"></i>
+文章摘要
+<i class="iconfont icon-up"></i>
+</span><span class=logo>FakeGPT</span></div><div class="content s-card"><span class=text></span></div><div class=meta></div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){new TypeIt(".article-gpt .content .text",{strings:"随着HTML5标准的确立，HTML5游戏开发逐渐兴起，可跨平台运行，本文基于《HML5 Canvas游戏开发实战》整理了HTML5游戏开发基础，强调了JavaScript中的面向对象编程和Canvas绘图基础，包括属性、方法的实现，继承机制，静态类实现，以及Canvas绘制线、矩形、圆等基本图形，文字、图片绘制，平移、旋转、伸缩操作，以及线性渐变、径向渐变、颜色反转和灰度等高级特效。",speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><div id=page-content class=markdown-main-style><p>随着 HTML5 标准最终敲定，HTML5 将有望成为游戏开发领域的的热门平台。HTML5 游戏能够运行于包括 iPhone 系列和 iPad 系列在内的计算机、智能手机以及平板电脑上，是目前跨平台应用开发的最佳实施方案。本文系根据 《HML5 Canvas 游戏开发实战》 一书中的内容整理而成，是了解和学习 HTML5 游戏开发的基础内容，希望能够帮助到那些和博主一样致力于游戏开发的朋友们！</p><h2 id=javascript-中的面向对象编程>JavaScript 中的面向对象编程</h2><p>对于游戏开发来说，面向对象编程(OOP)是一种重要而且必要的方法，所以在了解 HTML5 游戏开发前，首先应该了解 JavaScript 中的面向对象编程。JavaScript 是一种基于对象的语言，可它并不是一种真正的面向对象的编程语言，因为在 JavaScript 的语法中不存在类(Class)的概念。下面我们将分析和解决在 JavaScript 中实现封装、继承等面向对象的问题。</p><h3 id=在-javascript-中函数function就是就是一个类class>在 JavaScript 中函数(function)就是就是一个类(class)</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//声明一个函数
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>function</span> <span class=nx>MyClass</span><span class=p>(){}</span>
+</span></span><span class=line><span class=cl><span class=c1>//实例化一个对象
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>var</span> <span class=nx>cls1</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>MyClass</span><span class=p>();</span>
+</span></span></code></pre></div><h3 id=使用-this-关键字就可以为类增加属性>使用 this 关键字就可以为类增加属性</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//声明一个类并定义其构造函数
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>function</span> <span class=nx>MyClass</span><span class=p>(</span><span class=nx>name</span><span class=p>,</span><span class=nx>age</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>name</span> <span class=o>=</span> <span class=nx>name</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>age</span>  <span class=o>=</span> <span class=nx>age</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl><span class=c1>//实例化一个对象
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>var</span> <span class=nx>cls1</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>MyClass</span><span class=p>(</span><span class=s2>&#34;张三&#34;</span><span class=p>,</span><span class=mi>20</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=c1>//输出cls1的两个属性值
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>alert</span><span class=p>(</span><span class=s2>&#34;name=&#34;</span> <span class=o>+</span> <span class=nx>cls1</span><span class=p>.</span><span class=nx>name</span> <span class=o>+</span> <span class=s2>&#34;&amp;&#34;</span> <span class=o>+</span> <span class=nx>cls1</span><span class=p>.</span><span class=nx>age</span><span class=p>)</span>
+</span></span></code></pre></div><h3 id=使用-prototype-属性可以为类添加方法>使用 prototype 属性可以为类添加方法</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//声明一个类并定义其构造函数
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>function</span> <span class=nx>MyClass</span><span class=p>(</span><span class=nx>name</span><span class=p>,</span><span class=nx>age</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>name</span> <span class=o>=</span> <span class=nx>name</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>age</span>  <span class=o>=</span> <span class=nx>age</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl><span class=c1>//为MyClass增加方法
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>MyClass</span><span class=p>.</span><span class=nx>prototype</span><span class=o>=</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>toString</span><span class=o>:</span><span class=kd>function</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>alert</span><span class=p>(</span><span class=s2>&#34;name=&#34;</span> <span class=o>+</span> <span class=k>this</span><span class=p>.</span><span class=nx>name</span> <span class=o>+</span> <span class=s2>&#34;&amp;&#34;</span> <span class=o>+</span> <span class=k>this</span><span class=p>.</span><span class=nx>age</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=nx>getName</span><span class=o>:</span><span class=kd>function</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>alert</span><span class=p>(</span><span class=s2>&#34;name=&#34;</span> <span class=o>+</span> <span class=k>this</span><span class=p>.</span><span class=nx>name</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=nx>getAge</span><span class=o>:</span><span class=kd>function</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>alert</span><span class=p>(</span><span class=s2>&#34;age=&#34;</span> <span class=o>+</span> <span class=k>this</span><span class=p>.</span><span class=nx>age</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></div><h3 id=使用-apply-方法实现属性和方法的继承>使用 apply 方法实现属性和方法的继承</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//定义一个父类People
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>function</span> <span class=nx>People</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>type</span><span class=o>=</span><span class=s2>&#34;人&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl><span class=c1>//为父类定义一个方法
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>People</span><span class=p>.</span><span class=nx>prototype</span><span class=o>=</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>getType</span><span class=o>:</span><span class=kd>function</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>alert</span><span class=p>(</span><span class=s2>&#34;type=&#34;</span> <span class=o>+</span> <span class=k>this</span><span class=p>.</span><span class=nx>type</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>//定义一个子类Student
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>function</span> <span class=nx>Student</span><span class=p>(</span><span class=nx>name</span><span class=p>,</span><span class=nx>age</span><span class=p>,</span><span class=nx>sex</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>   <span class=c1>//继承父类的属性type
+</span></span></span><span class=line><span class=cl><span class=c1></span>   <span class=nx>People</span><span class=p>.</span><span class=nx>apply</span><span class=p>(</span><span class=k>this</span><span class=p>,</span><span class=nx>arguments</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>   <span class=k>this</span><span class=p>.</span><span class=nx>name</span> <span class=o>=</span> <span class=nx>name</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>   <span class=k>this</span><span class=p>.</span><span class=nx>age</span> <span class=o>=</span> <span class=nx>age</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>   <span class=k>this</span><span class=p>.</span><span class=nx>sex</span> <span class=o>=</span> <span class=nx>sex</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>//声明一个Student实例
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>var</span> <span class=nx>stu</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>Student</span><span class=p>(</span><span class=s2>&#34;张三&#34;</span><span class=p>,</span><span class=mi>20</span><span class=p>,</span><span class=s2>&#34;男&#34;</span><span class=p>)</span><span class=err>；</span>
+</span></span><span class=line><span class=cl><span class=c1>//输出type
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>alert</span><span class=p>(</span><span class=nx>stu</span><span class=p>.</span><span class=nx>type</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>//下面我们来了解下如何继承父类的方法，继承父类方法主要通过循环使用父对象的prototype进行复制来实现，如
+</span></span></span><span class=line><span class=cl><span class=c1>//重新定义子类Student
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>function</span> <span class=nx>Student</span><span class=p>(</span><span class=nx>name</span><span class=p>,</span><span class=nx>age</span><span class=p>,</span><span class=nx>sex</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//继承父类的属性type
+</span></span></span><span class=line><span class=cl><span class=c1></span>   <span class=nx>People</span><span class=p>.</span><span class=nx>apply</span><span class=p>(</span><span class=k>this</span><span class=p>,</span><span class=nx>arguments</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>   <span class=c1>//继承父类的方法，略显抽象
+</span></span></span><span class=line><span class=cl><span class=c1></span>   <span class=kd>var</span> <span class=nx>prop</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>   <span class=k>for</span><span class=p>(</span><span class=nx>prop</span> <span class=k>in</span> <span class=nx>People</span><span class=p>.</span><span class=nx>prototype</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>   <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>proto</span> <span class=o>=</span> <span class=k>this</span><span class=p>.</span><span class=nx>constructor</span><span class=p>.</span><span class=nx>prototype</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span><span class=p>(</span><span class=o>!</span><span class=nx>proto</span><span class=p>[</span><span class=nx>prop</span><span class=p>])</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>proto</span><span class=p>[</span><span class=nx>prop</span><span class=p>]</span> <span class=o>=</span> <span class=nx>People</span><span class=p>.</span><span class=nx>prototype</span><span class=p>[</span><span class=nx>prop</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>proto</span><span class=p>[</span><span class=nx>prop</span><span class=p>][</span><span class=s2>&#34;super&#34;</span><span class=p>]</span> <span class=o>=</span> <span class=nx>People</span><span class=p>.</span><span class=nx>prototype</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>   <span class=p>}</span>
+</span></span><span class=line><span class=cl>   <span class=c1>//属性定义
+</span></span></span><span class=line><span class=cl><span class=c1></span>   <span class=k>this</span><span class=p>.</span><span class=nx>name</span> <span class=o>=</span> <span class=nx>name</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>   <span class=k>this</span><span class=p>.</span><span class=nx>age</span> <span class=o>=</span> <span class=nx>age</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>   <span class=k>this</span><span class=p>.</span><span class=nx>sex</span> <span class=o>=</span> <span class=nx>sex</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>//实例化Student对象
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>var</span> <span class=nx>stu</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>Student</span><span class=p>(</span><span class=s2>&#34;张三&#34;</span><span class=p>,</span><span class=mi>20</span><span class=p>,</span><span class=s2>&#34;男&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>stu</span><span class=p>.</span><span class=nx>getType</span><span class=p>();</span>
+</span></span></code></pre></div><h3 id=静态类的实现>静态类的实现</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-plain data-lang=plain><span class=line><span class=cl>function staticClass()
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    staticClass.name = &#34;张三&#34;;
+</span></span><span class=line><span class=cl>    staticClass.toString=function
+</span></span><span class=line><span class=cl>    {
+</span></span><span class=line><span class=cl>        alert(&#34;name=&#34; + staticClass.name )
+</span></span><span class=line><span class=cl>    };
+</span></span><span class=line><span class=cl>};
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>alert(staticClass.name);
+</span></span><span class=line><span class=cl>staticClass.toString();
+</span></span></code></pre></div><h2 id=canvas-绘图基础>Canvas 绘图基础</h2><p>HTML5 提供了图像、视频、音频、表单、位置、本地数据库、离线存储、websocket 等各种全新的特性，对于 HTML 游戏开发而言，我们主要关注图像、音频、本地数据库以及 websocket 等，首先我们来了解下 Canavs 绘图的基础内容。</p><p>Canvas 是 HTML5 为我们提供的一张画布，可以让我们在 HTML 上直接绘制图形，因此 Canvas 可以作为 HTML5 游戏开发的基本元素，即 HTML5 游戏引擎的底层都是以 Canvas 元素来驱动的。Canvas 本身没有绘图的能力，需要借助于 JavaScript 来实现绘图的功能。使用 Canvas 元素只需要在网页中添加 canvas 标记即可，如</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-HTML data-lang=HTML><span class=line><span class=cl><span class=p>&lt;</span><span class=nt>canvas</span> <span class=na>id</span><span class=o>=</span><span class=s>&#34;myCanavs&#34;</span> <span class=na>width</span><span class=o>=</span><span class=s>&#34;800&#34;</span> <span class=na>height</span><span class=o>=</span><span class=s>&#34;480&#34;</span><span class=p>&gt;&lt;/</span><span class=nt>canvas</span><span class=p>&gt;</span>
+</span></span></code></pre></div><p>接下来我们通过 JavaScript 来获取这个 Canvas 并通过相关 API 实现绘图环境的初始化</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//获取Canvas元素
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>var</span> <span class=nx>canvas</span> <span class=o>=</span> <span class=nb>document</span><span class=p>.</span><span class=nx>getElementById</span><span class=p>(</span><span class=s1>&#39;myCanvas&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//检查canvas合法性
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>if</span><span class=p>(</span><span class=nx>canvas</span> <span class=o>&amp;&amp;</span> <span class=nx>canvas</span><span class=p>.</span><span class=nx>getContext</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//获取当前上下文
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kd>var</span> <span class=nx>ctx</span> <span class=o>=</span> <span class=nx>canvas</span><span class=p>.</span><span class=nx>getContext</span><span class=p>(</span><span class=s1>&#39;2d&#39;</span><span class=p>)</span>    
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>因为目前 Canvas 只支持 2D 绘图，因此，这里的参数暂时只能为 2d。因为 Cnavas 绘图的 API 都封装在 ctx 这个实例中，因此下面的所有操作都是基于 ctx 来实现的：</p><h3 id=使用-canvas-绘制线>使用 Canvas 绘制线</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//设置线宽
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>lineWidth</span> <span class=o>=</span> <span class=mi>10</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=c1>//设置画笔颜色
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>strokeStyle</span> <span class=o>=</span> <span class=s2>&#34;red&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=c1>//创建一个路径
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>beginPath</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=c1>//路径起点
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>moveTo</span><span class=p>(</span><span class=mi>10</span><span class=p>,</span><span class=mi>10</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//路径终点
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>lineTo</span><span class=p>(</span><span class=mi>150</span><span class=p>,</span><span class=mi>50</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//绘制路径
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>stroke</span><span class=p>();</span>
+</span></span></code></pre></div><h3 id=使用-cnavas-绘制矩形>使用 Cnavas 绘制矩形</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//设置线宽
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>lineWidth</span><span class=o>=</span><span class=mi>5</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=c1>//设置画笔颜色
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>strokeStyle</span><span class=o>-</span><span class=s2>&#34;red&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1>//创建路径
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>beginPath</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=c1>//绘制矩形
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>strokeRect</span><span class=p>(</span><span class=mi>10</span><span class=p>,</span><span class=mi>10</span><span class=p>,</span><span class=mi>70</span><span class=p>,</span><span class=mi>40</span><span class=p>);</span>
+</span></span></code></pre></div><p>或者</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//定义矩形
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>rect</span><span class=p>(</span><span class=mi>10</span><span class=p>,</span><span class=mi>10</span><span class=p>,</span><span class=mi>70</span><span class=p>,</span><span class=mi>40</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//绘制矩形
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>stroke</span><span class=p>();</span>
+</span></span></code></pre></div><p>如果需要对矩形进行填充</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//创建路径
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>beginPath</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=c1>//绘制矩形
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>fillRect</span><span class=p>(</span><span class=mi>10</span><span class=p>,</span><span class=mi>10</span><span class=p>,</span><span class=mi>70</span><span class=p>,</span><span class=mi>40</span><span class=p>)</span>
+</span></span></code></pre></div><h3 id=使用-canvas-绘制圆>使用 Canvas 绘制圆</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//创建路径
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>beginPath</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=c1>//定义圆
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>arc</span><span class=p>(</span><span class=mi>100</span><span class=p>,</span><span class=mi>100</span><span class=p>,</span><span class=mi>50</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>360</span><span class=o>*</span><span class=nb>Math</span><span class=p>.</span><span class=nx>PI</span><span class=o>/</span><span class=mi>180</span><span class=p>,</span><span class=kc>true</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//绘制圆
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>stroke</span><span class=p>();</span>
+</span></span></code></pre></div><p>同样地，可以使用 fill 进行填充绘制</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//创建路径
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>beginPath</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=c1>//定义圆
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>arc</span><span class=p>(</span><span class=mi>100</span><span class=p>,</span><span class=mi>100</span><span class=p>,</span><span class=mi>50</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>360</span><span class=o>*</span><span class=nb>Math</span><span class=p>.</span><span class=nx>PI</span><span class=o>/</span><span class=mi>180</span><span class=p>,</span><span class=kc>true</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//绘制圆
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>fill</span><span class=p>();</span>
+</span></span></code></pre></div><h3 id=使用-canvas-绘制圆角矩形>使用 Canvas 绘制圆角矩形</h3><p>绘制圆角矩形需要 arcTo 函数配合 lineTo 来完成</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//创建路径
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>beginPath</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>moveTo</span><span class=p>(</span><span class=mi>40</span><span class=p>,</span><span class=mi>20</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>lineTo</span><span class=p>(</span><span class=mi>100</span><span class=p>,</span><span class=mi>20</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>arcTo</span><span class=p>(</span><span class=mi>100</span><span class=p>,</span><span class=mi>20</span><span class=p>,</span><span class=mi>120</span><span class=p>,</span><span class=mi>40</span><span class=p>,</span><span class=mi>20</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>lineTo</span><span class=p>(</span><span class=mi>120</span><span class=p>,</span><span class=mi>70</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>arcTo</span><span class=p>(</span><span class=mi>120</span><span class=p>,</span><span class=mi>90</span><span class=p>,</span><span class=mi>100</span><span class=p>,</span><span class=mi>90</span><span class=p>,</span><span class=mi>20</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>lineTo</span><span class=p>(</span><span class=mi>40</span><span class=p>,</span><span class=mi>90</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>arcTo</span><span class=p>(</span><span class=mi>20</span><span class=p>,</span><span class=mi>90</span><span class=p>,</span><span class=mi>100</span><span class=p>,</span><span class=mi>70</span><span class=p>,</span><span class=mi>20</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>lineTo</span><span class=p>(</span><span class=mi>20</span><span class=p>,</span><span class=mi>40</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>arcTo</span><span class=p>(</span><span class=mi>20</span><span class=p>,</span><span class=mi>20</span><span class=p>,</span><span class=mi>40</span><span class=p>,</span><span class=mi>20</span><span class=p>,</span><span class=mi>20</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//绘制圆角矩形
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>stroke</span><span class=p>();</span>
+</span></span></code></pre></div><h3 id=使用-canvas-绘制复杂图形>使用 Canvas 绘制复杂图形</h3><p>在 HTML5 中可以通过 quadraticCurveTo 函数绘制二次贝塞尔曲线，通过 bezierCurveTo 函数绘制三次贝塞尔曲线,具体代码请参考 API 文档。</p><h3 id=使用-canvas-绘制文字>使用 Canvas 绘制文字</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//设置字体
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>font</span><span class=o>=</span><span class=s2>&#34;30px Arial&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=c1>//绘制文字
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>strokeText</span><span class=p>(</span><span class=s2>&#34;Hello HTML5&#34;</span><span class=p>,</span><span class=mi>100</span><span class=p>,</span><span class=mi>50</span><span class=p>);</span>
+</span></span></code></pre></div><h3 id=使用-canvas-绘制图片>使用 Canvas 绘制图片</h3><p>绘制图片使用 drawImage 函数，其函数原型如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=nx>drawImage</span><span class=p>(</span><span class=nx>image</span><span class=p>,</span><span class=nx>dx</span><span class=p>,</span><span class=nx>dy</span><span class=p>);</span>
+</span></span></code></pre></div><p>其中 image 可以是 HTML 中的标签或者是 JavaScript 中的 Image 对象。如</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-HTML data-lang=HTML><span class=line><span class=cl>//定义一个img标签
+</span></span><span class=line><span class=cl><span class=p>&lt;</span><span class=nt>img</span> <span class=na>id</span><span class=o>=</span><span class=s>&#34;img_source&#34;</span> <span class=na>src</span><span class=o>=</span><span class=s>&#34;source.jpg&#34;</span> <span class=na>width</span><span class=o>=</span><span class=s>&#34;240&#34;</span> <span class=na>height</span><span class=o>=</span><span class=s>&#34;240&#34;</span><span class=p>/&gt;</span>
+</span></span></code></pre></div><p>接下来通过 getElementById 来取得图像数据，并将其绘制出来</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=kd>var</span> <span class=nx>img</span><span class=o>=</span><span class=nb>document</span><span class=p>.</span><span class=nx>getElementById</span><span class=p>(</span><span class=s2>&#34;img_source&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>draw</span><span class=p>(</span><span class=nx>img</span><span class=p>,</span><span class=mi>200</span><span class=p>,</span><span class=mi>200</span><span class=p>);</span>
+</span></span></code></pre></div><p>如果直接使用 JavaScript 代码</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=kd>var</span> <span class=nx>img</span><span class=o>=</span><span class=k>new</span> <span class=nx>Image</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=nx>img</span><span class=p>.</span><span class=nx>src</span><span class=o>=</span><span class=s2>&#34;source.jpg&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=nx>ctx</span><span class=p>.</span><span class=nx>draw</span><span class=p>(</span><span class=nx>img</span><span class=p>,</span><span class=mi>200</span><span class=p>,</span><span class=mi>200</span><span class=p>)</span>
+</span></span></code></pre></div><h3 id=图形的平移操作>图形的平移操作</h3><p>使用 translate 函数实现在水平和垂直方向上的平移</p><h3 id=图形的旋转操作>图形的旋转操作</h3><p>使用 rotate 函数实现旋转，需要注意的是传入的参数是弧度</p><h3 id=图形的伸缩操作>图形的伸缩操作</h3><p>使用 scale 函数实现伸缩，当参数为负值时表示在该方向上翻转</p><h3 id=图形高级特效>图形高级特效</h3><p>这里主要介绍线性渐变、径向渐变、颜色反转、灰度。</p><ul><li>线性渐变</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//创建一个线性渐变容器
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>var</span> <span class=nx>grd</span><span class=o>=</span><span class=nx>ctx</span><span class=p>.</span><span class=nx>createLinearGradient</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>200</span><span class=p>,</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//添加颜色
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>grd</span><span class=p>.</span><span class=nx>addColorStop</span><span class=p>(</span><span class=mf>0.2</span><span class=p>,</span><span class=s2>&#34;#00ff00&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>grd</span><span class=p>.</span><span class=nx>addColorStop</span><span class=p>(</span><span class=mf>0.8</span><span class=p>,</span><span class=s2>&#34;#ff0000&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//应用渐变
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>fillStyle</span><span class=o>=</span><span class=nx>grd</span><span class=p>;</span>
+</span></span></code></pre></div><ul><li>径向渐变</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-JavaScript data-lang=JavaScript><span class=line><span class=cl><span class=c1>//创建一个径向渐变容器
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>var</span> <span class=nx>grd</span><span class=o>=</span><span class=nx>ctx</span><span class=p>.</span><span class=nx>createRadialGradient</span><span class=p>(</span><span class=mi>100</span><span class=p>,</span><span class=mi>100</span><span class=p>,</span><span class=mi>10</span><span class=p>,</span><span class=mi>100</span><span class=p>,</span><span class=mi>100</span><span class=p>,</span><span class=mi>50</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//添加颜色
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>grd</span><span class=p>.</span><span class=nx>addColorStop</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span><span class=s2>&#34;#00ff00&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nx>grd</span><span class=p>.</span><span class=nx>addColorStop</span><span class=p>(,</span><span class=s2>&#34;#ff0000&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>//应用渐变
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>ctx</span><span class=p>.</span><span class=nx>fillStyle</span><span class=o>=</span><span class=nx>grd</span><span class=p>;</span>
+</span></span></code></pre></div><ul><li>颜色反转
+遍历每个像素并对 RGB 值进行取反</li><li>灰度
+灰度计算公式：gary = red * 0.3 + green * 0.59 + blue * 0.11</li></ul><p>基础的内容就是这些了，以后如果碰到需要 HTML5 的地方可以回过头来看看。</p></div><div class="copyright s-card"><div class=title><span class=post-name>HTML5 游戏开发技术基础整理</span>
+<a :href=https://blog.yuanpei.me/posts/2038378679/ class=post-link target=_blank>https://blog.yuanpei.me/posts/2038378679/</a></div><div class=post-meta><div class=meta-item><span class=tip>作者</span>
+<span class=name>飞鸿踏雪</span></div><div class=meta-item><span class=tip>发布于</span>
+<span class=name>2015-03-08</span></div><div class=meta-item><span class=tip>更新于</span>
+<span class=name>2015-03-08</span></div><div class="meta-item cc"><span class=tip>许可协议</span>
+<a class=name href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank>CC BY-NC-SA 4.0</a></div></div><span class=meta-tip>署名-非商业性使用-相同方式共享 4.0 国际</span></div><div class=other-meta><div class=all-tags><a href=/tags/%E6%B8%B8%E6%88%8F class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>游戏</span>
+</a><a href=/tags/html5 class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>HTML5</span>
+</a><a href=/tags/%E6%8A%80%E6%9C%AF class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>技术</span>
+</a><a href=/tags/%E7%AC%94%E8%AE%B0 class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>笔记</span></a></div><a href=https://eqnxweimkr5.feishu.cn/share/base/form/shrcnCXCPmxCKKJYI3RKUfefJre class=report target=_blank><i class="iconfont icon-report"></i>
+反馈与投诉</a></div><div class=reward><div class=reward-btn onclick='window.$Modal.show("reward-modal")'><i class="iconfont icon-reward"></i>
+<span class=text>赞赏博主</span></div></div><div class=modal id=reward-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:430px><div class=title><div class=title-left><i class="iconfont icon-reward"></i>
+<span class=title-text>赞赏博主</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=reward-card><div class=thank>🙏 请博主喝一杯咖啡</div><div class=qr><a class=qr-img href=/images/reward/alipay.jpg target=_blank><img src=/images/reward/alipay.jpg alt=支付宝赞赏码><div class=tip><i class="iconfont icon-alipay"></i>
+<span>支付宝</span></div></a><a class=qr-img href=/images/reward/wechat.jpg target=_blank><img src=/images/reward/wechat.jpg alt=微信赞赏码><div class=tip><i class="iconfont icon-wechat"></i>
+<span>微信</span></div></a></div><div class="all-list s-card hover"><div class=title>赞赏记录</div><div class=tip>赞赏金额将全部用于开源项目维护，以及服务器、域名及各类云服务的开销</div></div></div></div></div></div><div class=related-post><div class=title><span class=name><i class="iconfont icon-star"></i>
+相关推荐
+</span><span class=shuffle onclick='window.location.href="/posts/integrate-crontab-scheduled-tasks-inside-docker-containers/"'>随便逛逛</span></div><div class=post-lists><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/3677280829/"'><div class=post-content><span class=post-title>《Web API 的设计与开发》读书笔记</span>
+<span class=post-desc>设计优美的 Web API需要易于使用、便于更改、健壮性好、不怕公开。REST有两层含义，一是符合Fielding的REST架构风格，二是使用符合RPC风格的XML或JSON+HTTP接口的系统。端点的基本设计包括短小便于输入的URI、易读的URI、大小写统一的URI等。HTTP方法包括GET、POST、PUT、DELETE、PATCH。查询参数和路径的使用区别在于唯一资源放在路径中，可忽略参数放在查询参数中。RESTful设计级别包括使用HTTP、引入资源概念、HTTP动词、HATEOAS。指定数据格式可通过查询参数、扩展名或Accept头部字段。用户可通过GraphQL决定响应内容，状态码表示错误信息，缓存需符合HTTP协议规范。API版本控制可以嵌入版本号或查询字符串中加入版本信息，也可通过媒体类型指定版本。API安全需使用HTTPS，避免XSS/XSRF注入漏洞，返回正确数据格式，使用安全相关首部，采用KVS实现访问限制。最后，提供API文档可使用API Blueprint、API Console或Apigee，并提供SDK。</span></div></article><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/345410188/"'><div class=post-content><span class=post-title>《C#多线程编程实战》读书笔记</span>
+<span class=post-desc>本文是根据《C#多线程编程实战》整理的读书笔记，详细介绍了在.NET中多线程编程相关的知识，包括线程基础、线程同步、使用线程池、任务并行库、并行集合、PLINQ以及异步I/O等内容。涵盖了线程的基本操作、线程同步的方法、使用线程池、任务并行库的使用、并行集合的应用以及异步I/O的实现。文章总结了55条关键的技巧和注意事项，对于想深入学习多线程编程的人来说是一份很好的参考资料。</span></div></article></div><style>.post-lists{width:100%}.post-lists .post-item{padding:0!important;display:flex;margin-bottom:1rem;animation:fade-up .6s backwards;cursor:pointer;overflow:hidden;height:200px}.post-lists .post-item .post-cover{flex:0 0 35%;overflow:hidden;transform:translateZ(0)}.post-lists .post-item .post-cover img{width:100%;height:100%;object-fit:cover;transform-origin:center center;transition:transform .5s ease-out,filter .5s ease-out;backface-visibility:hidden}.post-lists .post-item .post-content{flex:1;padding:1.6rem 2rem;display:flex;flex-direction:column;justify-content:space-between}.post-lists .post-item .post-category{display:flex;flex-wrap:wrap;width:100%;color:var(--main-font-second-color);font-size:14px}.post-lists .post-item .post-category .cat-name{display:flex;flex-direction:row;align-items:center}.post-lists .post-item .post-category .cat-name .iconfont{opacity:.8;margin-right:6px;color:var(--main-font-second-color)}.post-lists .post-item .post-category .top{margin-left:12px;color:var(--main-color)}.post-lists .post-item .post-category .top .iconfont{opacity:.8;color:var(--main-color)}.post-lists .post-item .post-title{font-size:20px;line-height:30px;font-weight:700;margin:.6rem 0;transition:color .3s;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-desc{margin-top:-.4rem;margin-bottom:.8rem;opacity:.8;line-height:30px;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-meta{display:flex;flex-direction:row;align-items:center;justify-content:space-between;color:var(--main-font-second-color)}.post-lists .post-item .post-tags{display:flex;flex-wrap:wrap;opacity:.8;margin-right:20px;overflow:hidden;mask:linear-gradient(90deg,#fff 0,#fff 90%,hsla(0,0%,100%,.6) 95%,hsla(0,0%,100%,0) 100%)}.post-lists .post-item .post-tags .tags-name{display:flex;flex-direction:row;align-items:center;margin-right:12px;white-space:nowrap;transition:color .3s}.post-lists .post-item .post-time{opacity:.6;font-size:13px;white-space:nowrap}.post-lists .post-item:hover .post-cover img{filter:brightness(.8);transform:scale(1.05)}.post-lists .post-item:hover .post-title{color:var(--main-color)}.post-lists .post-item:active{transform:scale(.98)}.post-lists .post-item.cover-left{flex-direction:row}.post-lists .post-item.cover-right{flex-direction:row-reverse}.post-lists .post-item.cover-both:nth-child(odd){flex-direction:row}.post-lists .post-item.cover-both:nth-child(even){flex-direction:row-reverse}.post-lists.layout-grid{display:grid;grid-template-columns:repeat(var(--grid-columns,2),1fr);gap:var(--grid-gap,1rem)}.post-lists.layout-grid .post-item{margin:0;flex-direction:column;height:auto}.post-lists.layout-grid .post-item .post-cover{flex:none;width:100%;height:225px}@media(max-width:768px){.post-lists .post-item{flex-direction:column;height:auto}.post-lists .post-item .post-cover{flex:none;width:100%;height:200px}.post-lists .post-item.cover-left,.post-lists .post-item.cover-right,.post-lists .post-item.cover-both{flex-direction:column!important}.post-lists.layout-grid{grid-template-columns:1fr}.post-lists .post-item .post-tags{flex-wrap:nowrap}}.post-lists .post-item .simple{animation:none;padding:.5rem 1.4rem!important;background-color:var(--main-card-second-background);height:auto;margin-bottom:.5rem}.post-lists .post-item .simple .post-content{padding:.5rem 0}.post-lists .post-item .simple .post-title{margin:0;font-size:16px}.post-lists .post-item .simple .post-desc{margin:.3rem 0 0;font-size:14px;opacity:.6}</style></div><style>.related-post{margin-top:1rem}.related-post .title{display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;margin:3rem 0 1rem;padding:0 6px}.related-post .title .name{display:flex;align-items:center;font-size:24px;font-weight:700}.related-post .title .name .iconfont{font-size:26px;font-weight:400;margin-right:8px}.related-post .title .shuffle{opacity:.6;font-size:14px;transition:color .3s,opacity .3s;cursor:pointer}.related-post .title .shuffle:hover{opacity:1;color:var(--main-color)}</style><div id=comments><div id=main-comment class=comment style=padding-left:1.5rem;padding-right:1.5rem><div v-if=!fill class=title><span class=name><i class="iconfont icon-chat"></i>
+评论
+</span><span class=tool>隐私政策</span></div><link rel=stylesheet href=https://unpkg.com/@waline/client@v3/dist/waline.css><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}.waline-container .wl-content img{width:unset!important;max-width:unset!important;max-height:unset!important;border-radius:unset!important}.waline-container .wl-content p{font-size:.9rem!important}.wl-header label{font-size:.8em}.wl-sort li{font-size:.8em}</style><script type=module>
+        import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+        init({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+            emoji: [
+                '//unpkg.com/@waline/emojis@1.2.0/weibo'
+            ],
+            reaction: false,
+        });
+      </script></div></div><div class="next-post s-card" id=next-post data-is-next=true><a href=/posts/3321992673/ class=next-post-link><span class=post-tip>下一篇阅读
+</span><span class=post-title>当梦想照进现实</span></a></div></article><aside class=main-aside><div class="hello s-card weidgets"><span class=tip id=hello-weidget-tip>好久不见</span><div class=content><div class=site-logo><div class=avatar><img src=/images/avatar.jpg alt=avatar loading=lazy></div></div><span class=site-desc>谢谢你，在这世界的角落，找到我。我是一位穿梭于数字与人文领域交界处的观察者，热衷于在数字迷雾中剖析谜题背后的真相，同时在人文星河中重拾温暖和光明。我期待，在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点。</span></div><div class=info><div class=name><span class=author>飞鸿踏雪</span>
+<span class=desc>纵有疾风起，人生不言弃</span></div><div class=link><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuapei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i></a></div></div></div><div class=sticky><div class="toc s-card weidgets" id=weidget-toc><div class=toc-title><i class="iconfont icon-toc"></i>
+<span class=name>目录</span></div><div id=toc-all class=toc-list></div></div><script>document.addEventListener("DOMContentLoaded",function(){const o=[];let e=null,t=null,n=0;const s=document.getElementById("toc-all"),i=()=>{try{if(e=document.getElementById("page-content"),!e)return!1;const t=Array.from(e.querySelectorAll("h1, h2, h3, h4")).filter(e=>e.parentElement.tagName.toLowerCase()==="div");return t}catch(e){console.error("获取所有目录数据出错：",e)}},r=()=>{const e=i();if(!e)return!1;s.innerHTML="",e.forEach((e,t)=>{const n={id:e.id,type:e.tagName,text:e.textContent?.replace(/\u200B/g,"").trim()},i=document.createElement("span");i.id="toc-"+n.id,i.className=`toc-item ${n.type} ${t===0?"active":""}`,i.textContent=n.text,i.addEventListener("click",()=>d(n.id)),s.appendChild(i),o.push(n)}),e&&e.length>0&&(t=e[0].id)},c=(e,t)=>{let n;return function(){const s=arguments,o=this;n||(e.apply(o,s),n=!0,setTimeout(()=>n=!1,t))}},l=c(()=>{if(!o.length)return!1;const e=i();if(!e)return!1;const s=120;if(window.scrollY===0){n=0,t=e[0]?.id,a();return}for(let n of e){const o=n.getBoundingClientRect();o.top-s<=0&&o.bottom+s>=0&&t!==n.id&&(t=n.id,a())}},100),a=()=>{document.querySelectorAll(".toc-item.active").forEach(e=>{e.classList.remove("active")});const e=document.getElementById("toc-"+t);if(!e)return!1;e.classList.add("active"),n=e.offsetTop-2||0,s.style.setProperty("--height",n+"px"),s.scrollTo({top:n-80,behavior:"smooth"})},d=t=>{try{const n=document.getElementById(t);if(!n||!e)return!1;const s=n.offsetTop,o=s+e.offsetTop-80;window.scroll({top:o,behavior:"smooth"})}catch(e){console.error("目录滚动失败：",e)}};r(),window.addEventListener("scroll",l)})</script><style lang=scss scoped>.toc{position:relative;padding:0!important;overflow:hidden;.toc-title { display: flex; flex-direction: row; align-items: center; padding: 18px; height: 58px; .iconfont { margin-right: 8px; font-weight: bold; opacity: 0.6; } .name { font-weight: bold; } } .toc-list { position: relative; padding: 20px; padding-top: 0; padding-left: 24px; display: flex; flex-direction: column; max-height: calc(70vh - 58px); overflow: auto; .toc-item { margin: 4px 0; padding: 6px 12px; border-radius: 8px; opacity: 0.6; transition: color 0.3s, opacity 0.3s, font-size 0.3s, background-color 0.3s; cursor: pointer; &:first-child { margin-top: 0; } &:last-child { margin-bottom: 0; } &.H1 { font-weight: bold; } &.H2 { font-size: 14px; margin-left: 15px; font-weight: normal; } &.H3 { font-size: 12px; margin-left: 25px; } &.active { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); &.H2 { font-size: 14px; } &.H3 { font-size: 12px; } } &:hover { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); } } &::after { content: ""; position: absolute; left: 12px; top: var(--height); width: 4px; height: 20px; margin: 8px 0; background-color: var(--main-color); border-radius: 8px; transition: top 0.3s; } } &::before { content: ""; position: absolute; left: 12px; bottom: 20px; width: 4px; height: calc(100% - 78px); background-color: var(--main-card-border); border-radius: 8px; }}</style><div class="tags-cloud s-card weidgets"><div class=title><i class="iconfont icon-hashtag"></i>
+<span class=title-name>热门标签</span></div><div class=all-tags><a href=/tags/dottrace/ class=tags><span class=name>DotTrace</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%96%87%E6%9C%AC%E5%88%86%E7%B1%BB/ class=tags><span class=name>文本分类</span>
+<sup class=num>1</sup>
+</a><a href=/tags/sourcetree/ class=tags><span class=name>SourceTree</span>
+<sup class=num>1</sup>
+</a><a href=/tags/quartz/ class=tags><span class=name>Quartz</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%87%AA%E6%88%91%E5%92%8C%E8%A7%A3/ class=tags><span class=name>自我和解</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%88%B1%E6%83%85/ class=tags><span class=name>爱情</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E6%BA%90%E7%A0%81/ class=tags><span class=name>源码</span>
+<sup class=num>5</sup>
+</a><a href=/tags/oracle/ class=tags><span class=name>Oracle</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%AE%97%E6%B3%95/ class=tags><span class=name>算法</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%A7%94%E6%89%98/ class=tags><span class=name>委托</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%86%B5%E5%A2%9E%E5%AE%9A%E5%BE%8B/ class=tags><span class=name>熵增定律</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%AE%A1%E8%AE%A1/ class=tags><span class=name>审计</span>
+<sup class=num>1</sup>
+</a><a href=/tags/ddd/ class=tags><span class=name>DDD</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%AF%95%E4%B8%9A/ class=tags><span class=name>毕业</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/ class=tags><span class=name>奇技淫巧</span>
+<sup class=num>1</sup>
+</a><a href=/tags/github/ class=tags><span class=name>Github</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E9%95%BF%E5%AE%89%E5%8D%81%E4%BA%8C%E6%97%B6%E8%BE%B0/ class=tags><span class=name>长安十二时辰</span>
+<sup class=num>1</sup>
+</a><a href=/tags/sklearn/ class=tags><span class=name>Sklearn</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%BB%BA%E7%AD%91/ class=tags><span class=name>建筑</span>
+<sup class=num>1</sup>
+</a><a href=/tags/envoy/ class=tags><span class=name>Envoy</span>
+<sup class=num>8</sup>
+</a><a href=/tags/%E6%97%B6%E9%97%B4/ class=tags><span class=name>时间</span>
+<sup class=num>3</sup>
+</a><a href=/tags/swagger/ class=tags><span class=name>Swagger</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/ class=tags><span class=name>反向代理</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%89%93%E5%8D%B0/ class=tags><span class=name>打印</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E6%97%A5%E6%9C%AC/ class=tags><span class=name>日本</span>
+<sup class=num>1</sup>
+</a><a href=/tags/semantic-kernel/ class=tags><span class=name>Semantic Kernel</span>
+<sup class=num>1</sup>
+</a><a href=/tags/lua/ class=tags><span class=name>Lua</span>
+<sup class=num>2</sup>
+</a><a href=/tags/webview2/ class=tags><span class=name>WebView2</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%B5%84%E6%BA%90%E6%8F%90%E5%8F%96/ class=tags><span class=name>资源提取</span>
+<sup class=num>1</sup>
+</a><a href=/tags/jsdelivr/ class=tags><span class=name>JsDelivr</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%88%91%E6%98%AF%E7%8C%AB/ class=tags><span class=name>我是猫</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/ class=tags><span class=name>图像处理</span>
+<sup class=num>3</sup>
+</a><a href=/tags/excel/ class=tags><span class=name>Excel</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%92%8C%E5%B9%B3/ class=tags><span class=name>和平</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AE%BF%E9%97%AE%E9%87%8F/ class=tags><span class=name>访问量</span>
+<sup class=num>1</sup>
+</a><a href=/tags/wechat/ class=tags><span class=name>Wechat</span>
+<sup class=num>1</sup>
+</a><a href=/tags/wmi/ class=tags><span class=name>WMI</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/ class=tags><span class=name>对象池</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%95%99%E7%A8%8B/ class=tags><span class=name>教程</span>
+<sup class=num>8</sup>
+</a><a href=/tags/%E6%80%BB%E7%BB%93/ class=tags><span class=name>总结</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E8%9B%8B%E7%82%92%E9%A5%AD/ class=tags><span class=name>蛋炒饭</span>
+<sup class=num>1</sup>
+</a><a href=/tags/react/ class=tags><span class=name>React</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%99%90%E6%B5%81/ class=tags><span class=name>限流</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%AD%A4%E7%8B%AC/ class=tags><span class=name>孤独</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%8E%B0%E5%AE%9E/ class=tags><span class=name>现实</span>
+<sup class=num>1</sup>
+</a><a href=/tags/cts/ class=tags><span class=name>CTS</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%9A%8F%E7%AC%94/ class=tags><span class=name>随笔</span>
+<sup class=num>18</sup>
+</a><a href=/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/ class=tags><span class=name>自动化</span>
+<sup class=num>1</sup>
+</a><a href=/tags/sublime/ class=tags><span class=name>Sublime</span>
+<sup class=num>1</sup>
+</a><a href=/tags/hls/ class=tags><span class=name>HLS</span>
+<sup class=num>1</sup></a></div><a href=/tags class=more-tags>查看全部</a></div><div class="site-data s-card weidgets"><div class=title><i class="iconfont icon-chart"></i>
+<span class=title-name>站点数据</span></div><div class=all-data><div class=data-item><span class=name><i class="iconfont icon-article"></i>
+文章总数
+</span><span class=num>282 篇</span></div><div class=data-item><span class=name><i class="iconfont icon-date"></i>
+建站天数
+</span><span class=num>4033 天</span></div><div class=data-item><span class=name><i class="iconfont icon-words"></i>
+全站字数
+</span><span class=num>109213 字</span></div><div class=data-item><span class=name><i class="iconfont icon-visibility"></i>
+总访问量
+</span><span class=num id=umami_value_site_pv></span></div><div class=data-item><span class=name><i class="iconfont icon-account"></i>
+总访客数
+</span><span class=num id=umami_value_site_uv></span></div></div></div></div></aside><style>.main-aside{padding-left:1rem;display:flex;flex-direction:column;animation:fade-up .6s .3s backwards;.weidgets { padding: 18px; margin-bottom: 1rem; :deep(.title) { margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; opacity: 0.75; .iconfont { opacity: 0.6; margin-right: 6px; } .title-name { opacity: 0.8; } } } .sticky { position: sticky; top: calc(60px + 1rem); .weidgets { animation: fade-up 0.6s 0.4s backwards; &:last-child { margin-bottom: 0; } } }}</style></div></div></main><div class=footer-link><div class=footer-bar><span class=site-title>元视角</span>
+<span class=site-desc>纵有疾风起，人生不言弃</span>
+<a href=/ class=to-home>了解更多</a></div><div class=footer-social><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuanpei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i>
+</a><a href=/index.xml target=_blank class=social-link aria-label=RSS><i class="iconfont icon-rss"></i></a><div class=logo title=返回顶部 onclick='window.scrollTo({top:0,behavior:"smooth"})'><img src=/images/icons8-stellar-128.png alt=author class=author></div><a href=https://weibo.com/1278609231 target=_blank class=social-link aria-label=微博><i class="iconfont icon-weibo"></i>
+</a><a href=https://www.douban.com/people/60029335/ target=_blank class=social-link aria-label=豆瓣><i class="iconfont icon-douban"></i>
+</a><a href=https://www.zhihu.com/people/qinyuanpei target=_blank class=social-link aria-label=知乎><i class="iconfont icon-zhihu"></i></a></div><div class=footer-sitemap><div class=sitemap-item><span class=title>博客</span><div class=links><a href=/archives class=link-text>文章归档
+</a><a href=/categories class=link-text>全部分类
+</a><a href=/tags class=link-text>全部标签</a></div></div><div class=sitemap-item><span class=title>项目</span><div class=links><a href=https://github.com/qinyuanpei/mcp-server-weibo target=_blank class=link-text>mcp-server-weibo</a></div></div><div class=sitemap-item><span class=title>专栏</span><div class=links><a href=https://blog.csdn.net/qinyuanpei/category_10852603.html target=_blank class=link-text>.NET 源代码探案系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_7444699.html target=_blank class=link-text>Python 数据挖掘系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_11484903.html target=_blank class=link-text>分布式丛林探险系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_1708629.html target=_blank class=link-text>Unity3D 游戏开发系列</a></div></div><div class=sitemap-item><span class=title>页面</span><div class=links><a href=/comments class=link-text>留言
+</a><a href=/books class=link-text>读书
+</a><a href=/movies class=link-text>观影
+</a><a href=/musics class=link-text>听歌</a></div></div><div class=sitemap-item><span class=title>友情链接</span><div class=links><a href=https://gudong.site/ target=_blank class=link-text>咕咚同学
+</a><a href=https://coolshell.cn/ target=_blank class=link-text>酷壳
+</a><a href=https://blog.zhheo.com/ target=_blank class=link-text>张洪
+</a><a href=/links class=link-text>更多</a></div></div></div></div><footer id=main-footer class=main-footer><div class=footer-content><div class=footer-copyright><span class=time data-v-6001e979>@ 2014 - 2025 </span><a href=/ class="author link" target=_blank>飞鸿踏雪</a></div><div class=meta><a class="power link" href=https://gohugo.io/ target=_blank><span class=by>Powered by</span>
+<span class=name>Hugo</span>
+</a><a class="theme link" href=https://github.com/imsyy/vitepress-theme-curve><span class=name>主题</span>
+</a><a class="rss link" href=/index.xml target=_blank><i class="iconfont icon-rss"></i>
+<span class=name data-v-6001e979>订阅</span>
+</a><a class="cc link" href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank aria-label="Creative Commons"><i class="iconfont icon-line"></i>
+<i class="iconfont icon-by-line"></i>
+<i class="iconfont icon-nc-line"></i>
+<i class="iconfont icon-nd-line"></i></a></div></div></footer><script type=module src=/scripts/main.js></script><script src=https://cdn.jsdelivr.net/npm/fuse.js@7.1.0></script><script src=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js></script><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css media="(prefers-color-scheme: dark)"><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css media="(prefers-color-scheme: light)"><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css><script src=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js></script><script src=https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js></script><script type=text/javascript src=/scripts/modules/badge.js></script><script type=text/javascript>window.createBadge("Hugo","v0.126.1","#35495e","#41b883"),window.createBadge("Github","1ae5ebb","#35495e","#ffc107")</script></body></html>

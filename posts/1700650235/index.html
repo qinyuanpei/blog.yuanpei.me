@@ -1,0 +1,357 @@
+<!doctype html><html lang=zh-cn><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=referrer content="no-referrer"><meta content="飞鸿踏雪" name=author><title>使用 C#开发 HTTP 服务器系列之实现 Get 和 Post - 元视角</title>
+<meta name=description content="本文介绍了如何在自己的 Web 服务器上实现 GET 和 POST 请求。GET 请求通过 URL 传递参数，而 POST 请求则将参数放在消息体中，相比 GET 请求更安全且无参数长度限制。实现过程包括解析请求报文中的参数，针对不同请求类型做相应处理。提供了代码示例展示如何在服务器端处理 GET 和 POST 请求，以及在 Unity 客户端使用 WWW 类发送 GET 和 POST 请求。最后展示了一个简单实例并给出了运行结果。"><link rel=icon type=image/png href=/images/favicons/favicon-96x96.png sizes=96x96><link rel=icon type=image/svg+xml href=/images/favicons/favicon.svg><link rel="shortcut icon" href=/images/favicons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/images/favicons/apple-touch-icon.png><meta name=apple-mobile-web-app-title content="元视角"><link rel=manifest href=/site.webmanifest><meta name=keywords content="HTTP,服务器,C#"><meta property="og:title" content="使用 C#开发 HTTP 服务器系列之实现 Get 和 Post - 元视角"><meta property="og:description" content="本文介绍了如何在自己的 Web 服务器上实现 GET 和 POST 请求。GET 请求通过 URL 传递参数，而 POST 请求则将参数放在消息体中，相比 GET 请求更安全且无参数长度限制。实现过程包括解析请求报文中的参数，针对不同请求类型做相应处理。提供了代码示例展示如何在服务器端处理 GET 和 POST 请求，以及在 Unity 客户端使用 WWW 类发送 GET 和 POST 请求。最后展示了一个简单实例并给出了运行结果。"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.yuanpei.me/posts/1700650235/"><meta property='og:site_name' content='元视角'><meta property="og:image" content="/images/avatar.jpg"><meta property="twitter:image" content="/images/avatar.jpg"><meta property='article:section' content='Posts'><meta property='article:tag' content='HTTP'><meta property='article:tag' content='服务器'><meta property='article:tag' content='C#'><meta property='article:published_time' content='2016-06-11T15:01:35+00:00'><meta property='article:modified_time' content='2016-06-11T15:01:35+00:00'><meta property="twitter:domain" content="https://blog.yuanpei.me/"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.yuanpei.me/posts/1700650235/"><meta property="twitter:title" content="使用 C#开发 HTTP 服务器系列之实现 Get 和 Post - 元视角"><meta property="twitter:description" content="本文介绍了如何在自己的 Web 服务器上实现 GET 和 POST 请求。GET 请求通过 URL 传递参数，而 POST 请求则将参数放在消息体中，相比 GET 请求更安全且无参数长度限制。实现过程包括解析请求报文中的参数，针对不同请求类型做相应处理。提供了代码示例展示如何在服务器端处理 GET 和 POST 请求，以及在 Unity 客户端使用 WWW 类发送 GET 和 POST 请求。最后展示了一个简单实例并给出了运行结果。"><meta name=twitter:site content="飞鸿踏雪"><meta name=twitter:creator content="飞鸿踏雪"><link rel=stylesheet href=/styles/main.min.bb9e9eadbf718b0c91c89c85c701c072a4eaa3846575271b714abf3bc7bb8210.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css><link rel=stylesheet href=/styles/iconfont.css><link rel=stylesheet href=/styles/iconfont-patch.css><script defer src=https://umami.yuanpei.me/JXOS5H5V data-website-id=445bd2eb-68f9-47fd-b93a-5dfa92be333d></script></head><body><div class="background patterns"><div class=bg-mask></div></div><style>.background{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:-2;&.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23494849' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } &.dark { &.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23fcfcfc' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } .cover { filter: brightness(0.6); } } .cover { width: auto; height: auto; min-height: 100%; opacity: 0; transition: filter 0.3s, opacity 0.3s; &.loaded { opacity: 1; } }}</style><header class=main-header><nav class="main-nav up top"><div class=nav-all><div class=left-nav><div class=site-name onclick='location.href="/"'>元视角</div></div><div class=nav-center><div class=site-menu><div class=site-menu><div class=menu-item><span class=link-btn>文库</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+文章归档
+</span><span class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+全部分类
+</span><span class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+全部标签</span></div></div><div class=menu-item><span class=link-btn>书影音</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+读书
+</span><span class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+观影
+</span><span class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+听歌</span></div></div><div class=menu-item><span class=link-btn>页面</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+友情链接
+</span><span class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+个人作品
+</span><span class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+站点统计</span></div></div><div class=menu-item><span class=link-btn>更多</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+留言
+</span><span class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+关于本站</span></div></div></div></div><span class=site-title>使用 C#开发 HTTP 服务器系列之实现 Get 和 Post</span></div><div class=right-nav><a class="menu-btn nav-btn travellings" title=开往-友链接力 href=https://www.travellings.cn/go.html target=_blank><i class="iconfont icon-subway"></i></a><div class="menu-btn nav-btn" title=随机前往一篇文章 id=randomToggle><i class="iconfont icon-shuffle"></i></div><div class="menu-btn nav-btn" title=全站搜索><i class="iconfont icon-search"></i></div><div class="menu-btn nav-btn" id=themeToggle title=切换主题模式><i class="iconfont icon-sun" id=themeIcon></i></div><div id=open-control class="menu-btn nav-btn pc" title=打开中控台><i class="iconfont icon-dashboard"></i></div><div class="to-top menu-btn hidden" title=返回顶部><div class=to-top-btn><span class=num>0</span>
+<i class="iconfont icon-up"></i></div></div><div class="menu-btn nav-btn mobile" title=打开菜单><i class="iconfont icon-toc"></i></div></div></div></nav><div class=mobile-menu id=mobileMenu><div class=menu-mask></div><div class="menu-content s-card"><div class=close-control><i class="iconfont icon-close"></i></div><div class=menu-list><div class=menu-item><span class=link-title>文库</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+<span class=name>文章归档</span></div><div class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+<span class=name>全部分类</span></div><div class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+<span class=name>全部标签</span></div></div></div><div class=menu-item><span class=link-title>书影音</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+<span class=name>读书</span></div><div class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+<span class=name>观影</span></div><div class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+<span class=name>听歌</span></div></div></div><div class=menu-item><span class=link-title>页面</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+<span class=name>友情链接</span></div><div class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+<span class=name>个人作品</span></div><div class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+<span class=name>站点统计</span></div></div></div><div class=menu-item><span class=link-title>更多</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+<span class=name>留言</span></div><div class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+<span class=name>关于本站</span></div></div></div></div></div></div><style>.mobile-menu{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;display:none}.mobile-menu .menu-mask{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;background-color:var(--main-mask-background)}.mobile-menu .menu-content{position:absolute;top:0;right:0;height:100%;width:100%;max-width:300px;border-radius:12px 0 0 12px;padding:20px;overflow:auto}.mobile-menu .close-control{position:absolute;top:10px;right:20px;display:flex;align-items:center;justify-content:center;width:35px;height:35px;padding:0;transition:background-color .3s,opacity .3s;border-radius:50%;cursor:pointer}.mobile-menu .close-control .iconfont{font-size:18px;line-height:1;color:var(--main-font-second-color);transition:color .3s,opacity .3s}.mobile-menu .close-control:hover{background-color:var(--main-color)}.mobile-menu .close-control:hover .iconfont{color:var(--main-card-background)}.mobile-menu .menu-list{margin-top:40px}.mobile-menu .menu-item{margin-bottom:12px}.mobile-menu .menu-item .link-title{font-size:14px;margin-bottom:12px;display:inline-block;color:var(--main-font-second-color)}.mobile-menu .menu-item .link-child{display:grid;gap:12px;grid-template-columns:1fr 1fr}.mobile-menu .menu-item .link-child-btn{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;border-radius:8px;padding:10px 12px;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);font-size:15px;cursor:pointer;transition:all .3s}.mobile-menu .menu-item .link-child-btn:hover{background-color:var(--main-color);color:var(--main-card-background)}.mobile-menu .menu-item .link-child-btn .iconfont{margin-right:6px;opacity:.6}.mobile-menu .menu-item .link-child-btn .name{max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><script>function toggleMobileMenu(){const e=document.getElementById("mobileMenu");e&&(e.style.display=e.style.display==="none"?"block":"none")}</script><div class=modal id=search-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:800px><div class=title><div class=title-left><i class="iconfont icon-search"></i>
+<span class=title-text>全局搜索</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=search-modal><div class=search-input><input type=text id=search-input placeholder=今天你想搜点什么？ autocomplete=off></div><div class=search-results><div class=search-list></div><div class=search-empty><i class="iconfont icon-search"></i><p>输入关键字，开始搜索</p></div></div><div class=search-hint><span class=text id=search-hint-text></span>
+<span class=text><a class=powered_by href=https://www.fusejs.io/ target=_blank>Fuse.js</a></span></div></div></div></div></div></header><main class=main-layout><div class=post><div class=post-meta><div class=meta><div class=categories><a href=/categories/%e7%bc%96%e7%a8%8b%e8%af%ad%e8%a8%80/ class=cat-item><i class="iconfont icon-folder"></i>
+<span class=name>编程语言</span></a></div><div class=tags><a href=/tags/http/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>HTTP</span>
+</a><a href=/tags/%e6%9c%8d%e5%8a%a1%e5%99%a8/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>服务器</span>
+</a><a href=/tags/c/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>C#</span></a></div></div><h1 class=title>使用 C#开发 HTTP 服务器系列之实现 Get 和 Post</h1><div class=other-meta><span class="meta date"><i class="iconfont icon-date"></i>
+2016-06-11
+</span><span class="update meta"><i class="iconfont icon-time"></i>
+2016-06-11
+</span><span class="hot meta"><i class="iconfont icon-fire"></i>
+<span class=artalk-pv-count id=umami_value_page_pv>0</span>
+</span><span class="chat meta hover" data-scroll-to=comments><i class="iconfont icon-chat"></i>
+<span id=waline_comments_count class=artalk-comment-count>0</span></span></div></div><div class=post-content><article class="post-article s-card"><div class="expired s-card">本文发表于 <strong>3504</strong> 天前，其中的信息可能已经事过境迁</div><div class="article-gpt s-card"><div class=title><span class=name><i class="iconfont icon-robot"></i>
+文章摘要
+<i class="iconfont icon-up"></i>
+</span><span class=logo>FakeGPT</span></div><div class="content s-card"><span class=text></span></div><div class=meta></div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){new TypeIt(".article-gpt .content .text",{strings:"本文介绍了如何在自己的 Web 服务器上实现 GET 和 POST 请求。GET 请求通过 URL 传递参数，而 POST 请求则将参数放在消息体中，相比 GET 请求更安全且无参数长度限制。实现过程包括解析请求报文中的参数，针对不同请求类型做相应处理。提供了代码示例展示如何在服务器端处理 GET 和 POST 请求，以及在 Unity 客户端使用 WWW 类发送 GET 和 POST 请求。最后展示了一个简单实例并给出了运行结果。",speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><div id=page-content class=markdown-main-style><p>各位朋友大家好，我是秦元培，欢迎大家关注我的博客，我的博客地址是<a href=http://qinyuanpei.com>http://qinyuanpei.com</a>。在我们这个 Web 服务器有了一个基本的门面以后，我们是时候来用它做点实际的事情了。还记得我们最早提到 HTTP 协议的用途是什么吗？它叫超文本传输协议啊，所以我们必须考虑让我们的服务器能够接收到客户端传来的数据。因为我们目前完成了大部分的工作，所以对数据传输这个问题我们这里选择以最简单的 GET 和 POST 为例来实现，这样我们今天的重点就落实在 Get 和 Post 的实现这个问题上来。而从原理上来讲，无论 Get 方式请求还是 Post 方式请求，我们都可以在请求报文中获得其请求参数，不同的是前者出现在请求行中，而后者出现在消息体中。例如我们传递的两个参数 num1 和 num2 对应的数值分别是 12 和 24，那么在具体的请求报文中我们都能找到类似“num1=12&amp;num2=24”这样的字符结构，所以只要针对这个字符结构进行解析，就可以获得客户端传递给服务器的参数啦。</p><h1 id=实现-get-请求>实现 Get 请求</h1><p>首先我们来实现 Get 请求，Get 是 HTTP 协议中默认的请求类型，我们平时访问网页、请求资源实际上都是通过 Get 方式实现的。Get 方式请求需要通过类似“?id=001&amp;option=10”这样的形式附加在 URL 上，因此 Get 方式对浏览器来说是透明的，即用户可以通过浏览器地址栏知道，这个过程中传递了哪些参数以及这些参数的值分别是什么。而由于浏览器的限制，我们通过这种方式请求的时候能够传递的参数数目和长度都是有限的，而且当参数中存在中文数值的时候还需要对其进行编码。Get 方式请求相对简单，我们下面来看看它的请求报文：</p><pre tabindex=0><code class=language-rfc data-lang=rfc>GET /?num1=23&amp;num2=12 HTTP/1.1
+Accept: text/html, application/xhtml+xml, image/jxr, */*
+Accept-Language: zh-Hans-CN,zh-Hans;q=0.5
+User-Agent: Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586
+Accept-Encoding: gzip, deflate
+Host: localhost:4040
+Connection: Keep-Alive
+Cookie: _ga=GA1.1.1181222800.1463541781
+</code></pre><p>此时我们可以注意到在请求报文第一行，即请求行中出现了“/?num1=23&amp;num2=12”这样的字样，这就是客户端传递给服务器的参数，我们很容易想到只需要将这个字段串中的“键”和“值”都解析出来，服务器就可以对这些数据进行处理然后返回给客户端了。所以下面我们通过这样的方式来实现，我们为 HtttpRequest 类增加了一个 Parms 属性，它是一个键和值均为字符串类型的字典，我们使用这个字典来存储和管理客户端传递来的参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=c1>//获取请求参数</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>Method</span> <span class=p>==</span> <span class=s>&#34;GET&#34;</span> <span class=p>&amp;&amp;</span> <span class=k>this</span><span class=p>.</span><span class=n>URL</span><span class=p>.</span><span class=n>Contains</span><span class=p>(</span><span class=sc>&#39;?&#39;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=n>Params</span> <span class=p>=</span> <span class=n>GetRequestParams</span><span class=p>(</span><span class=n>lines</span><span class=p>[</span><span class=m>0</span><span class=p>].</span><span class=n>Split</span><span class=p>(</span><span class=sc>&#39; &#39;</span><span class=p>)[</span><span class=m>1</span><span class=p>].</span><span class=n>Split</span><span class=p>(</span><span class=sc>&#39;?&#39;</span><span class=p>)[</span><span class=m>1</span><span class=p>]);</span>
+</span></span></code></pre></div><p>显然我们首先需要判断请求类型是否为 GET 以及请求中是否带有参数，其方法是判断请求地址中是否含有“?&ldquo;字符。这里的 lines 是指将报文信息按行分割以后的数组，显然请求地址在第一行，所以我们根据“?&ldquo;分割该行数据以后就可以得到“num1=23&amp;num2=12”这样的结果，这里我们使用一个方法 GetRequestParms 来返回参数字典，这样作做是为了复用方法，因为在处理 Post 请求的时候我们会继续使用这个方法。该方法定义如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl> <span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl><span class=cs>/// 从内容中解析请求参数并返回一个字典</span>
+</span></span><span class=line><span class=cl><span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl><span class=cs>/// &lt;param name=&#34;content&#34;&gt;使用&amp;连接的参数字符串&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl><span class=cs>/// &lt;returns&gt;如果存在参数则返回参数否则返回null&lt;/returns&gt;</span>
+</span></span><span class=line><span class=cl><span class=kd>protected</span> <span class=n>Dictionary</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>&gt;</span> <span class=n>GetRequestParams</span><span class=p>(</span><span class=kt>string</span> <span class=n>content</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//防御编程</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=kt>string</span><span class=p>.</span><span class=n>IsNullOrEmpty</span><span class=p>(</span><span class=n>content</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=kc>null</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>//按照&amp;对字符进行分割</span>
+</span></span><span class=line><span class=cl>    <span class=kt>string</span><span class=p>[]</span> <span class=n>reval</span> <span class=p>=</span> <span class=n>content</span><span class=p>.</span><span class=n>Split</span><span class=p>(</span><span class=sc>&#39;&amp;&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>reval</span><span class=p>.</span><span class=n>Length</span> <span class=p>&lt;=</span> <span class=m>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=kc>null</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>//将结果添加至字典</span>
+</span></span><span class=line><span class=cl>    <span class=n>Dictionary</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>&gt;</span> <span class=n>dict</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Dictionary</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>&gt;();</span>
+</span></span><span class=line><span class=cl>    <span class=k>foreach</span> <span class=p>(</span><span class=kt>string</span> <span class=n>val</span> <span class=k>in</span> <span class=n>reval</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>string</span><span class=p>[]</span> <span class=n>kv</span> <span class=p>=</span> <span class=n>val</span><span class=p>.</span><span class=n>Split</span><span class=p>(</span><span class=sc>&#39;=&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>kv</span><span class=p>.</span><span class=n>Length</span> <span class=p>&lt;=</span> <span class=m>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=n>dict</span><span class=p>.</span><span class=n>Add</span><span class=p>(</span><span class=n>kv</span><span class=p>[</span><span class=m>0</span><span class=p>],</span> <span class=s>&#34;&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>dict</span><span class=p>.</span><span class=n>Add</span><span class=p>(</span><span class=n>kv</span><span class=p>[</span><span class=m>0</span><span class=p>],</span><span class=n>kv</span><span class=p>[</span><span class=m>1</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>//返回字典</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>dict</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><h1 id=实现-post-请求>实现 Post 请求</h1><p>Post 请求相对 Get 请求比较安全，因为它克服了 Get 请求参数长度的限制问题，而且由于它的参数是存放在消息体中的，所以在传递参数的时候对用户而言是不可见的，我们平时接触到的网站登录都是这种类型，而复杂点的网站会通过验证码、Cookie 等形式来避免爬虫程序模拟登录，在 Web 开发中 Post 请求可以由一个表单发起，可以由爬虫程序如 HttpWebRequest、WebClient 等发起，下面我们重点来分析它的请求报文：</p><pre tabindex=0><code class=language-rfc data-lang=rfc>POST / HTTP/1.1
+Accept: text/html, application/xhtml+xml, image/jxr, */*
+Accept-Language: zh-Hans-CN,zh-Hans;q=0.5
+User-Agent: Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586
+Accept-Encoding: gzip, deflate
+Host: localhost:4040
+Connection: Keep-Alive
+Cookie: _ga=GA1.1.1181222800.1463541781
+
+num1=23&amp;num2=12
+</code></pre><p>我们可以注意到此时请求行的请求方法变成了 POST，而在报文结尾增加了一行内容，我们称其为“消息体”，这是一个可选的内容，请注意它前面有一个空行。所以，当我们处理一个 Posst 请求的时候，通过最后一行就可以解析出客户端传递过来的参数，和 Get 请求相同，我们这里继续使用 GetRequestParams 来完成解析。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=k>if</span> <span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>Method</span> <span class=p>==</span> <span class=s>&#34;POST&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=n>Params</span> <span class=p>=</span> <span class=n>GetRequestParams</span><span class=p>(</span><span class=n>lines</span><span class=p>[</span><span class=n>lines</span><span class=p>.</span><span class=n>Length</span><span class=p>-</span><span class=m>1</span><span class=p>]);</span>
+</span></span></code></pre></div><h1 id=实例>实例</h1><p>现在我们来完成一个简单地实例，服务器自然由我们这里设计的这个服务器来完成咯，而客户端则由 Unity 来完成因为 Unity 有简单的 WWW 可以使用。首先来编写服务端，这个继承 HttpServer 就好了，我们主要来写这里的方法：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=k>using</span> <span class=nn>System</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections.Generic</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Linq</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Text</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Threading.Tasks</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>HttpServerLib</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.IO</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>namespace</span> <span class=nn>HttpServer</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=k>class</span> <span class=nc>ExampleServer</span> <span class=p>:</span> <span class=n>HttpServerLib</span><span class=p>.</span><span class=n>HttpServer</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>        <span class=cs>/// 构造函数</span>
+</span></span><span class=line><span class=cl>        <span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>        <span class=cs>/// &lt;param name=&#34;ipAddress&#34;&gt;IP地址&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>        <span class=cs>/// &lt;param name=&#34;port&#34;&gt;端口号&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>        <span class=kd>public</span> <span class=n>ExampleServer</span><span class=p>(</span><span class=kt>string</span> <span class=n>ipAddress</span><span class=p>,</span> <span class=kt>int</span> <span class=n>port</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=p>:</span> <span class=k>base</span><span class=p>(</span><span class=n>ipAddress</span><span class=p>,</span> <span class=n>port</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kd>public</span> <span class=kd>override</span> <span class=k>void</span> <span class=n>OnPost</span><span class=p>(</span><span class=n>HttpRequest</span> <span class=n>request</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=c1>//获取客户端传递的参数</span>
+</span></span><span class=line><span class=cl>            <span class=kt>int</span> <span class=n>num1</span> <span class=p>=</span> <span class=kt>int</span><span class=p>.</span><span class=n>Parse</span><span class=p>(</span><span class=n>request</span><span class=p>.</span><span class=n>Params</span><span class=p>[</span><span class=s>&#34;num1&#34;</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>            <span class=kt>int</span> <span class=n>num2</span> <span class=p>=</span> <span class=kt>int</span><span class=p>.</span><span class=n>Parse</span><span class=p>(</span><span class=n>request</span><span class=p>.</span><span class=n>Params</span><span class=p>[</span><span class=s>&#34;num2&#34;</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=c1>//设置返回信息</span>
+</span></span><span class=line><span class=cl>            <span class=kt>string</span> <span class=n>content</span> <span class=p>=</span> <span class=kt>string</span><span class=p>.</span><span class=n>Format</span><span class=p>(</span><span class=s>&#34;这是通过Post方式返回的数据:num1={0},num2={1}&#34;</span><span class=p>,</span><span class=n>num1</span><span class=p>,</span><span class=n>num2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=c1>//构造响应报文</span>
+</span></span><span class=line><span class=cl>            <span class=n>HttpResponse</span> <span class=n>response</span> <span class=p>=</span> <span class=k>new</span> <span class=n>HttpResponse</span><span class=p>(</span><span class=n>content</span><span class=p>,</span> <span class=n>Encoding</span><span class=p>.</span><span class=n>UTF8</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>response</span><span class=p>.</span><span class=n>StatusCode</span> <span class=p>=</span> <span class=s>&#34;200&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=n>response</span><span class=p>.</span><span class=n>Content_Type</span> <span class=p>=</span> <span class=s>&#34;text/html; charset=UTF-8&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=n>response</span><span class=p>.</span><span class=n>Server</span> <span class=p>=</span> <span class=s>&#34;ExampleServer&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=c1>//发送响应</span>
+</span></span><span class=line><span class=cl>            <span class=n>ProcessResponse</span><span class=p>(</span><span class=n>request</span><span class=p>.</span><span class=n>Handler</span><span class=p>,</span> <span class=n>response</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kd>public</span> <span class=kd>override</span> <span class=k>void</span> <span class=n>OnGet</span><span class=p>(</span><span class=n>HttpRequest</span> <span class=n>request</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=c1>//获取客户端传递的参数</span>
+</span></span><span class=line><span class=cl>            <span class=kt>int</span> <span class=n>num1</span> <span class=p>=</span> <span class=kt>int</span><span class=p>.</span><span class=n>Parse</span><span class=p>(</span><span class=n>request</span><span class=p>.</span><span class=n>Params</span><span class=p>[</span><span class=s>&#34;num1&#34;</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>            <span class=kt>int</span> <span class=n>num2</span> <span class=p>=</span> <span class=kt>int</span><span class=p>.</span><span class=n>Parse</span><span class=p>(</span><span class=n>request</span><span class=p>.</span><span class=n>Params</span><span class=p>[</span><span class=s>&#34;num2&#34;</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=c1>//设置返回信息</span>
+</span></span><span class=line><span class=cl>            <span class=kt>string</span> <span class=n>content</span> <span class=p>=</span> <span class=kt>string</span><span class=p>.</span><span class=n>Format</span><span class=p>(</span><span class=s>&#34;这是通过Get方式返回的数据:num1={0},num2={1}&#34;</span><span class=p>,</span><span class=n>num1</span><span class=p>,</span><span class=n>num2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=c1>//构造响应报文</span>
+</span></span><span class=line><span class=cl>            <span class=n>HttpResponse</span> <span class=n>response</span> <span class=p>=</span> <span class=k>new</span> <span class=n>HttpResponse</span><span class=p>(</span><span class=n>content</span><span class=p>,</span> <span class=n>Encoding</span><span class=p>.</span><span class=n>UTF8</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>response</span><span class=p>.</span><span class=n>StatusCode</span> <span class=p>=</span> <span class=s>&#34;200&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=n>response</span><span class=p>.</span><span class=n>Content_Type</span> <span class=p>=</span> <span class=s>&#34;text/html; charset=UTF-8&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=n>response</span><span class=p>.</span><span class=n>Server</span> <span class=p>=</span> <span class=s>&#34;ExampleServer&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=c1>//发送响应</span>
+</span></span><span class=line><span class=cl>            <span class=n>ProcessResponse</span><span class=p>(</span><span class=n>request</span><span class=p>.</span><span class=n>Handler</span><span class=p>,</span> <span class=n>response</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>因为这里需要对 Get 和 Post 进行响应，所以我们这里对 OnGet 和 OnPost 两个方法进行了重写，这里的处理方式非常简单，按照一定格式返回数据即可。下面我们来说说 Unity 作为客户端这边要做的工作。WWW 是 Unity3D 中提供的一个简单的 HTTP 协议的封装类，它和.NET 平台下的 WebClient、HttpWebRequest/HttpWebResponse 类似，都可以处理常见的 HTTP 请求如 Get 和 Post 这两种请求方式。</p><p>WWW 的优势主要是简单易用和支持协程，尤其是 Unity3D 中的协程（Coroutine）这个特性，如果能够得到良好的使用，常常能够起到事倍功半的效果。因为 WWW 强调的是以 HTTP 短链接为主的易用性，所以相应地在超时、Cookie 等 HTTP 头部字段支持的完整性上无法和 WebClient、HttpWebRequest/HttpWebRespons 相提并论，当我们需要更复杂的 HTTP 协议支持的时候，选择在 WebClient、HttpWebRequest/HttpWebResponse 上进行深度定制将会是一个不错的选择。我们这里需要的是发起一个简单的 HTTP 请求，所以使用 WWW 完全可以满足我们的要求，首先我们来看在 Unity3D 中如何发起一个 Get 请求，这里给出一个简单的代码示例：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=c1>//采用GET方式请求数据</span>
+</span></span><span class=line><span class=cl><span class=n>IEnumerator</span> <span class=n>Get</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>WWW</span> <span class=n>www</span> <span class=p>=</span> <span class=k>new</span> <span class=n>WWW</span> <span class=p>(</span><span class=s>&#34;http://127.0.0.1:4040/?num1=12&amp;num2=23&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>yield</span> <span class=k>return</span> <span class=n>www</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=n>www</span><span class=p>.</span><span class=n>text</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>现在我们是需要使用 StartCoroutine 调用这个方法就可以啦！同样地，对于 Post 请求，我们这里采用一个 WWWForm 来封装参数，而在网页开发中我们通常都是借助表单来向服务器传递参数的，这里给出同样简单的代码示例：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=c1>//采用POST方式请求数据</span>
+</span></span><span class=line><span class=cl><span class=n>IEnumerator</span> <span class=n>Post</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>WWWForm</span> <span class=n>form</span> <span class=p>=</span> <span class=k>new</span> <span class=n>WWWForm</span> <span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=n>form</span><span class=p>.</span><span class=n>AddField</span> <span class=p>(</span><span class=s>&#34;num1&#34;</span><span class=p>,</span> <span class=m>12</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>form</span><span class=p>.</span><span class=n>AddField</span> <span class=p>(</span><span class=s>&#34;num2&#34;</span><span class=p>,</span> <span class=m>23</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>WWW</span> <span class=n>www</span> <span class=p>=</span> <span class=k>new</span> <span class=n>WWW</span> <span class=p>(</span><span class=s>&#34;http://127.0.0.1:4040/&#34;</span><span class=p>,</span> <span class=n>form</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>yield</span> <span class=k>return</span> <span class=n>www</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>Debug</span><span class=p>.</span><span class=n>Log</span> <span class=p>(</span><span class=n>www</span><span class=p>.</span><span class=n>text</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>而运行这个实例，我们可以得到下面的结果：</p><p><a class=img-fancybox href=/posts/1700650235/c2ddd71f78ca6017d71428da11305248.jpg data-fancybox=gallery data-src=/posts/1700650235/c2ddd71f78ca6017d71428da11305248.jpg data-caption=测试结果><img src=/posts/1700650235/c2ddd71f78ca6017d71428da11305248.jpg alt=测试结果 class=post-img loading=lazy>
+<span class=post-img-tip>测试结果</span></a></p><p>都是谁告诉你做服务器开发一定要用 Java 的啊，现在我们可以写出自己的服务器了，本篇结束，下期见！</p></div><div class="copyright s-card"><div class=title><span class=post-name>使用 C#开发 HTTP 服务器系列之实现 Get 和 Post</span>
+<a :href=https://blog.yuanpei.me/posts/1700650235/ class=post-link target=_blank>https://blog.yuanpei.me/posts/1700650235/</a></div><div class=post-meta><div class=meta-item><span class=tip>作者</span>
+<span class=name>飞鸿踏雪</span></div><div class=meta-item><span class=tip>发布于</span>
+<span class=name>2016-06-11</span></div><div class=meta-item><span class=tip>更新于</span>
+<span class=name>2016-06-11</span></div><div class="meta-item cc"><span class=tip>许可协议</span>
+<a class=name href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank>CC BY-NC-SA 4.0</a></div></div><span class=meta-tip>署名-非商业性使用-相同方式共享 4.0 国际</span></div><div class=other-meta><div class=all-tags><a href=/tags/http class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>HTTP</span>
+</a><a href=/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8 class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>服务器</span>
+</a><a href=/tags/c class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>C#</span></a></div><a href=https://eqnxweimkr5.feishu.cn/share/base/form/shrcnCXCPmxCKKJYI3RKUfefJre class=report target=_blank><i class="iconfont icon-report"></i>
+反馈与投诉</a></div><div class=reward><div class=reward-btn onclick='window.$Modal.show("reward-modal")'><i class="iconfont icon-reward"></i>
+<span class=text>赞赏博主</span></div></div><div class=modal id=reward-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:430px><div class=title><div class=title-left><i class="iconfont icon-reward"></i>
+<span class=title-text>赞赏博主</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=reward-card><div class=thank>🙏 请博主喝一杯咖啡</div><div class=qr><a class=qr-img href=/images/reward/alipay.jpg target=_blank><img src=/images/reward/alipay.jpg alt=支付宝赞赏码><div class=tip><i class="iconfont icon-alipay"></i>
+<span>支付宝</span></div></a><a class=qr-img href=/images/reward/wechat.jpg target=_blank><img src=/images/reward/wechat.jpg alt=微信赞赏码><div class=tip><i class="iconfont icon-wechat"></i>
+<span>微信</span></div></a></div><div class="all-list s-card hover"><div class=title>赞赏记录</div><div class=tip>赞赏金额将全部用于开源项目维护，以及服务器、域名及各类云服务的开销</div></div></div></div></div></div><div class=related-post><div class=title><span class=name><i class="iconfont icon-star"></i>
+相关推荐
+</span><span class=shuffle onclick='window.location.href="/posts/70687890/"'>随便逛逛</span></div><div class=post-lists><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/2734896333/"'><div class=post-content><span class=post-title>使用 C#开发 HTTP 服务器之支持 HTTPS</span>
+<span class=post-desc>本文介绍了作者在开发 HTTP 服务器系列中的第六篇文章，讨论了如何为Web服务器增加HTTPS支持。HTTPS是基于安全的HTTP协议，通过SSL加密和身份验证提供数据传输安全。讨论了苹果和Google推广HTTPS的原因，以及HTTPS协议的工作原理和区别。文章重点在于如何使用.NET中的SSL API创建和加载证书，并通过SSL对Socket通信消息进行加密。作者提到需要从CA机构购买证书，并给出了相关代码示例。文章列出了一些参考文章和配置HTTPS服务的指南。</span></div></article><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/3603924376/"'><div class=post-content><span class=post-title>使用 C#开发 HTTP 服务器系列之更简单的实现方式</span>
+<span class=post-desc>秦元培在博客中分享了关于HTTP服务器开发的系列文章，强调了从头开始构建Web服务器的乐趣和重要性，提到了HTTP协议的基本原理和无状态特性，以及如何利用TcpListener/TcpClient和HttpListener实现HTTP服务器的两种不同方法。他指出了在设计HTTP服务器时需要考虑保持状态的问题，并介绍了Cookie的应用。最后表示这些内容只是开发HTTP服务器的延伸，鼓励读者进一步探索。</span></div></article></div><style>.post-lists{width:100%}.post-lists .post-item{padding:0!important;display:flex;margin-bottom:1rem;animation:fade-up .6s backwards;cursor:pointer;overflow:hidden;height:200px}.post-lists .post-item .post-cover{flex:0 0 35%;overflow:hidden;transform:translateZ(0)}.post-lists .post-item .post-cover img{width:100%;height:100%;object-fit:cover;transform-origin:center center;transition:transform .5s ease-out,filter .5s ease-out;backface-visibility:hidden}.post-lists .post-item .post-content{flex:1;padding:1.6rem 2rem;display:flex;flex-direction:column;justify-content:space-between}.post-lists .post-item .post-category{display:flex;flex-wrap:wrap;width:100%;color:var(--main-font-second-color);font-size:14px}.post-lists .post-item .post-category .cat-name{display:flex;flex-direction:row;align-items:center}.post-lists .post-item .post-category .cat-name .iconfont{opacity:.8;margin-right:6px;color:var(--main-font-second-color)}.post-lists .post-item .post-category .top{margin-left:12px;color:var(--main-color)}.post-lists .post-item .post-category .top .iconfont{opacity:.8;color:var(--main-color)}.post-lists .post-item .post-title{font-size:20px;line-height:30px;font-weight:700;margin:.6rem 0;transition:color .3s;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-desc{margin-top:-.4rem;margin-bottom:.8rem;opacity:.8;line-height:30px;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-meta{display:flex;flex-direction:row;align-items:center;justify-content:space-between;color:var(--main-font-second-color)}.post-lists .post-item .post-tags{display:flex;flex-wrap:wrap;opacity:.8;margin-right:20px;overflow:hidden;mask:linear-gradient(90deg,#fff 0,#fff 90%,hsla(0,0%,100%,.6) 95%,hsla(0,0%,100%,0) 100%)}.post-lists .post-item .post-tags .tags-name{display:flex;flex-direction:row;align-items:center;margin-right:12px;white-space:nowrap;transition:color .3s}.post-lists .post-item .post-time{opacity:.6;font-size:13px;white-space:nowrap}.post-lists .post-item:hover .post-cover img{filter:brightness(.8);transform:scale(1.05)}.post-lists .post-item:hover .post-title{color:var(--main-color)}.post-lists .post-item:active{transform:scale(.98)}.post-lists .post-item.cover-left{flex-direction:row}.post-lists .post-item.cover-right{flex-direction:row-reverse}.post-lists .post-item.cover-both:nth-child(odd){flex-direction:row}.post-lists .post-item.cover-both:nth-child(even){flex-direction:row-reverse}.post-lists.layout-grid{display:grid;grid-template-columns:repeat(var(--grid-columns,2),1fr);gap:var(--grid-gap,1rem)}.post-lists.layout-grid .post-item{margin:0;flex-direction:column;height:auto}.post-lists.layout-grid .post-item .post-cover{flex:none;width:100%;height:225px}@media(max-width:768px){.post-lists .post-item{flex-direction:column;height:auto}.post-lists .post-item .post-cover{flex:none;width:100%;height:200px}.post-lists .post-item.cover-left,.post-lists .post-item.cover-right,.post-lists .post-item.cover-both{flex-direction:column!important}.post-lists.layout-grid{grid-template-columns:1fr}.post-lists .post-item .post-tags{flex-wrap:nowrap}}.post-lists .post-item .simple{animation:none;padding:.5rem 1.4rem!important;background-color:var(--main-card-second-background);height:auto;margin-bottom:.5rem}.post-lists .post-item .simple .post-content{padding:.5rem 0}.post-lists .post-item .simple .post-title{margin:0;font-size:16px}.post-lists .post-item .simple .post-desc{margin:.3rem 0 0;font-size:14px;opacity:.6}</style></div><style>.related-post{margin-top:1rem}.related-post .title{display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;margin:3rem 0 1rem;padding:0 6px}.related-post .title .name{display:flex;align-items:center;font-size:24px;font-weight:700}.related-post .title .name .iconfont{font-size:26px;font-weight:400;margin-right:8px}.related-post .title .shuffle{opacity:.6;font-size:14px;transition:color .3s,opacity .3s;cursor:pointer}.related-post .title .shuffle:hover{opacity:1;color:var(--main-color)}</style><div id=comments><div id=main-comment class=comment style=padding-left:1.5rem;padding-right:1.5rem><div v-if=!fill class=title><span class=name><i class="iconfont icon-chat"></i>
+评论
+</span><span class=tool>隐私政策</span></div><link rel=stylesheet href=https://unpkg.com/@waline/client@v3/dist/waline.css><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}.waline-container .wl-content img{width:unset!important;max-width:unset!important;max-height:unset!important;border-radius:unset!important}.waline-container .wl-content p{font-size:.9rem!important}.wl-header label{font-size:.8em}.wl-sort li{font-size:.8em}</style><script type=module>
+        import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+        init({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+            emoji: [
+                '//unpkg.com/@waline/emojis@1.2.0/weibo'
+            ],
+            reaction: false,
+        });
+      </script></div></div><div class="next-post s-card" id=next-post data-is-next=true><a href=/posts/1190622881/ class=next-post-link><span class=post-tip>下一篇阅读
+</span><span class=post-title>Unity3D 游戏开发之在 uGUI 中使用不规则精灵制作按钮</span></a></div></article><aside class=main-aside><div class="hello s-card weidgets"><span class=tip id=hello-weidget-tip>好久不见</span><div class=content><div class=site-logo><div class=avatar><img src=/images/avatar.jpg alt=avatar loading=lazy></div></div><span class=site-desc>谢谢你，在这世界的角落，找到我。我是一位穿梭于数字与人文领域交界处的观察者，热衷于在数字迷雾中剖析谜题背后的真相，同时在人文星河中重拾温暖和光明。我期待，在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点。</span></div><div class=info><div class=name><span class=author>飞鸿踏雪</span>
+<span class=desc>纵有疾风起，人生不言弃</span></div><div class=link><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuapei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i></a></div></div></div><div class=sticky><div class="toc s-card weidgets" id=weidget-toc><div class=toc-title><i class="iconfont icon-toc"></i>
+<span class=name>目录</span></div><div id=toc-all class=toc-list></div></div><script>document.addEventListener("DOMContentLoaded",function(){const o=[];let e=null,t=null,n=0;const s=document.getElementById("toc-all"),i=()=>{try{if(e=document.getElementById("page-content"),!e)return!1;const t=Array.from(e.querySelectorAll("h1, h2, h3, h4")).filter(e=>e.parentElement.tagName.toLowerCase()==="div");return t}catch(e){console.error("获取所有目录数据出错：",e)}},r=()=>{const e=i();if(!e)return!1;s.innerHTML="",e.forEach((e,t)=>{const n={id:e.id,type:e.tagName,text:e.textContent?.replace(/\u200B/g,"").trim()},i=document.createElement("span");i.id="toc-"+n.id,i.className=`toc-item ${n.type} ${t===0?"active":""}`,i.textContent=n.text,i.addEventListener("click",()=>d(n.id)),s.appendChild(i),o.push(n)}),e&&e.length>0&&(t=e[0].id)},c=(e,t)=>{let n;return function(){const s=arguments,o=this;n||(e.apply(o,s),n=!0,setTimeout(()=>n=!1,t))}},l=c(()=>{if(!o.length)return!1;const e=i();if(!e)return!1;const s=120;if(window.scrollY===0){n=0,t=e[0]?.id,a();return}for(let n of e){const o=n.getBoundingClientRect();o.top-s<=0&&o.bottom+s>=0&&t!==n.id&&(t=n.id,a())}},100),a=()=>{document.querySelectorAll(".toc-item.active").forEach(e=>{e.classList.remove("active")});const e=document.getElementById("toc-"+t);if(!e)return!1;e.classList.add("active"),n=e.offsetTop-2||0,s.style.setProperty("--height",n+"px"),s.scrollTo({top:n-80,behavior:"smooth"})},d=t=>{try{const n=document.getElementById(t);if(!n||!e)return!1;const s=n.offsetTop,o=s+e.offsetTop-80;window.scroll({top:o,behavior:"smooth"})}catch(e){console.error("目录滚动失败：",e)}};r(),window.addEventListener("scroll",l)})</script><style lang=scss scoped>.toc{position:relative;padding:0!important;overflow:hidden;.toc-title { display: flex; flex-direction: row; align-items: center; padding: 18px; height: 58px; .iconfont { margin-right: 8px; font-weight: bold; opacity: 0.6; } .name { font-weight: bold; } } .toc-list { position: relative; padding: 20px; padding-top: 0; padding-left: 24px; display: flex; flex-direction: column; max-height: calc(70vh - 58px); overflow: auto; .toc-item { margin: 4px 0; padding: 6px 12px; border-radius: 8px; opacity: 0.6; transition: color 0.3s, opacity 0.3s, font-size 0.3s, background-color 0.3s; cursor: pointer; &:first-child { margin-top: 0; } &:last-child { margin-bottom: 0; } &.H1 { font-weight: bold; } &.H2 { font-size: 14px; margin-left: 15px; font-weight: normal; } &.H3 { font-size: 12px; margin-left: 25px; } &.active { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); &.H2 { font-size: 14px; } &.H3 { font-size: 12px; } } &:hover { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); } } &::after { content: ""; position: absolute; left: 12px; top: var(--height); width: 4px; height: 20px; margin: 8px 0; background-color: var(--main-color); border-radius: 8px; transition: top 0.3s; } } &::before { content: ""; position: absolute; left: 12px; bottom: 20px; width: 4px; height: calc(100% - 78px); background-color: var(--main-card-border); border-radius: 8px; }}</style><div class="tags-cloud s-card weidgets"><div class=title><i class="iconfont icon-hashtag"></i>
+<span class=title-name>热门标签</span></div><div class=all-tags><a href=/tags/%E5%9B%9E%E9%A6%96/ class=tags><span class=name>回首</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AE%B0%E5%BD%95/ class=tags><span class=name>记录</span>
+<sup class=num>1</sup>
+</a><a href=/tags/html5/ class=tags><span class=name>HTML5</span>
+<sup class=num>2</sup>
+</a><a href=/tags/thoughtworks/ class=tags><span class=name>ThoughtWorks</span>
+<sup class=num>1</sup>
+</a><a href=/tags/opencv/ class=tags><span class=name>OpenCV</span>
+<sup class=num>5</sup>
+</a><a href=/tags/dag/ class=tags><span class=name>DAG</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%B5%84%E6%BA%90%E6%8F%90%E5%8F%96/ class=tags><span class=name>资源提取</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%9F%A9%E5%AF%92/ class=tags><span class=name>韩寒</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%AE%97%E6%B3%95/ class=tags><span class=name>算法</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%BB%BA%E7%AD%91/ class=tags><span class=name>建筑</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%A0%A1%E9%AA%8C/ class=tags><span class=name>校验</span>
+<sup class=num>1</sup>
+</a><a href=/tags/easyar/ class=tags><span class=name>EasyAR</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E6%A8%A1%E6%9D%BF/ class=tags><span class=name>模板</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/ class=tags><span class=name>机器学习</span>
+<sup class=num>1</sup>
+</a><a href=/tags/opentelemetry/ class=tags><span class=name>OpenTelemetry</span>
+<sup class=num>1</sup>
+</a><a href=/tags/web-api/ class=tags><span class=name>Web API</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%89%8D%E7%AB%AF/ class=tags><span class=name>前端</span>
+<sup class=num>9</sup>
+</a><a href=/tags/mecanim/ class=tags><span class=name>Mecanim</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%8A%B6%E6%80%81/ class=tags><span class=name>状态</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%8A%A0%E5%AF%86/ class=tags><span class=name>加密</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E7%94%BB%E5%AE%B6/ class=tags><span class=name>画家</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E4%BA%BA%E7%94%9F/ class=tags><span class=name>人生</span>
+<sup class=num>2</sup>
+</a><a href=/tags/gdi+/ class=tags><span class=name>GDI+</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%81%A5%E5%BA%B7%E7%A0%81/ class=tags><span class=name>健康码</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%BD%B1%E8%AF%84/ class=tags><span class=name>影评</span>
+<sup class=num>15</sup>
+</a><a href=/tags/%E5%A3%81%E7%BA%B8/ class=tags><span class=name>壁纸</span>
+<sup class=num>1</sup>
+</a><a href=/tags/scikit-learn/ class=tags><span class=name>Scikit-Learn</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%AF%95%E4%B8%9A/ class=tags><span class=name>毕业</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%9C%9D%E5%9C%A3/ class=tags><span class=name>朝圣</span>
+<sup class=num>1</sup>
+</a><a href=/tags/json/ class=tags><span class=name>JSON</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%BA%91%E9%9F%B3%E4%B9%90/ class=tags><span class=name>云音乐</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%8F%8D%E6%80%9D/ class=tags><span class=name>反思</span>
+<sup class=num>1</sup>
+</a><a href=/tags/docker/ class=tags><span class=name>Docker</span>
+<sup class=num>6</sup>
+</a><a href=/tags/%E5%9B%9E%E9%A1%BE/ class=tags><span class=name>回顾</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%AD%E8%A8%80/ class=tags><span class=name>语言</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%9F%AB%E6%83%85/ class=tags><span class=name>矫情</span>
+<sup class=num>1</sup>
+</a><a href=/tags/github/ class=tags><span class=name>Github</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E8%B5%B0%E8%B5%B0%E5%81%9C%E5%81%9C/ class=tags><span class=name>走走停停</span>
+<sup class=num>1</sup>
+</a><a href=/tags/matplotlib/ class=tags><span class=name>Matplotlib</span>
+<sup class=num>1</sup>
+</a><a href=/tags/grpc/ class=tags><span class=name>GRPC</span>
+<sup class=num>10</sup>
+</a><a href=/tags/ci/ class=tags><span class=name>CI</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%BC%80%E6%BA%90/ class=tags><span class=name>开源</span>
+<sup class=num>1</sup>
+</a><a href=/tags/postsharp/ class=tags><span class=name>PostSharp</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A0%91/ class=tags><span class=name>表达式树</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%A0%BC%E5%BC%8F%E5%8C%96/ class=tags><span class=name>格式化</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/ class=tags><span class=name>多线程</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/ class=tags><span class=name>数据分析</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%B8%B8%E8%AE%B0/ class=tags><span class=name>游记</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%84%E8%AE%BA/ class=tags><span class=name>评论</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%9D%92%E6%98%A5/ class=tags><span class=name>青春</span>
+<sup class=num>1</sup></a></div><a href=/tags class=more-tags>查看全部</a></div><div class="site-data s-card weidgets"><div class=title><i class="iconfont icon-chart"></i>
+<span class=title-name>站点数据</span></div><div class=all-data><div class=data-item><span class=name><i class="iconfont icon-article"></i>
+文章总数
+</span><span class=num>282 篇</span></div><div class=data-item><span class=name><i class="iconfont icon-date"></i>
+建站天数
+</span><span class=num>4033 天</span></div><div class=data-item><span class=name><i class="iconfont icon-words"></i>
+全站字数
+</span><span class=num>109213 字</span></div><div class=data-item><span class=name><i class="iconfont icon-visibility"></i>
+总访问量
+</span><span class=num id=umami_value_site_pv></span></div><div class=data-item><span class=name><i class="iconfont icon-account"></i>
+总访客数
+</span><span class=num id=umami_value_site_uv></span></div></div></div></div></aside><style>.main-aside{padding-left:1rem;display:flex;flex-direction:column;animation:fade-up .6s .3s backwards;.weidgets { padding: 18px; margin-bottom: 1rem; :deep(.title) { margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; opacity: 0.75; .iconfont { opacity: 0.6; margin-right: 6px; } .title-name { opacity: 0.8; } } } .sticky { position: sticky; top: calc(60px + 1rem); .weidgets { animation: fade-up 0.6s 0.4s backwards; &:last-child { margin-bottom: 0; } } }}</style></div></div></main><div class=footer-link><div class=footer-bar><span class=site-title>元视角</span>
+<span class=site-desc>纵有疾风起，人生不言弃</span>
+<a href=/ class=to-home>了解更多</a></div><div class=footer-social><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuanpei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i>
+</a><a href=/index.xml target=_blank class=social-link aria-label=RSS><i class="iconfont icon-rss"></i></a><div class=logo title=返回顶部 onclick='window.scrollTo({top:0,behavior:"smooth"})'><img src=/images/icons8-stellar-128.png alt=author class=author></div><a href=https://weibo.com/1278609231 target=_blank class=social-link aria-label=微博><i class="iconfont icon-weibo"></i>
+</a><a href=https://www.douban.com/people/60029335/ target=_blank class=social-link aria-label=豆瓣><i class="iconfont icon-douban"></i>
+</a><a href=https://www.zhihu.com/people/qinyuanpei target=_blank class=social-link aria-label=知乎><i class="iconfont icon-zhihu"></i></a></div><div class=footer-sitemap><div class=sitemap-item><span class=title>博客</span><div class=links><a href=/archives class=link-text>文章归档
+</a><a href=/categories class=link-text>全部分类
+</a><a href=/tags class=link-text>全部标签</a></div></div><div class=sitemap-item><span class=title>项目</span><div class=links><a href=https://github.com/qinyuanpei/mcp-server-weibo target=_blank class=link-text>mcp-server-weibo</a></div></div><div class=sitemap-item><span class=title>专栏</span><div class=links><a href=https://blog.csdn.net/qinyuanpei/category_10852603.html target=_blank class=link-text>.NET 源代码探案系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_7444699.html target=_blank class=link-text>Python 数据挖掘系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_11484903.html target=_blank class=link-text>分布式丛林探险系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_1708629.html target=_blank class=link-text>Unity3D 游戏开发系列</a></div></div><div class=sitemap-item><span class=title>页面</span><div class=links><a href=/comments class=link-text>留言
+</a><a href=/books class=link-text>读书
+</a><a href=/movies class=link-text>观影
+</a><a href=/musics class=link-text>听歌</a></div></div><div class=sitemap-item><span class=title>友情链接</span><div class=links><a href=https://gudong.site/ target=_blank class=link-text>咕咚同学
+</a><a href=https://coolshell.cn/ target=_blank class=link-text>酷壳
+</a><a href=https://blog.zhheo.com/ target=_blank class=link-text>张洪
+</a><a href=/links class=link-text>更多</a></div></div></div></div><footer id=main-footer class=main-footer><div class=footer-content><div class=footer-copyright><span class=time data-v-6001e979>@ 2014 - 2025 </span><a href=/ class="author link" target=_blank>飞鸿踏雪</a></div><div class=meta><a class="power link" href=https://gohugo.io/ target=_blank><span class=by>Powered by</span>
+<span class=name>Hugo</span>
+</a><a class="theme link" href=https://github.com/imsyy/vitepress-theme-curve><span class=name>主题</span>
+</a><a class="rss link" href=/index.xml target=_blank><i class="iconfont icon-rss"></i>
+<span class=name data-v-6001e979>订阅</span>
+</a><a class="cc link" href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank aria-label="Creative Commons"><i class="iconfont icon-line"></i>
+<i class="iconfont icon-by-line"></i>
+<i class="iconfont icon-nc-line"></i>
+<i class="iconfont icon-nd-line"></i></a></div></div></footer><script type=module src=/scripts/main.js></script><script src=https://cdn.jsdelivr.net/npm/fuse.js@7.1.0></script><script src=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js></script><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css media="(prefers-color-scheme: dark)"><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css media="(prefers-color-scheme: light)"><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css><script src=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js></script><script src=https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js></script><script type=text/javascript src=/scripts/modules/badge.js></script><script type=text/javascript>window.createBadge("Hugo","v0.126.1","#35495e","#41b883"),window.createBadge("Github","1ae5ebb","#35495e","#ffc107")</script></body></html>

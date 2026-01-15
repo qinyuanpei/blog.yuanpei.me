@@ -1,0 +1,418 @@
+<!doctype html><html lang=zh-cn><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=referrer content="no-referrer"><meta content="飞鸿踏雪" name=author><title>SDL 游戏开发系列第二话：基本图形的绘制 - 元视角</title>
+<meta name=description content="在这篇文章中，作者介绍了SDL游戏开发中基本图形的绘制方法。讨论了使用SDL_LoadBMP()、SDL_CreateTextureFromSurface()和SDL_RenderCopy()这三个方法实现基本图形绘制的过程，重点解释了裁剪图形的概念和在SDL中的应用。文章还展示了如何在SDL中绘制背景图片和在窗口中心绘制美少女的示例代码，并提到了解决卡顿问题的方法。最后，留下了关于透明背景和下一篇文章内容的引入。"><link rel=icon type=image/png href=/images/favicons/favicon-96x96.png sizes=96x96><link rel=icon type=image/svg+xml href=/images/favicons/favicon.svg><link rel="shortcut icon" href=/images/favicons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/images/favicons/apple-touch-icon.png><meta name=apple-mobile-web-app-title content="元视角"><link rel=manifest href=/site.webmanifest><meta name=keywords content="SDL,游戏,游戏引擎,图形,教程"><meta property="og:title" content="SDL 游戏开发系列第二话：基本图形的绘制 - 元视角"><meta property="og:description" content="在这篇文章中，作者介绍了SDL游戏开发中基本图形的绘制方法。讨论了使用SDL_LoadBMP()、SDL_CreateTextureFromSurface()和SDL_RenderCopy()这三个方法实现基本图形绘制的过程，重点解释了裁剪图形的概念和在SDL中的应用。文章还展示了如何在SDL中绘制背景图片和在窗口中心绘制美少女的示例代码，并提到了解决卡顿问题的方法。最后，留下了关于透明背景和下一篇文章内容的引入。"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.yuanpei.me/posts/3789971938/"><meta property='og:site_name' content='元视角'><meta property="og:image" content="/images/avatar.jpg"><meta property="twitter:image" content="/images/avatar.jpg"><meta property='article:section' content='Posts'><meta property='article:tag' content='SDL'><meta property='article:tag' content='游戏'><meta property='article:tag' content='游戏引擎'><meta property='article:tag' content='图形'><meta property='article:tag' content='教程'><meta property='article:published_time' content='2015-07-27T08:48:59+00:00'><meta property='article:modified_time' content='2015-07-27T08:48:59+00:00'><meta property="twitter:domain" content="https://blog.yuanpei.me/"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.yuanpei.me/posts/3789971938/"><meta property="twitter:title" content="SDL 游戏开发系列第二话：基本图形的绘制 - 元视角"><meta property="twitter:description" content="在这篇文章中，作者介绍了SDL游戏开发中基本图形的绘制方法。讨论了使用SDL_LoadBMP()、SDL_CreateTextureFromSurface()和SDL_RenderCopy()这三个方法实现基本图形绘制的过程，重点解释了裁剪图形的概念和在SDL中的应用。文章还展示了如何在SDL中绘制背景图片和在窗口中心绘制美少女的示例代码，并提到了解决卡顿问题的方法。最后，留下了关于透明背景和下一篇文章内容的引入。"><meta name=twitter:site content="飞鸿踏雪"><meta name=twitter:creator content="飞鸿踏雪"><link rel=stylesheet href=/styles/main.min.bb9e9eadbf718b0c91c89c85c701c072a4eaa3846575271b714abf3bc7bb8210.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css><link rel=stylesheet href=/styles/iconfont.css><link rel=stylesheet href=/styles/iconfont-patch.css><script defer src=https://umami.yuanpei.me/JXOS5H5V data-website-id=445bd2eb-68f9-47fd-b93a-5dfa92be333d></script></head><body><div class="background patterns"><div class=bg-mask></div></div><style>.background{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:-2;&.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23494849' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } &.dark { &.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23fcfcfc' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } .cover { filter: brightness(0.6); } } .cover { width: auto; height: auto; min-height: 100%; opacity: 0; transition: filter 0.3s, opacity 0.3s; &.loaded { opacity: 1; } }}</style><header class=main-header><nav class="main-nav up top"><div class=nav-all><div class=left-nav><div class=site-name onclick='location.href="/"'>元视角</div></div><div class=nav-center><div class=site-menu><div class=site-menu><div class=menu-item><span class=link-btn>文库</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+文章归档
+</span><span class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+全部分类
+</span><span class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+全部标签</span></div></div><div class=menu-item><span class=link-btn>书影音</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+读书
+</span><span class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+观影
+</span><span class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+听歌</span></div></div><div class=menu-item><span class=link-btn>页面</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+友情链接
+</span><span class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+个人作品
+</span><span class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+站点统计</span></div></div><div class=menu-item><span class=link-btn>更多</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+留言
+</span><span class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+关于本站</span></div></div></div></div><span class=site-title>SDL 游戏开发系列第二话：基本图形的绘制</span></div><div class=right-nav><a class="menu-btn nav-btn travellings" title=开往-友链接力 href=https://www.travellings.cn/go.html target=_blank><i class="iconfont icon-subway"></i></a><div class="menu-btn nav-btn" title=随机前往一篇文章 id=randomToggle><i class="iconfont icon-shuffle"></i></div><div class="menu-btn nav-btn" title=全站搜索><i class="iconfont icon-search"></i></div><div class="menu-btn nav-btn" id=themeToggle title=切换主题模式><i class="iconfont icon-sun" id=themeIcon></i></div><div id=open-control class="menu-btn nav-btn pc" title=打开中控台><i class="iconfont icon-dashboard"></i></div><div class="to-top menu-btn hidden" title=返回顶部><div class=to-top-btn><span class=num>0</span>
+<i class="iconfont icon-up"></i></div></div><div class="menu-btn nav-btn mobile" title=打开菜单><i class="iconfont icon-toc"></i></div></div></div></nav><div class=mobile-menu id=mobileMenu><div class=menu-mask></div><div class="menu-content s-card"><div class=close-control><i class="iconfont icon-close"></i></div><div class=menu-list><div class=menu-item><span class=link-title>文库</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+<span class=name>文章归档</span></div><div class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+<span class=name>全部分类</span></div><div class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+<span class=name>全部标签</span></div></div></div><div class=menu-item><span class=link-title>书影音</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+<span class=name>读书</span></div><div class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+<span class=name>观影</span></div><div class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+<span class=name>听歌</span></div></div></div><div class=menu-item><span class=link-title>页面</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+<span class=name>友情链接</span></div><div class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+<span class=name>个人作品</span></div><div class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+<span class=name>站点统计</span></div></div></div><div class=menu-item><span class=link-title>更多</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+<span class=name>留言</span></div><div class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+<span class=name>关于本站</span></div></div></div></div></div></div><style>.mobile-menu{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;display:none}.mobile-menu .menu-mask{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;background-color:var(--main-mask-background)}.mobile-menu .menu-content{position:absolute;top:0;right:0;height:100%;width:100%;max-width:300px;border-radius:12px 0 0 12px;padding:20px;overflow:auto}.mobile-menu .close-control{position:absolute;top:10px;right:20px;display:flex;align-items:center;justify-content:center;width:35px;height:35px;padding:0;transition:background-color .3s,opacity .3s;border-radius:50%;cursor:pointer}.mobile-menu .close-control .iconfont{font-size:18px;line-height:1;color:var(--main-font-second-color);transition:color .3s,opacity .3s}.mobile-menu .close-control:hover{background-color:var(--main-color)}.mobile-menu .close-control:hover .iconfont{color:var(--main-card-background)}.mobile-menu .menu-list{margin-top:40px}.mobile-menu .menu-item{margin-bottom:12px}.mobile-menu .menu-item .link-title{font-size:14px;margin-bottom:12px;display:inline-block;color:var(--main-font-second-color)}.mobile-menu .menu-item .link-child{display:grid;gap:12px;grid-template-columns:1fr 1fr}.mobile-menu .menu-item .link-child-btn{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;border-radius:8px;padding:10px 12px;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);font-size:15px;cursor:pointer;transition:all .3s}.mobile-menu .menu-item .link-child-btn:hover{background-color:var(--main-color);color:var(--main-card-background)}.mobile-menu .menu-item .link-child-btn .iconfont{margin-right:6px;opacity:.6}.mobile-menu .menu-item .link-child-btn .name{max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><script>function toggleMobileMenu(){const e=document.getElementById("mobileMenu");e&&(e.style.display=e.style.display==="none"?"block":"none")}</script><div class=modal id=search-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:800px><div class=title><div class=title-left><i class="iconfont icon-search"></i>
+<span class=title-text>全局搜索</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=search-modal><div class=search-input><input type=text id=search-input placeholder=今天你想搜点什么？ autocomplete=off></div><div class=search-results><div class=search-list></div><div class=search-empty><i class="iconfont icon-search"></i><p>输入关键字，开始搜索</p></div></div><div class=search-hint><span class=text id=search-hint-text></span>
+<span class=text><a class=powered_by href=https://www.fusejs.io/ target=_blank>Fuse.js</a></span></div></div></div></div></div></header><main class=main-layout><div class=post><div class=post-meta><div class=meta><div class=categories><a href=/categories/%e6%b8%b8%e6%88%8f%e5%bc%80%e5%8f%91/ class=cat-item><i class="iconfont icon-folder"></i>
+<span class=name>游戏开发</span></a></div><div class=tags><a href=/tags/sdl/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>SDL</span>
+</a><a href=/tags/%e6%b8%b8%e6%88%8f/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>游戏</span>
+</a><a href=/tags/%e6%b8%b8%e6%88%8f%e5%bc%95%e6%93%8e/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>游戏引擎</span>
+</a><a href=/tags/%e5%9b%be%e5%bd%a2/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>图形</span>
+</a><a href=/tags/%e6%95%99%e7%a8%8b/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>教程</span></a></div></div><h1 class=title>SDL 游戏开发系列第二话：基本图形的绘制</h1><div class=other-meta><span class="meta date"><i class="iconfont icon-date"></i>
+2015-07-27
+</span><span class="update meta"><i class="iconfont icon-time"></i>
+2015-07-27
+</span><span class="hot meta"><i class="iconfont icon-fire"></i>
+<span class=artalk-pv-count id=umami_value_page_pv>0</span>
+</span><span class="chat meta hover" data-scroll-to=comments><i class="iconfont icon-chat"></i>
+<span id=waline_comments_count class=artalk-comment-count>0</span></span></div></div><div class=post-content><article class="post-article s-card"><div class="expired s-card">本文发表于 <strong>3824</strong> 天前，其中的信息可能已经事过境迁</div><div class="article-gpt s-card"><div class=title><span class=name><i class="iconfont icon-robot"></i>
+文章摘要
+<i class="iconfont icon-up"></i>
+</span><span class=logo>FakeGPT</span></div><div class="content s-card"><span class=text></span></div><div class=meta></div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){new TypeIt(".article-gpt .content .text",{strings:"在这篇文章中，作者介绍了SDL游戏开发中基本图形的绘制方法。讨论了使用SDL_LoadBMP()、SDL_CreateTextureFromSurface()和SDL_RenderCopy()这三个方法实现基本图形绘制的过程，重点解释了裁剪图形的概念和在SDL中的应用。文章还展示了如何在SDL中绘制背景图片和在窗口中心绘制美少女的示例代码，并提到了解决卡顿问题的方法。最后，留下了关于透明背景和下一篇文章内容的引入。",speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><div id=page-content class=markdown-main-style><p>各位朋友，大家好，我是秦元培，欢迎大家关注我的博客，我的博客地址是：<a href=http://qinyuanpei.com>http://qinyuanpei.com</a>。话题紧接上回，在上回我们讲到了 SDL 的下载、安装和配置并对 SDL 游戏有了初步的了解。我们知道游戏开发中最为基础的内容是图形的绘制，因此在我们学习 SDL 游戏开发的过程中我们同样要从最简单的图形绘制开始学习。在 2D 游戏开发中，精灵（Sprite）是一个基础而核心的内容，具体来讲精灵首先是一张 2D 图片，精灵的绘制从本质上是图片的绘制，所以这是一个基础的内容。因为精灵在 2D 游戏中承担着 GameObject 的重要角色，所以一个图形引擎对精灵的支持好坏会决定游戏设计的最终效果。今天这篇文章主要是通过使用 SDL 中的 SDL_LoadBMP()、SDL_CreateTextureFromSurface()和 SDL_RenderCopy()这三个方法来实现在 SDL 中基本图形的绘制，从整体上尚属较为简单的内容。可是从学习 SDL 游戏开发的角度来看，一切都值得我们深入地去研究。好了，这就开始吧！</p><h1 id=使用-sdl_loadbmp-加载位图>使用 SDL_loadBMP 加载位图</h1><p>从 SDL_LoadBMP()这个方法的名称，我们就可以看出这是一个读取 BMP 位图的方法。BMP 是 Windows 操作系统中最早的图形格式，这种图形格式的容量较大，经常出现在 Win32 API 中。好了，言归正传，我们下面来看看整个绘制过程：</p><ul><li><p>1、首先我们使用 SDL_LoadBMP()方法来加载一张 BMP 位图：</p><pre tabindex=0><code class=language-C++plainplainplain data-lang=C++plainplainplain>//读取一张BMP位图
+SDL_Surface* m_pSurface=SDL_LoadBMP(&#34;background.bmp&#34;);
+</code></pre></li><li><p>2、接下来我们使用 SDL_CreateTextureFromSurface()方法将 SDL_Surface 类型转化为 SDL_Texture 类型</p><pre tabindex=0><code class=language-C++plainplainplainplainplainplainplain data-lang=C++plainplainplainplainplainplainplain>//获取SDL纹理
+SDL_Texture* m_pTexture=SDL_CreateTextureFromSurface(g_pRenderer,m_pSurface);
+//释放m_pBackgroundSurface
+SDL_FreeSurface(m_pSurface);
+</code></pre></li></ul><p>注意到在这里 m_pSurface 扮演了一个临时演员的角色。当我们获得了 SDL 纹理后，它的演员生涯便就此结束了，因此我们需要使用 SDL_FreeSurface()方法来释放它的内存。</p><ul><li>3、接下来是关键性的一个步骤，我们首先来关注 SDL_RenderCopy()的方法定义:<pre tabindex=0><code class=language-C++plainplainplainplainplainplain data-lang=C++plainplainplainplainplainplain>SDL_RenderCopy(SDL_Renderer * renderer,SDL_Texture * texture,const SDL_Rect * srcrect,const SDL_Rect * dstrect);
+</code></pre></li></ul><p>如你所见，该方法的第一个参数和第二个参数我们已经相当熟悉了，即 SDL 渲染器和 SDL 纹理。这里想说的是第三个参数 srcrect 和第四个参数 dstrect，这两个参数都是 SDL_Rect 类型，表示一个矩形范围，它有四个参数，即矩形左上角横坐标、矩形左上角纵坐标、矩形宽度、矩形高度。那么该如何理解这两个参数呢？</p><h1 id=sdl-绘图中的精灵裁剪>SDL 绘图中的精灵裁剪</h1><p>这里我是这样理解的：第一个参数 srcrect 表示一个裁剪范围，即我们希望绘制图形的一个范围。例如我们现在有一张大小为 640*480 的图片，当我们使用(0,0,640,480)这样一个矩形对图片进行裁剪时，我们将获得整张图片；当我们使用(320,240,320,240)这个矩形对图片进行裁剪的时，我们将获得整张图片右下角 1/4 的部分。依次类推。相反地，dstrect 则更加类似于一个画布（Canvas）的概念，即我们可以在一个多大的矩形范围内去绘制这样一张图片。</p><p>在这里，我们可以联想到 2D 图形绘制中的 SpriteSheet，即“雪碧图”这个概念。在游戏开发中我们常常会使用 TexturePacker 这样的工具来将零散的小图打包成一张大图，因为这样可以提高游戏运行的效率，该工具最终导出的文件由.plist 文件和合成的大图两部分组成，其中的.plist 文件中记录了每张小图的位置信息，因此将这个概念引申到这里来，你就会理解这里提到的精灵裁剪，即 srcrect 这个矩形的作用是选择“大图”中的“小图”，而 dstrect 这个矩形的作用是决定将选出的“小图”绘制在一个多大的范围内。</p><p>一个经典的例子是我们现在一个有一张 1124x676 的图片，我们希望将其绘制到一个 800x640 的窗口作为背景图片，那么我们的代码可以这样写：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-C++ data-lang=C++><span class=line><span class=cl><span class=cm>/* 添加对SDL的引用 */</span>
+</span></span><span class=line><span class=cl><span class=cp>#include&lt;SDL.h&gt;
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cm>/* 声明SDL窗口 */</span>
+</span></span><span class=line><span class=cl><span class=n>SDL_Window</span> <span class=o>*</span><span class=n>g_pWindow</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/* 声明SDL渲染器 */</span>
+</span></span><span class=line><span class=cl><span class=n>SDL_Renderer</span> <span class=o>*</span><span class=n>g_pRenderer</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/* 声明程序入口函数main */</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>agrc</span><span class=p>,</span><span class=kt>char</span> <span class=o>*</span><span class=n>args</span><span class=p>[])</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//初始化SDL
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=kt>int</span> <span class=n>SDLInit</span><span class=o>=</span><span class=n>SDL_Init</span><span class=p>(</span><span class=n>SDL_INIT_EVERYTHING</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span><span class=p>(</span><span class=n>SDLInit</span><span class=o>&gt;=</span><span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//创建一个SDL窗口
+</span></span></span><span class=line><span class=cl><span class=c1></span>		<span class=n>g_pWindow</span><span class=o>=</span><span class=n>SDL_CreateWindow</span><span class=p>(</span><span class=s>&#34;SDL Game Development-02&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>			<span class=n>SDL_WINDOWPOS_CENTERED</span><span class=p>,</span><span class=n>SDL_WINDOWPOS_CENTERED</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>			<span class=mi>800</span><span class=p>,</span><span class=mi>640</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>			<span class=n>SDL_WINDOW_SHOWN</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>g_pWindow</span><span class=o>!=</span><span class=mi>0</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//创建SDL渲染器
+</span></span></span><span class=line><span class=cl><span class=c1></span>			<span class=n>g_pRenderer</span><span class=o>=</span><span class=n>SDL_CreateRenderer</span><span class=p>(</span><span class=n>g_pWindow</span><span class=p>,</span><span class=o>-</span><span class=mi>1</span><span class=p>,</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>	
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//设置背景色
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_SetRenderDrawColor</span><span class=p>(</span><span class=n>g_pRenderer</span><span class=p>,</span><span class=mi>255</span><span class=p>,</span><span class=mi>255</span><span class=p>,</span><span class=mi>255</span><span class=p>,</span><span class=mi>255</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//渲染器清空
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_RenderClear</span><span class=p>(</span><span class=n>g_pRenderer</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//读取一张BMP位图
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Surface</span><span class=o>*</span> <span class=n>m_pSurface</span><span class=o>=</span><span class=n>SDL_LoadBMP</span><span class=p>(</span><span class=s>&#34;background.bmp&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//获取SDL纹理
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Texture</span><span class=o>*</span> <span class=n>m_pTexture</span><span class=o>=</span><span class=n>SDL_CreateTextureFromSurface</span><span class=p>(</span><span class=n>g_pRenderer</span><span class=p>,</span><span class=n>m_pSurface</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//释放m_pBackgroundSurface
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_FreeSurface</span><span class=p>(</span><span class=n>m_pSurface</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//构造SDL矩形
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Rect</span><span class=o>*</span> <span class=n>m_pSrcRect</span><span class=o>=</span><span class=k>new</span> <span class=n>SDL_Rect</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>x</span><span class=o>=</span><span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>y</span><span class=o>=</span><span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>w</span><span class=o>=</span><span class=mi>1124</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>h</span><span class=o>=</span><span class=mi>676</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>SDL_Rect</span><span class=o>*</span> <span class=n>m_pTargetRect</span><span class=o>=</span><span class=k>new</span> <span class=n>SDL_Rect</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>x</span><span class=o>=</span><span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>y</span><span class=o>=</span><span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>w</span><span class=o>=</span><span class=mi>800</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>h</span><span class=o>=</span><span class=mi>640</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//绘制SDL纹理
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_RenderCopy</span><span class=p>(</span><span class=n>g_pRenderer</span><span class=p>,</span><span class=n>m_pTexture</span><span class=p>,</span><span class=n>m_pSrcRect</span><span class=p>,</span><span class=n>m_pTargetRect</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//显示绘制结果
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_RenderPresent</span><span class=p>(</span><span class=n>g_pRenderer</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//注意这里增加秒的延迟是为了看到渲染的结果
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>//在实际的开发中不应该出现这样的代码因为在运行期间会导致窗口的卡顿
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>//正确的做法是使用循环来处理这样一个渲染的过程
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Delay</span><span class=p>(</span><span class=mi>5000</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>//退出
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Quit</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>好了，现在运行这段代码，在运行这段代码前请确保完成了 SDL 的配置、在 Debug 目录中存放有一张名为 background.bmp 的位图文件以及 SDL2.dll。如果你准确无误地完成以上注意事项，那么你将毫无意外地看到这样一个画面：</p><p><a class=img-fancybox href=https://i.loli.net/2021/10/18/9KCGaqr8kWfJL5E.png data-fancybox=gallery data-src=https://i.loli.net/2021/10/18/9KCGaqr8kWfJL5E.png data-caption=SDL游戏开发><img src=https://i.loli.net/2021/10/18/9KCGaqr8kWfJL5E.png alt=SDL游戏开发 class=post-img loading=lazy>
+<span class=post-img-tip>SDL游戏开发</span></a></p><h1 id=工程示例>工程示例</h1><p>现在让我们为这个示例增加点有趣的东西，我们知道在游戏设计中一般背景图片的大小是和游戏设计的窗口大小保持一致的，因为这样能够避免图片拉伸的问题。假定我们目前使用的精灵图片素材都是单个精灵的素材，那么我们可以设计这样一个方法来更加自由地绘制图片：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-C++ data-lang=C++><span class=line><span class=cl><span class=cm>/* 实现绘制BMP位图的方法 */</span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>DrawBMP</span><span class=p>(</span><span class=n>SDL_Renderer</span><span class=o>*</span> <span class=n>renderer</span><span class=p>,</span><span class=k>const</span> <span class=kt>char</span><span class=o>*</span> <span class=n>fileName</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=n>positionX</span><span class=p>,</span><span class=kt>int</span> <span class=n>positionY</span><span class=p>,</span><span class=kt>int</span> <span class=n>textureWidth</span><span class=p>,</span><span class=kt>int</span> <span class=n>textureHeight</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//读取一张BMP位图
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Surface</span><span class=o>*</span> <span class=n>m_pSurface</span><span class=o>=</span><span class=n>SDL_LoadBMP</span><span class=p>(</span><span class=n>fileName</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//获取SDL纹理
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Texture</span><span class=o>*</span> <span class=n>m_pTexture</span><span class=o>=</span><span class=n>SDL_CreateTextureFromSurface</span><span class=p>(</span><span class=n>renderer</span><span class=p>,</span><span class=n>m_pSurface</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//释放m_pBackgroundSurface
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_FreeSurface</span><span class=p>(</span><span class=n>m_pSurface</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//构造SDL矩形
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Rect</span><span class=o>*</span> <span class=n>m_pSrcRect</span><span class=o>=</span><span class=k>new</span> <span class=n>SDL_Rect</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>x</span><span class=o>=</span><span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>y</span><span class=o>=</span><span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>w</span><span class=o>=</span><span class=n>textureWidth</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>h</span><span class=o>=</span><span class=n>textureHeight</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>SDL_Rect</span><span class=o>*</span> <span class=n>m_pTargetRect</span><span class=o>=</span><span class=k>new</span> <span class=n>SDL_Rect</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>x</span><span class=o>=</span><span class=n>positionX</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>y</span><span class=o>=</span><span class=n>positionY</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>w</span><span class=o>=</span><span class=n>textureWidth</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>h</span><span class=o>=</span><span class=n>textureHeight</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//绘制SDL纹理
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_RenderCopy</span><span class=p>(</span><span class=n>renderer</span><span class=p>,</span><span class=n>m_pTexture</span><span class=p>,</span><span class=n>m_pSrcRect</span><span class=p>,</span><span class=n>m_pTargetRect</span><span class=p>);</span>
+</span></span></code></pre></div><p>在认为背景图片大小和窗口大小一致的前提下，我们修改下代码：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-C++ data-lang=C++><span class=line><span class=cl><span class=cm>/* 添加对SDL的引用 */</span>
+</span></span><span class=line><span class=cl><span class=cp>#include&lt;SDL.h&gt;
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cm>/* 声明SDL窗口 */</span>
+</span></span><span class=line><span class=cl><span class=n>SDL_Window</span> <span class=o>*</span><span class=n>g_pWindow</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/* 声明SDL渲染器 */</span>
+</span></span><span class=line><span class=cl><span class=n>SDL_Renderer</span> <span class=o>*</span><span class=n>g_pRenderer</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/* 声明相关方法 */</span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>DrawBMP</span><span class=p>(</span><span class=n>SDL_Renderer</span><span class=o>*</span> <span class=n>renderer</span><span class=p>,</span><span class=k>const</span> <span class=kt>char</span><span class=o>*</span> <span class=n>fileName</span>
+</span></span><span class=line><span class=cl><span class=p>,</span><span class=kt>int</span> <span class=n>positionX</span><span class=p>,</span><span class=kt>int</span> <span class=n>positionY</span><span class=p>,</span><span class=kt>int</span> <span class=n>textureWidth</span><span class=p>,</span><span class=kt>int</span> <span class=n>textureHeight</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/* 声明程序入口函数main */</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>agrc</span><span class=p>,</span><span class=kt>char</span> <span class=o>*</span><span class=n>args</span><span class=p>[])</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//初始化SDL
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=kt>int</span> <span class=n>SDLInit</span><span class=o>=</span><span class=n>SDL_Init</span><span class=p>(</span><span class=n>SDL_INIT_EVERYTHING</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span><span class=p>(</span><span class=n>SDLInit</span><span class=o>&gt;=</span><span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//创建一个SDL窗口
+</span></span></span><span class=line><span class=cl><span class=c1></span>		<span class=n>g_pWindow</span><span class=o>=</span><span class=n>SDL_CreateWindow</span><span class=p>(</span><span class=s>&#34;SDL Game Development-02&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>			<span class=n>SDL_WINDOWPOS_CENTERED</span><span class=p>,</span><span class=n>SDL_WINDOWPOS_CENTERED</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>			<span class=mi>1124</span><span class=p>,</span><span class=mi>676</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>			<span class=n>SDL_WINDOW_SHOWN</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>g_pWindow</span><span class=o>!=</span><span class=mi>0</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//创建SDL渲染器
+</span></span></span><span class=line><span class=cl><span class=c1></span>			<span class=n>g_pRenderer</span><span class=o>=</span><span class=n>SDL_CreateRenderer</span><span class=p>(</span><span class=n>g_pWindow</span><span class=p>,</span><span class=o>-</span><span class=mi>1</span><span class=p>,</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>	
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//设置背景色
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_SetRenderDrawColor</span><span class=p>(</span><span class=n>g_pRenderer</span><span class=p>,</span><span class=mi>255</span><span class=p>,</span><span class=mi>255</span><span class=p>,</span><span class=mi>255</span><span class=p>,</span><span class=mi>255</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//渲染器清空
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_RenderClear</span><span class=p>(</span><span class=n>g_pRenderer</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//在绘制背景图片时因为我们已通过画图软件获得了该图片的大小为1124*676
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>//并且保证图片的大小和窗口大小一致因此我们可以直接构造一个(0,0,1024,676)的矩形来绘制
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>DrawBMP</span><span class=p>(</span><span class=n>g_pRenderer</span><span class=p>,</span><span class=s>&#34;background.bmp&#34;</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>0</span><span class=p>,</span><span class=mi>1124</span><span class=p>,</span><span class=mi>676</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//接下来我们在窗口中心绘制一个大小为161*400的美少女
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>DrawBMP</span><span class=p>(</span><span class=n>g_pRenderer</span><span class=p>,</span><span class=s>&#34;girl.bmp&#34;</span><span class=p>,</span><span class=mi>1124</span><span class=o>/</span><span class=mi>2</span><span class=o>-</span><span class=mi>161</span><span class=o>/</span><span class=mi>2</span><span class=p>,</span><span class=mi>676</span><span class=o>/</span><span class=mi>2</span><span class=o>-</span><span class=mi>400</span><span class=o>/</span><span class=mi>2</span><span class=p>,</span><span class=mi>161</span><span class=p>,</span><span class=mi>400</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//显示绘制结果
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_RenderPresent</span><span class=p>(</span><span class=n>g_pRenderer</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>SDL_Delay</span><span class=p>(</span><span class=mi>10000</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//退出
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Quit</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/* 实现绘制BMP位图的方法 */</span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>DrawBMP</span><span class=p>(</span><span class=n>SDL_Renderer</span><span class=o>*</span> <span class=n>renderer</span><span class=p>,</span><span class=k>const</span> <span class=kt>char</span><span class=o>*</span> <span class=n>fileName</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=n>positionX</span><span class=p>,</span><span class=kt>int</span> <span class=n>positionY</span><span class=p>,</span><span class=kt>int</span> <span class=n>textureWidth</span><span class=p>,</span><span class=kt>int</span> <span class=n>textureHeight</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//读取一张BMP位图
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Surface</span><span class=o>*</span> <span class=n>m_pSurface</span><span class=o>=</span><span class=n>SDL_LoadBMP</span><span class=p>(</span><span class=n>fileName</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//获取SDL纹理
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Texture</span><span class=o>*</span> <span class=n>m_pTexture</span><span class=o>=</span><span class=n>SDL_CreateTextureFromSurface</span><span class=p>(</span><span class=n>renderer</span><span class=p>,</span><span class=n>m_pSurface</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//释放m_pBackgroundSurface
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_FreeSurface</span><span class=p>(</span><span class=n>m_pSurface</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//构造SDL矩形
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_Rect</span><span class=o>*</span> <span class=n>m_pSrcRect</span><span class=o>=</span><span class=k>new</span> <span class=n>SDL_Rect</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>x</span><span class=o>=</span><span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>y</span><span class=o>=</span><span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>w</span><span class=o>=</span><span class=n>textureWidth</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pSrcRect</span><span class=o>-&gt;</span><span class=n>h</span><span class=o>=</span><span class=n>textureHeight</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>SDL_Rect</span><span class=o>*</span> <span class=n>m_pTargetRect</span><span class=o>=</span><span class=k>new</span> <span class=n>SDL_Rect</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>x</span><span class=o>=</span><span class=n>positionX</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>y</span><span class=o>=</span><span class=n>positionY</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>w</span><span class=o>=</span><span class=n>textureWidth</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>m_pTargetRect</span><span class=o>-&gt;</span><span class=n>h</span><span class=o>=</span><span class=n>textureHeight</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//绘制SDL纹理
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>SDL_RenderCopy</span><span class=p>(</span><span class=n>renderer</span><span class=p>,</span><span class=n>m_pTexture</span><span class=p>,</span><span class=n>m_pSrcRect</span><span class=p>,</span><span class=n>m_pTargetRect</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p><a class=img-fancybox href=https://ww1.sinaimg.cn/large/4c36074fly1fz68jcze58j20vn0jvhdt.jpg data-fancybox=gallery data-src=https://ww1.sinaimg.cn/large/4c36074fly1fz68jcze58j20vn0jvhdt.jpg data-caption=SDL游戏开发><img src=https://ww1.sinaimg.cn/large/4c36074fly1fz68jcze58j20vn0jvhdt.jpg alt=SDL游戏开发 class=post-img loading=lazy>
+<span class=post-img-tip>SDL游戏开发</span></a></p><p>现在我们再来运行程序，可以发现在背景图片上绘制了一个美少女，并且这个美少女处于窗口的中心。好了，通过今天的这部分内容我们可以实现在屏幕任意位置绘制图片，这里要注意一个前提，即图片表示的是单个精灵，在绘制过程中不存在裁切和缩放的问题。作为一个有节操的程序员，我们怎么能为了目前的这点成果而止步不前呢？注意到窗口标题上出现了未响应的字样，这是因为我们这里使用了 SDL_Delay()这个方法的缘故，该方法会造成程序在运行过程中的卡顿。那么怎么解决这个问题呢？这里就需要涉及到 SDL 中的事件机制，可能这里大家会有点迷茫，可是我们暂时只需要用到 SDL_PollEvent 这个方法，这个方法可以帮助我们判断是否触发了某个事件，比如我们需要判断用户是否点击了窗口右上角的关闭按钮：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-plain data-lang=plain><span class=line><span class=cl>SDL_Event m_event;
+</span></span><span class=line><span class=cl>if(SDL_PollEvent(&amp;m_event))
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	if(m_event.type==SDL_QUIT)
+</span></span><span class=line><span class=cl>		SDL_Quit();
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>考虑到游戏渲染是一个循环的过程，因此我们只需要在工程示例中增加事件处理的相关代码，就可以解决因为使用 SDL_Delay 方法而带来的卡顿问题。好了，今天的内容暂时就研究到这里，我们注意到这里的图片都是静态的缺乏某种交互感，而且窗口中心绘制的美少女的有白色背景的，如果我们希望这里透明该怎么做呢？欲知后事如何，且听下回分解，敬请期待 SDL 游戏开发系列第三话：说说 SDL 中的扩展库。</p></div><div class="copyright s-card"><div class=title><span class=post-name>SDL 游戏开发系列第二话：基本图形的绘制</span>
+<a :href=https://blog.yuanpei.me/posts/3789971938/ class=post-link target=_blank>https://blog.yuanpei.me/posts/3789971938/</a></div><div class=post-meta><div class=meta-item><span class=tip>作者</span>
+<span class=name>飞鸿踏雪</span></div><div class=meta-item><span class=tip>发布于</span>
+<span class=name>2015-07-27</span></div><div class=meta-item><span class=tip>更新于</span>
+<span class=name>2015-07-27</span></div><div class="meta-item cc"><span class=tip>许可协议</span>
+<a class=name href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank>CC BY-NC-SA 4.0</a></div></div><span class=meta-tip>署名-非商业性使用-相同方式共享 4.0 国际</span></div><div class=other-meta><div class=all-tags><a href=/tags/sdl class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>SDL</span>
+</a><a href=/tags/%E6%B8%B8%E6%88%8F class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>游戏</span>
+</a><a href=/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>游戏引擎</span>
+</a><a href=/tags/%E5%9B%BE%E5%BD%A2 class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>图形</span>
+</a><a href=/tags/%E6%95%99%E7%A8%8B class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>教程</span></a></div><a href=https://eqnxweimkr5.feishu.cn/share/base/form/shrcnCXCPmxCKKJYI3RKUfefJre class=report target=_blank><i class="iconfont icon-report"></i>
+反馈与投诉</a></div><div class=reward><div class=reward-btn onclick='window.$Modal.show("reward-modal")'><i class="iconfont icon-reward"></i>
+<span class=text>赞赏博主</span></div></div><div class=modal id=reward-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:430px><div class=title><div class=title-left><i class="iconfont icon-reward"></i>
+<span class=title-text>赞赏博主</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=reward-card><div class=thank>🙏 请博主喝一杯咖啡</div><div class=qr><a class=qr-img href=/images/reward/alipay.jpg target=_blank><img src=/images/reward/alipay.jpg alt=支付宝赞赏码><div class=tip><i class="iconfont icon-alipay"></i>
+<span>支付宝</span></div></a><a class=qr-img href=/images/reward/wechat.jpg target=_blank><img src=/images/reward/wechat.jpg alt=微信赞赏码><div class=tip><i class="iconfont icon-wechat"></i>
+<span>微信</span></div></a></div><div class="all-list s-card hover"><div class=title>赞赏记录</div><div class=tip>赞赏金额将全部用于开源项目维护，以及服务器、域名及各类云服务的开销</div></div></div></div></div></div><div class=related-post><div class=title><span class=name><i class="iconfont icon-star"></i>
+相关推荐
+</span><span class=shuffle onclick='window.location.href="/posts/1333693167/"'>随便逛逛</span></div><div class=post-lists><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/183718218/"'><div class=post-content><span class=post-title>SDL 游戏开发系列第一话：Hello SDL</span>
+<span class=post-desc>本文介绍了SDL游戏开发系列的第一篇文章，以"Hello SDL"为主题。SDL是一套开放源代码的跨平台多媒体开发库，提供图像、声音、事件等功能，适用于多种平台。文章详细介绍了SDL的特性和优点，包括跨平台性、支持2D和3D开发、外部扩展库等。另外，还描述了SDL的下载安装配置过程和基本流程，最后通过一个简单示例展示了SDL游戏开发的一般流程。</span></div></article><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/927393529/"'><div class=post-content><span class=post-title>Unity3D 游戏场景优化系列之批处理</span>
+<span class=post-desc>秦元培分享了他对Unity3D游戏场景优化的研究，以及他对《仙剑奇侠传六》游戏的失望。他深入探讨了Unity3D中的批处理技术，包括静态批处理和动态批处理的方式、效果和实现方法。通过测试对比发现，只有当不同物体共享相同材质时批处理才能有效降低DrawCall。他强调了优化的重要性，指出场景优化不仅仅是使用引擎，还需要程序员深入研究。文章总结了静态批处理的优势，并呼吁大家共同探讨学习，为提升Unity3D游戏开发效率而努力。</span></div></article></div><style>.post-lists{width:100%}.post-lists .post-item{padding:0!important;display:flex;margin-bottom:1rem;animation:fade-up .6s backwards;cursor:pointer;overflow:hidden;height:200px}.post-lists .post-item .post-cover{flex:0 0 35%;overflow:hidden;transform:translateZ(0)}.post-lists .post-item .post-cover img{width:100%;height:100%;object-fit:cover;transform-origin:center center;transition:transform .5s ease-out,filter .5s ease-out;backface-visibility:hidden}.post-lists .post-item .post-content{flex:1;padding:1.6rem 2rem;display:flex;flex-direction:column;justify-content:space-between}.post-lists .post-item .post-category{display:flex;flex-wrap:wrap;width:100%;color:var(--main-font-second-color);font-size:14px}.post-lists .post-item .post-category .cat-name{display:flex;flex-direction:row;align-items:center}.post-lists .post-item .post-category .cat-name .iconfont{opacity:.8;margin-right:6px;color:var(--main-font-second-color)}.post-lists .post-item .post-category .top{margin-left:12px;color:var(--main-color)}.post-lists .post-item .post-category .top .iconfont{opacity:.8;color:var(--main-color)}.post-lists .post-item .post-title{font-size:20px;line-height:30px;font-weight:700;margin:.6rem 0;transition:color .3s;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-desc{margin-top:-.4rem;margin-bottom:.8rem;opacity:.8;line-height:30px;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-meta{display:flex;flex-direction:row;align-items:center;justify-content:space-between;color:var(--main-font-second-color)}.post-lists .post-item .post-tags{display:flex;flex-wrap:wrap;opacity:.8;margin-right:20px;overflow:hidden;mask:linear-gradient(90deg,#fff 0,#fff 90%,hsla(0,0%,100%,.6) 95%,hsla(0,0%,100%,0) 100%)}.post-lists .post-item .post-tags .tags-name{display:flex;flex-direction:row;align-items:center;margin-right:12px;white-space:nowrap;transition:color .3s}.post-lists .post-item .post-time{opacity:.6;font-size:13px;white-space:nowrap}.post-lists .post-item:hover .post-cover img{filter:brightness(.8);transform:scale(1.05)}.post-lists .post-item:hover .post-title{color:var(--main-color)}.post-lists .post-item:active{transform:scale(.98)}.post-lists .post-item.cover-left{flex-direction:row}.post-lists .post-item.cover-right{flex-direction:row-reverse}.post-lists .post-item.cover-both:nth-child(odd){flex-direction:row}.post-lists .post-item.cover-both:nth-child(even){flex-direction:row-reverse}.post-lists.layout-grid{display:grid;grid-template-columns:repeat(var(--grid-columns,2),1fr);gap:var(--grid-gap,1rem)}.post-lists.layout-grid .post-item{margin:0;flex-direction:column;height:auto}.post-lists.layout-grid .post-item .post-cover{flex:none;width:100%;height:225px}@media(max-width:768px){.post-lists .post-item{flex-direction:column;height:auto}.post-lists .post-item .post-cover{flex:none;width:100%;height:200px}.post-lists .post-item.cover-left,.post-lists .post-item.cover-right,.post-lists .post-item.cover-both{flex-direction:column!important}.post-lists.layout-grid{grid-template-columns:1fr}.post-lists .post-item .post-tags{flex-wrap:nowrap}}.post-lists .post-item .simple{animation:none;padding:.5rem 1.4rem!important;background-color:var(--main-card-second-background);height:auto;margin-bottom:.5rem}.post-lists .post-item .simple .post-content{padding:.5rem 0}.post-lists .post-item .simple .post-title{margin:0;font-size:16px}.post-lists .post-item .simple .post-desc{margin:.3rem 0 0;font-size:14px;opacity:.6}</style></div><style>.related-post{margin-top:1rem}.related-post .title{display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;margin:3rem 0 1rem;padding:0 6px}.related-post .title .name{display:flex;align-items:center;font-size:24px;font-weight:700}.related-post .title .name .iconfont{font-size:26px;font-weight:400;margin-right:8px}.related-post .title .shuffle{opacity:.6;font-size:14px;transition:color .3s,opacity .3s;cursor:pointer}.related-post .title .shuffle:hover{opacity:1;color:var(--main-color)}</style><div id=comments><div id=main-comment class=comment style=padding-left:1.5rem;padding-right:1.5rem><div v-if=!fill class=title><span class=name><i class="iconfont icon-chat"></i>
+评论
+</span><span class=tool>隐私政策</span></div><link rel=stylesheet href=https://unpkg.com/@waline/client@v3/dist/waline.css><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}.waline-container .wl-content img{width:unset!important;max-width:unset!important;max-height:unset!important;border-radius:unset!important}.waline-container .wl-content p{font-size:.9rem!important}.wl-header label{font-size:.8em}.wl-sort li{font-size:.8em}</style><script type=module>
+        import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+        init({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+            emoji: [
+                '//unpkg.com/@waline/emojis@1.2.0/weibo'
+            ],
+            reaction: false,
+        });
+      </script></div></div><div class="next-post s-card" id=next-post data-is-next=true><a href=/posts/887585917/ class=next-post-link><span class=post-tip>下一篇阅读
+</span><span class=post-title>Unity3D 游戏开发游戏读/存档在 Unity3D 中的实现</span></a></div></article><aside class=main-aside><div class="hello s-card weidgets"><span class=tip id=hello-weidget-tip>好久不见</span><div class=content><div class=site-logo><div class=avatar><img src=/images/avatar.jpg alt=avatar loading=lazy></div></div><span class=site-desc>谢谢你，在这世界的角落，找到我。我是一位穿梭于数字与人文领域交界处的观察者，热衷于在数字迷雾中剖析谜题背后的真相，同时在人文星河中重拾温暖和光明。我期待，在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点。</span></div><div class=info><div class=name><span class=author>飞鸿踏雪</span>
+<span class=desc>纵有疾风起，人生不言弃</span></div><div class=link><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuapei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i></a></div></div></div><div class=sticky><div class="toc s-card weidgets" id=weidget-toc><div class=toc-title><i class="iconfont icon-toc"></i>
+<span class=name>目录</span></div><div id=toc-all class=toc-list></div></div><script>document.addEventListener("DOMContentLoaded",function(){const o=[];let e=null,t=null,n=0;const s=document.getElementById("toc-all"),i=()=>{try{if(e=document.getElementById("page-content"),!e)return!1;const t=Array.from(e.querySelectorAll("h1, h2, h3, h4")).filter(e=>e.parentElement.tagName.toLowerCase()==="div");return t}catch(e){console.error("获取所有目录数据出错：",e)}},r=()=>{const e=i();if(!e)return!1;s.innerHTML="",e.forEach((e,t)=>{const n={id:e.id,type:e.tagName,text:e.textContent?.replace(/\u200B/g,"").trim()},i=document.createElement("span");i.id="toc-"+n.id,i.className=`toc-item ${n.type} ${t===0?"active":""}`,i.textContent=n.text,i.addEventListener("click",()=>d(n.id)),s.appendChild(i),o.push(n)}),e&&e.length>0&&(t=e[0].id)},c=(e,t)=>{let n;return function(){const s=arguments,o=this;n||(e.apply(o,s),n=!0,setTimeout(()=>n=!1,t))}},l=c(()=>{if(!o.length)return!1;const e=i();if(!e)return!1;const s=120;if(window.scrollY===0){n=0,t=e[0]?.id,a();return}for(let n of e){const o=n.getBoundingClientRect();o.top-s<=0&&o.bottom+s>=0&&t!==n.id&&(t=n.id,a())}},100),a=()=>{document.querySelectorAll(".toc-item.active").forEach(e=>{e.classList.remove("active")});const e=document.getElementById("toc-"+t);if(!e)return!1;e.classList.add("active"),n=e.offsetTop-2||0,s.style.setProperty("--height",n+"px"),s.scrollTo({top:n-80,behavior:"smooth"})},d=t=>{try{const n=document.getElementById(t);if(!n||!e)return!1;const s=n.offsetTop,o=s+e.offsetTop-80;window.scroll({top:o,behavior:"smooth"})}catch(e){console.error("目录滚动失败：",e)}};r(),window.addEventListener("scroll",l)})</script><style lang=scss scoped>.toc{position:relative;padding:0!important;overflow:hidden;.toc-title { display: flex; flex-direction: row; align-items: center; padding: 18px; height: 58px; .iconfont { margin-right: 8px; font-weight: bold; opacity: 0.6; } .name { font-weight: bold; } } .toc-list { position: relative; padding: 20px; padding-top: 0; padding-left: 24px; display: flex; flex-direction: column; max-height: calc(70vh - 58px); overflow: auto; .toc-item { margin: 4px 0; padding: 6px 12px; border-radius: 8px; opacity: 0.6; transition: color 0.3s, opacity 0.3s, font-size 0.3s, background-color 0.3s; cursor: pointer; &:first-child { margin-top: 0; } &:last-child { margin-bottom: 0; } &.H1 { font-weight: bold; } &.H2 { font-size: 14px; margin-left: 15px; font-weight: normal; } &.H3 { font-size: 12px; margin-left: 25px; } &.active { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); &.H2 { font-size: 14px; } &.H3 { font-size: 12px; } } &:hover { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); } } &::after { content: ""; position: absolute; left: 12px; top: var(--height); width: 4px; height: 20px; margin: 8px 0; background-color: var(--main-color); border-radius: 8px; transition: top 0.3s; } } &::before { content: ""; position: absolute; left: 12px; bottom: 20px; width: 4px; height: calc(100% - 78px); background-color: var(--main-card-border); border-radius: 8px; }}</style><div class="tags-cloud s-card weidgets"><div class=title><i class="iconfont icon-hashtag"></i>
+<span class=title-name>热门标签</span></div><div class=all-tags><a href=/tags/%E6%9C%8D%E5%8A%A1/ class=tags><span class=name>服务</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%9B%9E%E5%BF%86/ class=tags><span class=name>回忆</span>
+<sup class=num>1</sup>
+</a><a href=/tags/jaeger/ class=tags><span class=name>Jaeger</span>
+<sup class=num>1</sup>
+</a><a href=/tags/hexo/ class=tags><span class=name>Hexo</span>
+<sup class=num>8</sup>
+</a><a href=/tags/jexus/ class=tags><span class=name>Jexus</span>
+<sup class=num>1</sup>
+</a><a href=/tags/lua/ class=tags><span class=name>Lua</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E9%83%A8%E7%BD%B2/ class=tags><span class=name>部署</span>
+<sup class=num>1</sup>
+</a><a href=/tags/consul/ class=tags><span class=name>Consul</span>
+<sup class=num>1</sup>
+</a><a href=/tags/httpclient/ class=tags><span class=name>HttpClient</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%BE%AE%E5%8D%9A/ class=tags><span class=name>微博</span>
+<sup class=num>4</sup>
+</a><a href=/tags/flv/ class=tags><span class=name>FLV</span>
+<sup class=num>1</sup>
+</a><a href=/tags/hyperlog/ class=tags><span class=name>Hyperlog</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%BC%82%E5%B8%B8/ class=tags><span class=name>异常</span>
+<sup class=num>3</sup>
+</a><a href=/tags/restful/ class=tags><span class=name>RESTful</span>
+<sup class=num>4</sup>
+</a><a href=/tags/%E4%BD%90%E8%97%A4%E5%81%A5/ class=tags><span class=name>佐藤健</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/ class=tags><span class=name>主从复制</span>
+<sup class=num>2</sup>
+</a><a href=/tags/gpts/ class=tags><span class=name>GPTs</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%AD%E8%A8%80/ class=tags><span class=name>语言</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%B8%B8%E8%AE%B0/ class=tags><span class=name>游记</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/ class=tags><span class=name>跨平台</span>
+<sup class=num>3</sup>
+</a><a href=/tags/disunity/ class=tags><span class=name>Disunity</span>
+<sup class=num>1</sup>
+</a><a href=/tags/referrer/ class=tags><span class=name>Referrer</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%8F%8C%E5%8D%81%E4%B8%80/ class=tags><span class=name>双十一</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%A5%BF%E6%BC%82/ class=tags><span class=name>西漂</span>
+<sup class=num>1</sup>
+</a><a href=/tags/thoughtworks/ class=tags><span class=name>ThoughtWorks</span>
+<sup class=num>1</sup>
+</a><a href=/tags/markdown/ class=tags><span class=name>Markdown</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%A4%9A%E7%A7%9F%E6%88%B7/ class=tags><span class=name>多租户</span>
+<sup class=num>1</sup>
+</a><a href=/tags/jsdelivr/ class=tags><span class=name>JsDelivr</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%A8%A1%E6%9D%BF/ class=tags><span class=name>模板</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%B1%B3%E8%8A%B1%E4%B9%8B%E5%91%B3/ class=tags><span class=name>米花之味</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%A4%95%E9%9B%BE%E8%8A%B1%E5%9B%AD/ class=tags><span class=name>夕雾花园</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%89%8D%E7%AB%AF/ class=tags><span class=name>前端</span>
+<sup class=num>9</sup>
+</a><a href=/tags/%E8%B7%AF%E7%94%B1/ class=tags><span class=name>路由</span>
+<sup class=num>1</sup>
+</a><a href=/tags/opencv/ class=tags><span class=name>OpenCV</span>
+<sup class=num>5</sup>
+</a><a href=/tags/kafka/ class=tags><span class=name>Kafka</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%9B%9E%E9%A6%96/ class=tags><span class=name>回首</span>
+<sup class=num>1</sup>
+</a><a href=/tags/docker/ class=tags><span class=name>Docker</span>
+<sup class=num>6</sup>
+</a><a href=/tags/excel/ class=tags><span class=name>Excel</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%9F%AB%E6%83%85/ class=tags><span class=name>矫情</span>
+<sup class=num>1</sup>
+</a><a href=/tags/abp/ class=tags><span class=name>ABP</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E6%A2%A6%E6%83%B3/ class=tags><span class=name>梦想</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83/ class=tags><span class=name>配置中心</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%98%85%E8%AF%BB/ class=tags><span class=name>阅读</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5/ class=tags><span class=name>依赖注入</span>
+<sup class=num>2</sup>
+</a><a href=/tags/tracing/ class=tags><span class=name>Tracing</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E4%BA%91%E5%8E%9F%E7%94%9F/ class=tags><span class=name>云原生</span>
+<sup class=num>1</sup>
+</a><a href=/tags/keycloak/ class=tags><span class=name>Keycloak</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%94%9F%E6%AD%BB/ class=tags><span class=name>生死</span>
+<sup class=num>1</sup>
+</a><a href=/tags/ddd/ class=tags><span class=name>DDD</span>
+<sup class=num>1</sup>
+</a><a href=/tags/ado.net/ class=tags><span class=name>ADO.NET</span>
+<sup class=num>1</sup></a></div><a href=/tags class=more-tags>查看全部</a></div><div class="site-data s-card weidgets"><div class=title><i class="iconfont icon-chart"></i>
+<span class=title-name>站点数据</span></div><div class=all-data><div class=data-item><span class=name><i class="iconfont icon-article"></i>
+文章总数
+</span><span class=num>282 篇</span></div><div class=data-item><span class=name><i class="iconfont icon-date"></i>
+建站天数
+</span><span class=num>4033 天</span></div><div class=data-item><span class=name><i class="iconfont icon-words"></i>
+全站字数
+</span><span class=num>109213 字</span></div><div class=data-item><span class=name><i class="iconfont icon-visibility"></i>
+总访问量
+</span><span class=num id=umami_value_site_pv></span></div><div class=data-item><span class=name><i class="iconfont icon-account"></i>
+总访客数
+</span><span class=num id=umami_value_site_uv></span></div></div></div></div></aside><style>.main-aside{padding-left:1rem;display:flex;flex-direction:column;animation:fade-up .6s .3s backwards;.weidgets { padding: 18px; margin-bottom: 1rem; :deep(.title) { margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; opacity: 0.75; .iconfont { opacity: 0.6; margin-right: 6px; } .title-name { opacity: 0.8; } } } .sticky { position: sticky; top: calc(60px + 1rem); .weidgets { animation: fade-up 0.6s 0.4s backwards; &:last-child { margin-bottom: 0; } } }}</style></div></div></main><div class=footer-link><div class=footer-bar><span class=site-title>元视角</span>
+<span class=site-desc>纵有疾风起，人生不言弃</span>
+<a href=/ class=to-home>了解更多</a></div><div class=footer-social><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuanpei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i>
+</a><a href=/index.xml target=_blank class=social-link aria-label=RSS><i class="iconfont icon-rss"></i></a><div class=logo title=返回顶部 onclick='window.scrollTo({top:0,behavior:"smooth"})'><img src=/images/icons8-stellar-128.png alt=author class=author></div><a href=https://weibo.com/1278609231 target=_blank class=social-link aria-label=微博><i class="iconfont icon-weibo"></i>
+</a><a href=https://www.douban.com/people/60029335/ target=_blank class=social-link aria-label=豆瓣><i class="iconfont icon-douban"></i>
+</a><a href=https://www.zhihu.com/people/qinyuanpei target=_blank class=social-link aria-label=知乎><i class="iconfont icon-zhihu"></i></a></div><div class=footer-sitemap><div class=sitemap-item><span class=title>博客</span><div class=links><a href=/archives class=link-text>文章归档
+</a><a href=/categories class=link-text>全部分类
+</a><a href=/tags class=link-text>全部标签</a></div></div><div class=sitemap-item><span class=title>项目</span><div class=links><a href=https://github.com/qinyuanpei/mcp-server-weibo target=_blank class=link-text>mcp-server-weibo</a></div></div><div class=sitemap-item><span class=title>专栏</span><div class=links><a href=https://blog.csdn.net/qinyuanpei/category_10852603.html target=_blank class=link-text>.NET 源代码探案系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_7444699.html target=_blank class=link-text>Python 数据挖掘系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_11484903.html target=_blank class=link-text>分布式丛林探险系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_1708629.html target=_blank class=link-text>Unity3D 游戏开发系列</a></div></div><div class=sitemap-item><span class=title>页面</span><div class=links><a href=/comments class=link-text>留言
+</a><a href=/books class=link-text>读书
+</a><a href=/movies class=link-text>观影
+</a><a href=/musics class=link-text>听歌</a></div></div><div class=sitemap-item><span class=title>友情链接</span><div class=links><a href=https://gudong.site/ target=_blank class=link-text>咕咚同学
+</a><a href=https://coolshell.cn/ target=_blank class=link-text>酷壳
+</a><a href=https://blog.zhheo.com/ target=_blank class=link-text>张洪
+</a><a href=/links class=link-text>更多</a></div></div></div></div><footer id=main-footer class=main-footer><div class=footer-content><div class=footer-copyright><span class=time data-v-6001e979>@ 2014 - 2025 </span><a href=/ class="author link" target=_blank>飞鸿踏雪</a></div><div class=meta><a class="power link" href=https://gohugo.io/ target=_blank><span class=by>Powered by</span>
+<span class=name>Hugo</span>
+</a><a class="theme link" href=https://github.com/imsyy/vitepress-theme-curve><span class=name>主题</span>
+</a><a class="rss link" href=/index.xml target=_blank><i class="iconfont icon-rss"></i>
+<span class=name data-v-6001e979>订阅</span>
+</a><a class="cc link" href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank aria-label="Creative Commons"><i class="iconfont icon-line"></i>
+<i class="iconfont icon-by-line"></i>
+<i class="iconfont icon-nc-line"></i>
+<i class="iconfont icon-nd-line"></i></a></div></div></footer><script type=module src=/scripts/main.js></script><script src=https://cdn.jsdelivr.net/npm/fuse.js@7.1.0></script><script src=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js></script><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css media="(prefers-color-scheme: dark)"><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css media="(prefers-color-scheme: light)"><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css><script src=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js></script><script src=https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js></script><script type=text/javascript src=/scripts/modules/badge.js></script><script type=text/javascript>window.createBadge("Hugo","v0.126.1","#35495e","#41b883"),window.createBadge("Github","1ae5ebb","#35495e","#ffc107")</script></body></html>

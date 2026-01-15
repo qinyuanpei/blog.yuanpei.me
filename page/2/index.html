@@ -1,0 +1,328 @@
+<!doctype html><html lang=zh-cn><head><meta name=generator content="Hugo 0.126.1"><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=referrer content="no-referrer"><meta content="飞鸿踏雪" name=author><title>元视角</title>
+<meta name=description content="分享技术思维与人文感悟，希望在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点"><link rel=icon type=image/png href=/images/favicons/favicon-96x96.png sizes=96x96><link rel=icon type=image/svg+xml href=/images/favicons/favicon.svg><link rel="shortcut icon" href=/images/favicons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/images/favicons/apple-touch-icon.png><meta name=apple-mobile-web-app-title content="元视角"><link rel=manifest href=/site.webmanifest><meta name=keywords content="元视角,元培的元视角,飞鸿踏雪,全栈工程师,Python,AI"><meta property="og:title" content="元视角"><meta property="og:description" content="分享技术思维与人文感悟，希望在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点"><meta property="og:type" content="website"><meta property="og:url" content="https://blog.yuanpei.me/"><meta property='og:site_name' content='元视角'><meta property="og:image" content="/images/avatar.jpg"><meta property="twitter:image" content="/images/avatar.jpg"><meta property='og:updated_time' content=' 2026-01-13T22:00:00+00:00 '><meta property="twitter:domain" content="https://blog.yuanpei.me/"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:title" content="元视角"><meta property="twitter:description" content="分享技术思维与人文感悟，希望在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点"><meta name=twitter:site content="飞鸿踏雪"><meta name=twitter:creator content="飞鸿踏雪"><link rel=stylesheet href=/styles/main.min.bb9e9eadbf718b0c91c89c85c701c072a4eaa3846575271b714abf3bc7bb8210.css><link rel=alternate type=application/rss+xml href=https://blog.yuanpei.me/index.xml title=元视角><link rel=alternate type=application/json href=https://blog.yuanpei.me/index.json title=元视角><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css><link rel=stylesheet href=/styles/iconfont.css><link rel=stylesheet href=/styles/iconfont-patch.css><script defer src=https://umami.yuanpei.me/JXOS5H5V data-website-id=445bd2eb-68f9-47fd-b93a-5dfa92be333d></script></head><body><div class="background patterns"><div class=bg-mask></div></div><style>.background{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:-2;&.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23494849' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } &.dark { &.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23fcfcfc' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } .cover { filter: brightness(0.6); } } .cover { width: auto; height: auto; min-height: 100%; opacity: 0; transition: filter 0.3s, opacity 0.3s; &.loaded { opacity: 1; } }}</style><header class=main-header><nav class="main-nav up top"><div class=nav-all><div class=left-nav><div class=site-name onclick='location.href="/"'>元视角</div></div><div class=nav-center><div class=site-menu><div class=site-menu><div class=menu-item><span class=link-btn>文库</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+文章归档
+</span><span class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+全部分类
+</span><span class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+全部标签</span></div></div><div class=menu-item><span class=link-btn>书影音</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+读书
+</span><span class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+观影
+</span><span class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+听歌</span></div></div><div class=menu-item><span class=link-btn>页面</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+友情链接
+</span><span class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+个人作品
+</span><span class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+站点统计</span></div></div><div class=menu-item><span class=link-btn>更多</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+留言
+</span><span class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+关于本站</span></div></div></div></div><span class=site-title>纵有疾风起，人生不言弃</span></div><div class=right-nav><a class="menu-btn nav-btn travellings" title=开往-友链接力 href=https://www.travellings.cn/go.html target=_blank><i class="iconfont icon-subway"></i></a><div class="menu-btn nav-btn" title=随机前往一篇文章 id=randomToggle><i class="iconfont icon-shuffle"></i></div><div class="menu-btn nav-btn" title=全站搜索><i class="iconfont icon-search"></i></div><div class="menu-btn nav-btn" id=themeToggle title=切换主题模式><i class="iconfont icon-sun" id=themeIcon></i></div><div id=open-control class="menu-btn nav-btn pc" title=打开中控台><i class="iconfont icon-dashboard"></i></div><div class="to-top menu-btn hidden" title=返回顶部><div class=to-top-btn><span class=num>0</span>
+<i class="iconfont icon-up"></i></div></div><div class="menu-btn nav-btn mobile" title=打开菜单><i class="iconfont icon-toc"></i></div></div></div></nav><div class=mobile-menu id=mobileMenu><div class=menu-mask></div><div class="menu-content s-card"><div class=close-control><i class="iconfont icon-close"></i></div><div class=menu-list><div class=menu-item><span class=link-title>文库</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+<span class=name>文章归档</span></div><div class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+<span class=name>全部分类</span></div><div class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+<span class=name>全部标签</span></div></div></div><div class=menu-item><span class=link-title>书影音</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+<span class=name>读书</span></div><div class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+<span class=name>观影</span></div><div class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+<span class=name>听歌</span></div></div></div><div class=menu-item><span class=link-title>页面</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+<span class=name>友情链接</span></div><div class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+<span class=name>个人作品</span></div><div class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+<span class=name>站点统计</span></div></div></div><div class=menu-item><span class=link-title>更多</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+<span class=name>留言</span></div><div class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+<span class=name>关于本站</span></div></div></div></div></div></div><style>.mobile-menu{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;display:none}.mobile-menu .menu-mask{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;background-color:var(--main-mask-background)}.mobile-menu .menu-content{position:absolute;top:0;right:0;height:100%;width:100%;max-width:300px;border-radius:12px 0 0 12px;padding:20px;overflow:auto}.mobile-menu .close-control{position:absolute;top:10px;right:20px;display:flex;align-items:center;justify-content:center;width:35px;height:35px;padding:0;transition:background-color .3s,opacity .3s;border-radius:50%;cursor:pointer}.mobile-menu .close-control .iconfont{font-size:18px;line-height:1;color:var(--main-font-second-color);transition:color .3s,opacity .3s}.mobile-menu .close-control:hover{background-color:var(--main-color)}.mobile-menu .close-control:hover .iconfont{color:var(--main-card-background)}.mobile-menu .menu-list{margin-top:40px}.mobile-menu .menu-item{margin-bottom:12px}.mobile-menu .menu-item .link-title{font-size:14px;margin-bottom:12px;display:inline-block;color:var(--main-font-second-color)}.mobile-menu .menu-item .link-child{display:grid;gap:12px;grid-template-columns:1fr 1fr}.mobile-menu .menu-item .link-child-btn{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;border-radius:8px;padding:10px 12px;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);font-size:15px;cursor:pointer;transition:all .3s}.mobile-menu .menu-item .link-child-btn:hover{background-color:var(--main-color);color:var(--main-card-background)}.mobile-menu .menu-item .link-child-btn .iconfont{margin-right:6px;opacity:.6}.mobile-menu .menu-item .link-child-btn .name{max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><script>function toggleMobileMenu(){const e=document.getElementById("mobileMenu");e&&(e.style.display=e.style.display==="none"?"block":"none")}</script><div class=modal id=search-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:800px><div class=title><div class=title-left><i class="iconfont icon-search"></i>
+<span class=title-text>全局搜索</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=search-modal><div class=search-input><input type=text id=search-input placeholder=今天你想搜点什么？ autocomplete=off></div><div class=search-results><div class=search-list></div><div class=search-empty><i class="iconfont icon-search"></i><p>输入关键字，开始搜索</p></div></div><div class=search-hint><span class=text id=search-hint-text></span>
+<span class=text><a class=powered_by href=https://www.fusejs.io/ target=_blank>Fuse.js</a></span></div></div></div></div></div></header><main class=main-layout><div class=home><div class="banner half" id=main-banner><h1 class=title>你好，欢迎来到元视角</h1><div class=subtitle><span class=text>纵有疾风起，人生不言弃</span></div></div><div class=home-content><div class=posts-content><div class="type-bar s-card hover"><div class=all-type><a href=/ class="type-item choose">首页</a>
+<a href=/categories/unity3d/ class=type-item>unity3d
+</a><a href=/categories/%e5%89%8d%e7%ab%af%e5%bc%80%e5%8f%91/ class=type-item>前端开发
+</a><a href=/categories/%e5%8d%95%e6%9c%ba%e6%b8%b8%e6%88%8f/ class=type-item>单机游戏
+</a><a href=/categories/%e5%bc%80%e5%8f%91%e5%b7%a5%e5%85%b7/ class=type-item>开发工具
+</a><a href=/categories/%e6%95%b0%e6%8d%ae%e5%88%86%e6%9e%90/ class=type-item>数据分析
+</a><a href=/categories/%e6%95%b0%e6%8d%ae%e5%ad%98%e5%82%a8/ class=type-item>数据存储
+</a><a href=/categories/%e6%b8%b8%e6%88%8f%e5%bc%80%e5%8f%91/ class=type-item>游戏开发
+</a><a href=/categories/%e7%8b%ac%e7%ab%8b%e5%8d%9a%e5%ae%a2/ class=type-item>独立博客
+</a><a href=/categories/%e7%94%9f%e6%b4%bb%e6%84%9f%e6%82%9f/ class=type-item>生活感悟
+</a><a href=/categories/%e7%bc%96%e7%a8%8b%e8%af%ad%e8%a8%80/ class=type-item>编程语言
+</a><a href=/categories/%e8%af%bb%e4%b9%a6%e7%ac%94%e8%ae%b0/ class=type-item>读书笔记</a></div><a href=/categories class=more-type><i class="iconfont icon-arrow-right"></i>
+更多</a></div><div class=post-lists><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/review-and-rethink-backend-universal-query-solutions/"'><div class=post-cover><img src=/posts/review-and-rethink-backend-universal-query-solutions/Sea-8948636_1280.jpg alt=温故而知新：后端通用查询方案的再思考 loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>温故而知新：后端通用查询方案的再思考</span>
+<span class=post-desc>本文探讨了后端通用查询方案的实现和优化。作者从 Gridify 库获得启发，提出了一种基于泛型和接口的查询方案，实现了灵活的分页和过滤功能。文章详细介绍了方案的实现细节，包括 QueryParameter 类的设计、IQueryableFilter 接口的应用，以及如何通过自定义 IModelBinder 来兼容不同的参数传递格式，改变 ASP.NET Core 默认的模型绑定行为。文章强调了在 AI 时代，程序员应该关注复杂问题的解决和生产关系的改善，而不仅仅是简单的代码生成。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E6%9F%A5%E8%AF%A2",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+查询
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%90%8E%E7%AB%AF",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+后端
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%80%9D%E8%80%83",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+思考
+</span><span class=tags-name onclick='window.location.href="/tags/api",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+API
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%B8%A9%E6%95%85%E7%9F%A5%E6%96%B0",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+温故知新</span></div><span class=post-time>2024-09-23</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/"'><div class=post-cover><img src=/posts/cancellation-mechanism-cancellationtoken-cooperative-scene/cover.png alt="浅议 CancellationToken 在前后端协同取消场景中的应用" loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>浅议 CancellationToken 在前后端协同取消场景中的应用</span>
+<span class=post-desc>本文深入探讨了在生成式AI领域中，前后端协同取消机制的重要性和实现方式。作者首先回顾了流式传输技术，然后通过 .NET 中的 CancellationToken 和 CancellationTokenSource 的使用示例，展示了如何在异步编程模型中处理任务取消请求。文章进一步分析了在 Web 服务中，如何通过 HttpContext.RequestAborted 属性感知客户端的取消请求，并给出了具体的代码示例。最后，作者讨论了在实际开发中，如何优化取消机制的实现，以提高代码的效率和可维护性。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E5%8F%96%E6%B6%88",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+取消
+</span><span class=tags-name onclick='window.location.href="/tags/aigc",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+AIGC
+</span><span class=tags-name onclick='window.location.href="/tags/cts",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+CTS
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%83%B3%E6%B3%95",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+想法</span></div><span class=post-time>2024-08-15</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/semantic-kernel-driven-text2sql-practice/"'><div class=post-cover><img src=/posts/semantic-kernel-driven-text2sql-practice/24e44881-f8b8-42b0-845f-09e16e674b47_1721116483631011226~tplv-a9rns2rl98-web-image.jpeg alt="Semantic Kernel 视角下的 Text2SQL 实践与思考" loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>Semantic Kernel 视角下的 Text2SQL 实践与思考</span>
+<span class=post-desc>本文深入探讨了人工智能领域的最新进展，特别是大型语言模型（LLMs）的应用及其与检索增强生成（RAG）技术的结合。文章首先引用《诗经》中的名句，比喻技术的快速发展，随后讨论了 Agent 的概念，强调了其规划、记忆和工具使用的能力。作者分享了对市场上主流 Agent 产品的体验，并提出了对大模型动态规划任务的信念。文中还介绍了 Text2SQL 技术，展示了如何将自然语言转化为 SQL 语句，以及这一技术如何帮助大模型与关系型数据库连接。最后，作者反思了技术进步对人类社会的影响，特别是在效率提升与人类幸福感之间的关系。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/agent",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Agent
+</span><span class=tags-name onclick='window.location.href="/tags/text2sql",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Text2SQL
+</span><span class=tags-name onclick='window.location.href="/tags/aigc",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+AIGC
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+大模型</span></div><span class=post-time>2024-07-15</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/g-for-gap/"'><div class=post-cover><img src=/posts/g-for-gap/P2909066866.jpg alt=走走停停，允许一切发生 loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+生活感悟</span></div><span class=post-title>走走停停，允许一切发生</span>
+<span class=post-desc>《走走停停》是一部由龙飞导演，胡歌和高圆圆主演的影片，讲述了北漂中年人吴迪在职场和情场受挫后，选择回归故乡拍摄电影的故事。影片通过吴迪的视角，展现了现代人在生活压力和内心追求之间的挣扎与和解。吴迪在面对家庭和社会的期望时，选择了追随自己的梦想，尽管过程中充满了挑战和不确定性。影片深刻地探讨了个人成长、家庭关系和生活态度等主题，同时通过戏中戏的叙事手法，增加了故事的层次感和深度。吴迪最终在家人的支持下，找到了生活的意义和方向。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E8%B5%B0%E8%B5%B0%E5%81%9C%E5%81%9C",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+走走停停
+</span><span class=tags-name onclick='window.location.href="/tags/%E8%8B%8F%E8%BD%BC",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+苏轼
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%BD%B1%E8%AF%84",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+影评
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%84%9F%E6%82%9F",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+感悟</span></div><span class=post-time>2024-06-23</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/everything-you-need-to-know-about-streaming-with-chatgpt/"'><div class=post-cover><img src=/posts/everything-you-need-to-know-about-streaming-with-chatgpt/edoardo-bortoli-cPZutxQCeIc-unsplash.jpg alt="关于 ChatGPT 的流式传输，你需要知道的一切" loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>关于 ChatGPT 的流式传输，你需要知道的一切</span>
+<span class=post-desc>本文深入探讨了生成式 AI 产品如 ChatGPT 的流式输出效果，阐释了其目的在于减少用户等待时间，而非简单模仿人类行为。文章详细介绍了 Server-Sent Events（SSE）技术在实现流式传输中的应用，并通过代码示例展示了服务端配置和客户端数据接收的方法。同时，讨论了 WebSocket 技术作为 SSE 的替代方案，强调了在 AI 应用开发中实现流式传输的重要性。此外，文中还介绍了 .NET 中的 IAsyncEnumerable 接口，并讨论了在生成式 AI 中实现取消/停止生成功能的挑战，提出了基于 WebSocket 的双向通信机制来解决这一问题。最后，文章总结了流式传输在 AI 与人类交互中的重要性，并提出了对 AI 智能本质的思考。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/sse",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+SSE
+</span><span class=tags-name onclick='window.location.href="/tags/openai",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+OpenAI
+</span><span class=tags-name onclick='window.location.href="/tags/chatgpt",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+ChatGPT
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%B5%81%E5%BC%8F%E4%BC%A0%E8%BE%93",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+流式传输</span></div><span class=post-time>2024-06-06</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/seeing-the-world-through-tiktok/"'><div class=post-cover><img src=/posts/seeing-the-world-through-tiktok/water-8200502_1280.jpg alt=从抖音看见世界的参差 loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+生活感悟</span></div><span class=post-title>从抖音看见世界的参差</span>
+<span class=post-desc>在这篇文章中，作者深入探讨了社交媒体如何影响我们对世界的理解和体验。通过抖音这一平台，作者反思了数字内容的量产化和真实体验的重要性。文章批判了社交媒体上信息的简化和平面化，提出了信息茧房的概念，并给出了避免陷入这一陷阱的建议。作者还讨论了旅行的不同阶段，强调了深入了解文化和历史的必要性。最后，文章呼吁读者主动寻找信息，避免被算法和资本驯化，保持对高密度信息的阅读能力。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E9%9A%8F%E7%AC%94",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+随笔
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%84%9F%E6%82%9F",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+感悟
+</span><span class=tags-name onclick='window.location.href="/tags/%E7%9C%9F%E5%AE%9E",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+真实
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%8F%82%E5%B7%AE",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+参差</span></div><span class=post-time>2024-05-16</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/in-the-twinkling-of-an-eye/"'><div class=post-cover><img src=/posts/in-the-twinkling-of-an-eye/Seagulls-8583786_1280.png alt=俯仰之间：五一小长假出行记 loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+生活感悟</span></div><span class=post-title>俯仰之间：五一小长假出行记</span>
+<span class=post-desc>本文是一篇详尽的旅行日志，记录了作者在五一假期的探索之旅。文章以历史爱好者的视角，带领读者从西安出发，原计划探访四川的阆中和广元，最终因车票问题转向汉中。在旅途中，作者参观了皇泽寺、昭化古城、诸葛古镇的武侯祠和马超墓祠等，深入体验了与武则天、姜维、诸葛亮等历史人物相关的历史遗迹。文章不仅重现了历史场景，还引发对女性主义、个人与社会责任、历史循环等现代议题的思考，为读者提供了一次心灵与历史的对话。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E6%B8%B8%E8%AE%B0",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+游记
+</span><span class=tags-name onclick='window.location.href="/tags/%E9%9A%8F%E7%AC%94",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+随笔
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%8E%86%E5%8F%B2",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+历史
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%84%9F%E6%82%9F",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+感悟</span></div><span class=post-time>2024-05-10</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/the-true-or-false-rewrite-rerank-of-rag/"'><div class=post-cover><img src=/posts/the-true-or-false-rewrite-rerank-of-rag/four-white-llamas.jpg alt="RAG 的是与非、Rewrite 和 Rerank" loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>RAG 的是与非、Rewrite 和 Rerank</span>
+<span class=post-desc>本文深入探讨了文化团体的形成及其对个体认知的影响，同时对社交媒体中的信息筛选和定义问题提出了批判。文章进一步分析了 AI 大型语言模型（LLM）的最新发展，特别是 Meta 的 Llama3 和微软的 Phi-3模型，以及它们在信息检索和生成中的应用。重点介绍了RAG（Retrieval-Augmented Generation）模型中的Rewrite 和 Rerank技术，展示了如何通过这些技术提升AI在处理复杂查询时的性能。通过实际的 Python 代码示例和 LangChain 库的应用，作者详细说明了Rewrite 和 Rerank 的实现方法，并通过案例展示了它们在提高检索多样性和准确性方面的显著效果。文章最后强调了RAG模型中检索（Retrieval）的核心地位，并讨论了文理科思维方式的差异及其对行动的影响。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/rag",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+RAG
+</span><span class=tags-name onclick='window.location.href="/tags/rewrite",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Rewrite
+</span><span class=tags-name onclick='window.location.href="/tags/rerank",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Rerank
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%80%9D%E8%80%83",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+思考
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%84%9F%E6%82%9F",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+感悟</span></div><span class=post-time>2024-04-26</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/the-boy-the-heron-the-self-reconciliation/"'><div class=post-cover><img src=/posts/the-boy-the-heron-the-self-reconciliation/P2896704315.jpg alt=《你想活出怎样的人生》与宫崎骏的自我和解 loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+生活感悟</span></div><span class=post-title>《你想活出怎样的人生》与宫崎骏的自我和解</span>
+<span class=post-desc>文章深入分析了宫崎骏的动画电影《你想活出怎样的人生》，探讨了宫崎骏如何通过这部作品进行自我和解。电影讲述了主人公牧真人在母亲去世后，如何面对身份认同危机和新家庭的适应问题。宫崎骏在作品中融入了个人对飞行的热爱和对家族历史的反思，以及对战争的反对和对自然的尊重。文章还解读了电影中的各种象征元素，如舅公、鹦鹉和“亡灵世界”，它们反映了宫崎骏对历史、权力和人类文明的深刻思考。最后，文章强调了电影提出的核心问题——如何活出有意义的人生，鼓励观众接受生命的不完美，勇敢面对现实，热爱生活。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E5%BD%B1%E8%AF%84",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+影评
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%AE%AB%E5%B4%8E%E9%AA%8F",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+宫崎骏
+</span><span class=tags-name onclick='window.location.href="/tags/%E8%87%AA%E6%88%91%E5%92%8C%E8%A7%A3",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+自我和解
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%84%9F%E6%82%9F",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+感悟</span></div><span class=post-time>2024-04-18</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:.4s onclick='window.location.href="/posts/use-efcore-with-postgresql-for-vector-storage-and-retrieval/"'><div class=post-cover><img src=/posts/use-efcore-with-postgresql-for-vector-storage-and-retrieval/library-898333_1280.jpg alt="使用 EFCore 和 PostgreSQL 实现向量存储及检索" loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>使用 EFCore 和 PostgreSQL 实现向量存储及检索</span>
+<span class=post-desc>本文探讨了如何使用 EFCore 和 PostgreSQL 实现向量存储和检索，以及如何利用 PostgreSQL 进行全文检索。文章首先介绍了向量数据库的市场需求和发展趋势，然后详细说明了 PostgreSQL 的 pgvector 插件的使用方法，包括创建表、插入数据、查询向量以及建立索引等。接着，文章讨论了如何将 pgvector 与 EFCore 集成，并提供了相应的代码示例。最后，文章还探讨了 PostgreSQL 的全文检索功能，包括使用中文分词器 pg_jieba 来增强中文检索效果，并分享了作者在构建知识库时的实践经验和思考。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/postgresql",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+PostgreSQL
+</span><span class=tags-name onclick='window.location.href="/tags/pgvector",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+pgvector
+</span><span class=tags-name onclick='window.location.href="/tags/pg_jieba",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+pg_jieba
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+全文检索
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%90%91%E9%87%8F",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+向量</span></div><span class=post-time>2024-03-15</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:1.4s onclick='window.location.href="/posts/practice-local-ai-knowledg-base-based-on-llama-and-langchain/"'><div class=post-cover><img src=/posts/%e5%9f%ba%e4%ba%8e-LLaMA-%e5%92%8c-LangChain-%e5%ae%9e%e8%b7%b5%e6%9c%ac%e5%9c%b0-AI-%e7%9f%a5%e8%af%86%e5%ba%93/cover.png alt="基于 LLaMA 和 LangChain 实践本地 AI 知识库" loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>基于 LLaMA 和 LangChain 实践本地 AI 知识库</span>
+<span class=post-desc>本文讨论了人工智能领域的最新发展，主要围绕着基于 Transformer 和 MoE 架构的多模态模型 Gemini 1.5 Pro，以及 OpenAI 推出的支持从文字生成视频的模型 Sora。文章提到通用人工智能（AGI）的实现正在加速，指出 AI 应用落地的主要实践围绕大模型微调、提示词工程和知识增强展开。在介绍 LangChain 中的知识库构建过程中，涉及Loader、Splitter、Embeddings 和 VectorStore 等步骤。此外，还讨论了 RAG 和 GPTs 在实践中的应用，以及LangChain 中的 Chain 概念，以及如何将其与大语言模型和知识库结合以实现 Q&amp;A 和 对话式检索。文章最后呼吁关注LangChain 的最新发展和替代品 AutoChain、Embedchain。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/llama",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+LLaMA
+</span><span class=tags-name onclick='window.location.href="/tags/langchain",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+LangChain
+</span><span class=tags-name onclick='window.location.href="/tags/rag",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+RAG
+</span><span class=tags-name onclick='window.location.href="/tags/gpts",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+GPTs</span></div><span class=post-time>2024-02-29</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:1.4s onclick='window.location.href="/posts/an-attempt-to-deploy-a-large-ai-model-locally-using-llama.cpp/"'><div class=post-cover><img src=/posts/an-attempt-to-deploy-a-large-ai-model-locally-using-llama.cpp/cover.png alt="使用 llama.cpp 在本地部署 AI 大模型的一次尝试" loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>使用 llama.cpp 在本地部署 AI 大模型的一次尝试</span>
+<span class=post-desc>2023 年被誉为 AIGC 元年，随着技术浪潮，人们开始对人工智能的发展产生担忧。文章介绍了使用 llama.cpp 在本地部署AI大模型的过程，包括编译、量化和模型下载。通过对不同模型的体验，展示了其运行效果和评估。最后，将 ChatGPT-Next-Web 与 llama.cpp 结合，展示了本地部署 AI 大模型的潜力。整体讲述了私有化部署AI大模型的重要性和实践过程。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/llama.cpp",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+llama.cpp
+</span><span class=tags-name onclick='window.location.href="/tags/chatgpt",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+ChatGPT
+</span><span class=tags-name onclick='window.location.href="/tags/qwen-7b-chat",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Qwen-7B-Chat
+</span><span class=tags-name onclick='window.location.href="/tags/llama",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+LLaMA</span></div><span class=post-time>2024-02-04</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:1.4s onclick='window.location.href="/posts/how-to-configure-multiple-ssh-keys-for-git/"'><div class=post-cover><img src=/posts/how-to-configure-multiple-ssh-keys-for-git/GIT-Branch-and-its-Operations.png alt="如何为 Git 配置多个 SSH Key" loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>如何为 Git 配置多个 SSH Key</span>
+<span class=post-desc>电视剧《繁花》中的情节展示了汪小姐和宝总之间的关系，以“排骨是排骨，年糕是年糕”来表达分道扬镳后的境况。文章讨论了人们需要亲密关系和界限感，类比工作与生活的关系。针对程序员如何为 Git 配置多个 SSH Key，介绍了生成 SSH Key、配置文件和添加公钥的步骤，以及在不同平台上验证和使用的方法，最后提及了在 SourceTree 中配置多个 SSH Key 可能带来的身份混淆问题和解决建议。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/git",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Git
+</span><span class=tags-name onclick='window.location.href="/tags/ssh-key",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+SSH-Key
+</span><span class=tags-name onclick='window.location.href="/tags/%E5%A4%87%E5%BF%98",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+备忘
+</span><span class=tags-name onclick='window.location.href="/tags/bash",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+Bash</span></div><span class=post-time>2024-01-30</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:1.4s onclick='window.location.href="/posts/csharp-uses-libusbdotnet-to-implement-usb-device-detection/"'><div class=post-cover><img src=/posts/csharp-uses-libusbdotnet-to-implement-usb-device-detection/immo-wegmann-HtsVneqf5Fg-unsplash.jpg alt="C# 使用 LibUsbDotNet 实现 USB 设备检测" loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>C# 使用 LibUsbDotNet 实现 USB 设备检测</span>
+<span class=post-desc>本文讨论了工作中围绕硬件展开的问题，以及尝试解决"简单"问题的经历。作者分享了在程序中集成某厂商硬件时遇到的挑战，并介绍了使用 WMI 和 LibUsbDotNet 库来检测和处理 USB 设备的方法。描述了如何通过硬件 ID 判断 USB 设备连接状态，并展示了通过 WMI 监听 USB 设备插入和拔出事件的实现。最终强调了编程的本质是不断照顾程序中的问题，以及对代码中的冗余部分进行反思。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E7%A1%AC%E4%BB%B6",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+硬件
+</span><span class=tags-name onclick='window.location.href="/tags/usb",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+USB
+</span><span class=tags-name onclick='window.location.href="/tags/wmi",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+WMI
+</span><span class=tags-name onclick='window.location.href="/tags/libusbdotnet",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+LibUsbDotNet</span></div><span class=post-time>2023-10-18</span></div></div></article><article class="post-item s-card hover cover cover-left" style=animation-delay:1.4s onclick='window.location.href="/posts/a-printing-scheme-for-separating-style-and-data-based-on-csharp/"'><div class=post-cover><img src=/posts/a-printing-scheme-for-separating-style-and-data-based-on-csharp/pexels-suzy-hazelwood-1999352.jpg alt="基于 C# 实现样式与数据分离的打印方案" loading=lazy></div><div class=post-content><div class=post-category><span class=cat-name><i class="iconfont icon-folder"></i>
+编程语言</span></div><span class=post-title>基于 C# 实现样式与数据分离的打印方案</span>
+<span class=post-desc>这篇文章讨论了作者在忙碌工作生活中对打印技术和样式与数据分离的探索。作者提到了使用PrintDocument进行打印的基本思路和代码实现，以及尝试通过HTML模板来实现样式与数据分离的方案。作者还介绍了利用WebView2组件将HTML转换为图片或PDF文件，以及探讨了使用浏览器自带打印方案和RDLC报表设计的方法。最后，作者总结了这篇文章内容的零散性和对打印技术的看法。</span><div class=post-meta><div class=post-tags><span class=tags-name onclick='window.location.href="/tags/%E6%89%93%E5%8D%B0",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+打印
+</span><span class=tags-name onclick='window.location.href="/tags/printdocument",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+PrintDocument
+</span><span class=tags-name onclick='window.location.href="/tags/webview2",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+WebView2
+</span><span class=tags-name onclick='window.location.href="/tags/%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E",event.stopPropagation()'><i class="iconfont icon-hashtag"></i>
+模板引擎</span></div><span class=post-time>2023-09-20</span></div></div></article></div><style>.post-lists{width:100%}.post-lists .post-item{padding:0!important;display:flex;margin-bottom:1rem;animation:fade-up .6s backwards;cursor:pointer;overflow:hidden;height:200px}.post-lists .post-item .post-cover{flex:0 0 35%;overflow:hidden;transform:translateZ(0)}.post-lists .post-item .post-cover img{width:100%;height:100%;object-fit:cover;transform-origin:center center;transition:transform .5s ease-out,filter .5s ease-out;backface-visibility:hidden}.post-lists .post-item .post-content{flex:1;padding:1.6rem 2rem;display:flex;flex-direction:column;justify-content:space-between}.post-lists .post-item .post-category{display:flex;flex-wrap:wrap;width:100%;color:var(--main-font-second-color);font-size:14px}.post-lists .post-item .post-category .cat-name{display:flex;flex-direction:row;align-items:center}.post-lists .post-item .post-category .cat-name .iconfont{opacity:.8;margin-right:6px;color:var(--main-font-second-color)}.post-lists .post-item .post-category .top{margin-left:12px;color:var(--main-color)}.post-lists .post-item .post-category .top .iconfont{opacity:.8;color:var(--main-color)}.post-lists .post-item .post-title{font-size:20px;line-height:30px;font-weight:700;margin:.6rem 0;transition:color .3s;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-desc{margin-top:-.4rem;margin-bottom:.8rem;opacity:.8;line-height:30px;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-meta{display:flex;flex-direction:row;align-items:center;justify-content:space-between;color:var(--main-font-second-color)}.post-lists .post-item .post-tags{display:flex;flex-wrap:wrap;opacity:.8;margin-right:20px;overflow:hidden;mask:linear-gradient(90deg,#fff 0,#fff 90%,hsla(0,0%,100%,.6) 95%,hsla(0,0%,100%,0) 100%)}.post-lists .post-item .post-tags .tags-name{display:flex;flex-direction:row;align-items:center;margin-right:12px;white-space:nowrap;transition:color .3s}.post-lists .post-item .post-time{opacity:.6;font-size:13px;white-space:nowrap}.post-lists .post-item:hover .post-cover img{filter:brightness(.8);transform:scale(1.05)}.post-lists .post-item:hover .post-title{color:var(--main-color)}.post-lists .post-item:active{transform:scale(.98)}.post-lists .post-item.cover-left{flex-direction:row}.post-lists .post-item.cover-right{flex-direction:row-reverse}.post-lists .post-item.cover-both:nth-child(odd){flex-direction:row}.post-lists .post-item.cover-both:nth-child(even){flex-direction:row-reverse}.post-lists.layout-grid{display:grid;grid-template-columns:repeat(var(--grid-columns,2),1fr);gap:var(--grid-gap,1rem)}.post-lists.layout-grid .post-item{margin:0;flex-direction:column;height:auto}.post-lists.layout-grid .post-item .post-cover{flex:none;width:100%;height:225px}@media(max-width:768px){.post-lists .post-item{flex-direction:column;height:auto}.post-lists .post-item .post-cover{flex:none;width:100%;height:200px}.post-lists .post-item.cover-left,.post-lists .post-item.cover-right,.post-lists .post-item.cover-both{flex-direction:column!important}.post-lists.layout-grid{grid-template-columns:1fr}.post-lists .post-item .post-tags{flex-wrap:nowrap}}.post-lists .post-item .simple{animation:none;padding:.5rem 1.4rem!important;background-color:var(--main-card-second-background);height:auto;margin-bottom:.5rem}.post-lists .post-item .simple .post-content{padding:.5rem 0}.post-lists .post-item .simple .post-title{margin:0;font-size:16px}.post-lists .post-item .simple .post-desc{margin:.3rem 0 0;font-size:14px;opacity:.6}</style><div class=pagination><div class="page-item prev" onclick='window.location.href="/"'><i class="iconfont icon-page-right"></i>
+<span class=page-text>上页</span></div><div class=page-number><div class=page-item onclick='window.location.href="/"'><span class=page-num>1</span></div><div class="page-item choose" onclick='window.location.href="/page/2/"'><span class=page-num>2</span></div><div class=page-item onclick='window.location.href="/page/3/"'><span class=page-num>3</span></div><div class=page-item onclick='window.location.href="/page/4/"'><span class=page-num>4</span></div><div class=point>...</div><div class=page-item onclick='window.location.href="/page/20/"'><span class=page-num>20</span></div><div class=fast-jump title=快速跳转><input type=number id=pageJumpInput min=1 max=20 onfocus='this.parentElement.classList.add("focus")' onblur='this.parentElement.classList.remove("focus")' onkeydown='event.key==="Enter"&&jumpToPage(this.value,20)' aria-label=jump>
+<i class="iconfont icon-arrow-right" onclick='jumpToPage(document.getElementById("pageJumpInput").value,20)'></i></div></div><div class="page-item next" onclick='window.location.href="/page/3/"'><span class=page-text>下页</span>
+<i class="iconfont icon-page-right"></i></div></div><style>.pagination{position:relative;display:flex;flex-direction:row;align-items:center;justify-content:center;margin-top:20px;width:100%;height:40px;animation:fade-up .6s .4s backwards}.page-item{position:relative;display:flex;justify-content:center;align-items:center;width:40px;height:40px;border-radius:8px;overflow:hidden;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);transition:border-color .3s,box-shadow .3s;cursor:pointer}.page-item.prev,.page-item.next{position:absolute;width:80px;left:0}.page-item.prev .iconfont{transform:rotate(180deg)}.page-item.next{left:auto;right:0}.page-item:hover{border-color:var(--main-color);box-shadow:0 8px 16px -4px var(--main-color-bg)}.page-item.choose{color:var(--main-card-background);border-color:var(--main-color);background-color:var(--main-color);box-shadow:0 8px 16px -4px var(--main-color-bg)}.page-text{opacity:0;transition:opacity .3s}.page-item:hover .page-text{opacity:1}.page-number{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:center}.page-number .page-item{margin:0 6px}.point{margin:0 4px;transform:translateY(-8px);font-size:22px}.fast-jump{position:relative;margin:0 6px}.fast-jump input{width:40px;height:40px;border-radius:8px;padding:0 8px;font-size:16px;color:var(--main-font-color);background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);transition:all .3s}.fast-jump.focus input,.fast-jump:hover input{width:100px;border-color:var(--main-color);box-shadow:0 8px 16px -4px var(--main-color-bg)}@media(max-width:768px){.page-number{display:none}.page-item:first-child{margin-right:10px}.page-item:last-child{margin-left:10px}}</style><script>function jumpToPage(e,t){e=parseInt(e),(!e||e<1)&&(e=1),e>t&&(e=t);let n=window.location.pathname;e===1?n=n.replace(/\/page\/\d+/,""):n.includes("/page/")?n=n.replace(/\/page\/\d+/,`/page/${e}`):n=n.replace(/\/$/,"")+`/page/${e}`,window.location.href=n}</script></div><aside class=main-aside><div class="hello s-card weidgets"><span class=tip id=hello-weidget-tip>好久不见</span><div class=content><div class=site-logo><div class=avatar><img src=/images/avatar.jpg alt=avatar loading=lazy></div></div><span class=site-desc>谢谢你，在这世界的角落，找到我。我是一位穿梭于数字与人文领域交界处的观察者，热衷于在数字迷雾中剖析谜题背后的真相，同时在人文星河中重拾温暖和光明。我期待，在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点。</span></div><div class=info><div class=name><span class=author>飞鸿踏雪</span>
+<span class=desc>纵有疾风起，人生不言弃</span></div><div class=link><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuapei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i></a></div></div></div><div class=sticky><div class="tags-cloud s-card weidgets"><div class=title><i class="iconfont icon-hashtag"></i>
+<span class=title-name>热门标签</span></div><div class=all-tags><a href=/tags/%E5%8D%83%E5%AF%BB%E5%B0%8F%E5%A7%90/ class=tags><span class=name>千寻小姐</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/ class=tags><span class=name>数据库</span>
+<sup class=num>8</sup>
+</a><a href=/tags/%E5%A4%9A%E7%A7%9F%E6%88%B7/ class=tags><span class=name>多租户</span>
+<sup class=num>1</sup>
+</a><a href=/tags/envoy/ class=tags><span class=name>Envoy</span>
+<sup class=num>8</sup>
+</a><a href=/tags/%E5%AD%A4%E7%8B%AC/ class=tags><span class=name>孤独</span>
+<sup class=num>1</sup>
+</a><a href=/tags/grafana/ class=tags><span class=name>Grafana</span>
+<sup class=num>1</sup>
+</a><a href=/tags/gpts/ class=tags><span class=name>GPTs</span>
+<sup class=num>1</sup>
+</a><a href=/tags/msbuild/ class=tags><span class=name>MSBuild</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%9E%B6%E6%9E%84/ class=tags><span class=name>架构</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%9B%BE%E5%BA%8A/ class=tags><span class=name>图床</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%A0%94%E5%8F%91/ class=tags><span class=name>研发</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AE%B0%E5%BD%95/ class=tags><span class=name>记录</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%AC%BC%E6%BB%85%E3%81%AE%E5%88%83/ class=tags><span class=name>鬼滅の刃</span>
+<sup class=num>1</sup>
+</a><a href=/tags/mono/ class=tags><span class=name>Mono</span>
+<sup class=num>4</sup>
+</a><a href=/tags/retrofit/ class=tags><span class=name>Retrofit</span>
+<sup class=num>1</sup>
+</a><a href=/tags/llama.cpp/ class=tags><span class=name>Llama.cpp</span>
+<sup class=num>1</sup>
+</a><a href=/tags/wmi/ class=tags><span class=name>WMI</span>
+<sup class=num>1</sup>
+</a><a href=/tags/protobuf/ class=tags><span class=name>Protobuf</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%BC%82%E6%AD%A5/ class=tags><span class=name>异步</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E7%BC%96%E8%BE%91%E5%99%A8/ class=tags><span class=name>编辑器</span>
+<sup class=num>4</sup>
+</a><a href=/tags/%E7%86%B5%E5%A2%9E%E5%AE%9A%E5%BE%8B/ class=tags><span class=name>熵增定律</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%90%8C%E6%AD%A5/ class=tags><span class=name>同步</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%9F%A5%E8%AF%A2/ class=tags><span class=name>查询</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%B7%E8%AE%B0%E4%BD%8F%E6%88%91/ class=tags><span class=name>请记住我</span>
+<sup class=num>1</sup>
+</a><a href=/tags/thoughtworks/ class=tags><span class=name>ThoughtWorks</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%81%9A%E7%B1%BB/ class=tags><span class=name>聚类</span>
+<sup class=num>1</sup>
+</a><a href=/tags/java/ class=tags><span class=name>Java</span>
+<sup class=num>1</sup>
+</a><a href=/tags/restful/ class=tags><span class=name>RESTful</span>
+<sup class=num>4</sup>
+</a><a href=/tags/channel/ class=tags><span class=name>Channel</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%BD%90%E8%97%A4%E5%81%A5/ class=tags><span class=name>佐藤健</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%AD%E6%B3%95/ class=tags><span class=name>语法</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%89%88%E6%9D%83/ class=tags><span class=name>版权</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%80%A7%E8%83%BD/ class=tags><span class=name>性能</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%84%E8%AE%BA/ class=tags><span class=name>评论</span>
+<sup class=num>1</sup>
+</a><a href=/tags/server-%E9%85%B1/ class=tags><span class=name>Server 酱</span>
+<sup class=num>1</sup>
+</a><a href=/tags/cts/ class=tags><span class=name>CTS</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%AE%A1%E9%81%93/ class=tags><span class=name>管道</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%80%BB%E7%BB%93/ class=tags><span class=name>总结</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%B0%8F%E7%88%B1%E5%90%8C%E5%AD%A6/ class=tags><span class=name>小爱同学</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%A0%87%E6%B3%A8/ class=tags><span class=name>标注</span>
+<sup class=num>1</sup>
+</a><a href=/tags/rabbitmq/ class=tags><span class=name>RabbitMQ</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E6%95%B0%E5%AD%A6/ class=tags><span class=name>数学</span>
+<sup class=num>5</sup>
+</a><a href=/tags/polly/ class=tags><span class=name>Polly</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%87%8D%E8%AF%95/ class=tags><span class=name>重试</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E8%AE%AD%E7%BB%83/ class=tags><span class=name>训练</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%97%B6%E9%97%B4/ class=tags><span class=name>时间</span>
+<sup class=num>3</sup>
+</a><a href=/tags/webapi/ class=tags><span class=name>WebApi</span>
+<sup class=num>4</sup>
+</a><a href=/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/ class=tags><span class=name>大模型</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%BA%91%E5%8E%9F%E7%94%9F/ class=tags><span class=name>云原生</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%8D%E4%BA%91/ class=tags><span class=name>词云</span>
+<sup class=num>1</sup></a></div><a href=/tags class=more-tags>查看全部</a></div><div class="site-data s-card weidgets"><div class=title><i class="iconfont icon-chart"></i>
+<span class=title-name>站点数据</span></div><div class=all-data><div class=data-item><span class=name><i class="iconfont icon-article"></i>
+文章总数
+</span><span class=num>282 篇</span></div><div class=data-item><span class=name><i class="iconfont icon-date"></i>
+建站天数
+</span><span class=num>4033 天</span></div><div class=data-item><span class=name><i class="iconfont icon-words"></i>
+全站字数
+</span><span class=num>109213 字</span></div><div class=data-item><span class=name><i class="iconfont icon-visibility"></i>
+总访问量
+</span><span class=num id=umami_value_site_pv></span></div><div class=data-item><span class=name><i class="iconfont icon-account"></i>
+总访客数
+</span><span class=num id=umami_value_site_uv></span></div></div></div></div></aside><style>.main-aside{padding-left:1rem;display:flex;flex-direction:column;animation:fade-up .6s .3s backwards;.weidgets { padding: 18px; margin-bottom: 1rem; :deep(.title) { margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; opacity: 0.75; .iconfont { opacity: 0.6; margin-right: 6px; } .title-name { opacity: 0.8; } } } .sticky { position: sticky; top: calc(60px + 1rem); .weidgets { animation: fade-up 0.6s 0.4s backwards; &:last-child { margin-bottom: 0; } } }}</style></div></div><script>document.addEventListener("DOMContentLoaded",function(){const e=localStorage.getItem("lastScrollY");e&&(window.scrollTo({top:parseInt(e),behavior:"smooth"}),localStorage.removeItem("lastScrollY"))}),window.addEventListener("beforeunload",function(){localStorage.setItem("lastScrollY",window.scrollY.toString())})</script></main><div class=footer-link><div class=footer-bar><span class=site-title>元视角</span>
+<span class=site-desc>纵有疾风起，人生不言弃</span>
+<a href=/ class=to-home>了解更多</a></div><div class=footer-social><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuanpei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i>
+</a><a href=/index.xml target=_blank class=social-link aria-label=RSS><i class="iconfont icon-rss"></i></a><div class=logo title=返回顶部 onclick='window.scrollTo({top:0,behavior:"smooth"})'><img src=/images/icons8-stellar-128.png alt=author class=author></div><a href=https://weibo.com/1278609231 target=_blank class=social-link aria-label=微博><i class="iconfont icon-weibo"></i>
+</a><a href=https://www.douban.com/people/60029335/ target=_blank class=social-link aria-label=豆瓣><i class="iconfont icon-douban"></i>
+</a><a href=https://www.zhihu.com/people/qinyuanpei target=_blank class=social-link aria-label=知乎><i class="iconfont icon-zhihu"></i></a></div><div class=footer-sitemap><div class=sitemap-item><span class=title>博客</span><div class=links><a href=/archives class=link-text>文章归档
+</a><a href=/categories class=link-text>全部分类
+</a><a href=/tags class=link-text>全部标签</a></div></div><div class=sitemap-item><span class=title>项目</span><div class=links><a href=https://github.com/qinyuanpei/mcp-server-weibo target=_blank class=link-text>mcp-server-weibo</a></div></div><div class=sitemap-item><span class=title>专栏</span><div class=links><a href=https://blog.csdn.net/qinyuanpei/category_10852603.html target=_blank class=link-text>.NET 源代码探案系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_7444699.html target=_blank class=link-text>Python 数据挖掘系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_11484903.html target=_blank class=link-text>分布式丛林探险系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_1708629.html target=_blank class=link-text>Unity3D 游戏开发系列</a></div></div><div class=sitemap-item><span class=title>页面</span><div class=links><a href=/comments class=link-text>留言
+</a><a href=/books class=link-text>读书
+</a><a href=/movies class=link-text>观影
+</a><a href=/musics class=link-text>听歌</a></div></div><div class=sitemap-item><span class=title>友情链接</span><div class=links><a href=https://gudong.site/ target=_blank class=link-text>咕咚同学
+</a><a href=https://coolshell.cn/ target=_blank class=link-text>酷壳
+</a><a href=https://blog.zhheo.com/ target=_blank class=link-text>张洪
+</a><a href=/links class=link-text>更多</a></div></div></div></div><footer id=main-footer class=main-footer><div class=footer-content><div class=footer-copyright><span class=time data-v-6001e979>@ 2014 - 2025 </span><a href=/ class="author link" target=_blank>飞鸿踏雪</a></div><div class=meta><a class="power link" href=https://gohugo.io/ target=_blank><span class=by>Powered by</span>
+<span class=name>Hugo</span>
+</a><a class="theme link" href=https://github.com/imsyy/vitepress-theme-curve><span class=name>主题</span>
+</a><a class="rss link" href=/index.xml target=_blank><i class="iconfont icon-rss"></i>
+<span class=name data-v-6001e979>订阅</span>
+</a><a class="cc link" href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank aria-label="Creative Commons"><i class="iconfont icon-line"></i>
+<i class="iconfont icon-by-line"></i>
+<i class="iconfont icon-nc-line"></i>
+<i class="iconfont icon-nd-line"></i></a></div></div></footer><script type=module src=/scripts/main.js></script><script src=https://cdn.jsdelivr.net/npm/fuse.js@7.1.0></script><script src=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js></script><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css media="(prefers-color-scheme: dark)"><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css media="(prefers-color-scheme: light)"><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css><script src=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js></script><script src=https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js></script><script type=text/javascript src=/scripts/modules/badge.js></script><script type=text/javascript>window.createBadge("Hugo","v0.126.1","#35495e","#41b883"),window.createBadge("Github","1ae5ebb","#35495e","#ffc107")</script></body></html>

@@ -1,0 +1,534 @@
+<!doctype html><html lang=zh-cn><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=referrer content="no-referrer"><meta content="飞鸿踏雪" name=author><title>Unity3D 游戏开发之 SQLite 让数据库开发更简单 - 元视角</title>
+<meta name=description content="本文介绍了在Unity3D游戏开发中使用SQLite数据库的相关内容。SQLite是一款轻型的关系型数据库管理系统，适用于嵌入式设备和各种编程语言。文章详细介绍了SQLite的特性、选择原因，以及在Unity3D中使用SQLite的方法和示例代码。同时分享了一个SQLite辅助类SQLiteHelper.cs的代码，实现了数据库和数据表的创建以及基本操作。最后提供了不同平台上数据库存储路径的相关信息。"><link rel=icon type=image/png href=/images/favicons/favicon-96x96.png sizes=96x96><link rel=icon type=image/svg+xml href=/images/favicons/favicon.svg><link rel="shortcut icon" href=/images/favicons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/images/favicons/apple-touch-icon.png><meta name=apple-mobile-web-app-title content="元视角"><link rel=manifest href=/site.webmanifest><meta name=keywords content="Unity3D,SQLite,数据库"><meta property="og:title" content="Unity3D 游戏开发之 SQLite 让数据库开发更简单 - 元视角"><meta property="og:description" content="本文介绍了在Unity3D游戏开发中使用SQLite数据库的相关内容。SQLite是一款轻型的关系型数据库管理系统，适用于嵌入式设备和各种编程语言。文章详细介绍了SQLite的特性、选择原因，以及在Unity3D中使用SQLite的方法和示例代码。同时分享了一个SQLite辅助类SQLiteHelper.cs的代码，实现了数据库和数据表的创建以及基本操作。最后提供了不同平台上数据库存储路径的相关信息。"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.yuanpei.me/posts/582264328/"><meta property='og:site_name' content='元视角'><meta property="og:image" content="/images/avatar.jpg"><meta property="twitter:image" content="/images/avatar.jpg"><meta property='article:section' content='Posts'><meta property='article:tag' content='Unity3D'><meta property='article:tag' content='SQLite'><meta property='article:tag' content='数据库'><meta property='article:published_time' content='2015-07-09T09:47:06+00:00'><meta property='article:modified_time' content='2015-07-09T09:47:06+00:00'><meta property="twitter:domain" content="https://blog.yuanpei.me/"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.yuanpei.me/posts/582264328/"><meta property="twitter:title" content="Unity3D 游戏开发之 SQLite 让数据库开发更简单 - 元视角"><meta property="twitter:description" content="本文介绍了在Unity3D游戏开发中使用SQLite数据库的相关内容。SQLite是一款轻型的关系型数据库管理系统，适用于嵌入式设备和各种编程语言。文章详细介绍了SQLite的特性、选择原因，以及在Unity3D中使用SQLite的方法和示例代码。同时分享了一个SQLite辅助类SQLiteHelper.cs的代码，实现了数据库和数据表的创建以及基本操作。最后提供了不同平台上数据库存储路径的相关信息。"><meta name=twitter:site content="飞鸿踏雪"><meta name=twitter:creator content="飞鸿踏雪"><link rel=stylesheet href=/styles/main.min.bb9e9eadbf718b0c91c89c85c701c072a4eaa3846575271b714abf3bc7bb8210.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css><link rel=stylesheet href=/styles/iconfont.css><link rel=stylesheet href=/styles/iconfont-patch.css><script defer src=https://umami.yuanpei.me/JXOS5H5V data-website-id=445bd2eb-68f9-47fd-b93a-5dfa92be333d></script></head><body><div class="background patterns"><div class=bg-mask></div></div><style>.background{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:-2;&.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23494849' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } &.dark { &.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23fcfcfc' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } .cover { filter: brightness(0.6); } } .cover { width: auto; height: auto; min-height: 100%; opacity: 0; transition: filter 0.3s, opacity 0.3s; &.loaded { opacity: 1; } }}</style><header class=main-header><nav class="main-nav up top"><div class=nav-all><div class=left-nav><div class=site-name onclick='location.href="/"'>元视角</div></div><div class=nav-center><div class=site-menu><div class=site-menu><div class=menu-item><span class=link-btn>文库</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+文章归档
+</span><span class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+全部分类
+</span><span class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+全部标签</span></div></div><div class=menu-item><span class=link-btn>书影音</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+读书
+</span><span class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+观影
+</span><span class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+听歌</span></div></div><div class=menu-item><span class=link-btn>页面</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+友情链接
+</span><span class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+个人作品
+</span><span class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+站点统计</span></div></div><div class=menu-item><span class=link-btn>更多</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+留言
+</span><span class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+关于本站</span></div></div></div></div><span class=site-title>Unity3D 游戏开发之 SQLite 让数据库开发更简单</span></div><div class=right-nav><a class="menu-btn nav-btn travellings" title=开往-友链接力 href=https://www.travellings.cn/go.html target=_blank><i class="iconfont icon-subway"></i></a><div class="menu-btn nav-btn" title=随机前往一篇文章 id=randomToggle><i class="iconfont icon-shuffle"></i></div><div class="menu-btn nav-btn" title=全站搜索><i class="iconfont icon-search"></i></div><div class="menu-btn nav-btn" id=themeToggle title=切换主题模式><i class="iconfont icon-sun" id=themeIcon></i></div><div id=open-control class="menu-btn nav-btn pc" title=打开中控台><i class="iconfont icon-dashboard"></i></div><div class="to-top menu-btn hidden" title=返回顶部><div class=to-top-btn><span class=num>0</span>
+<i class="iconfont icon-up"></i></div></div><div class="menu-btn nav-btn mobile" title=打开菜单><i class="iconfont icon-toc"></i></div></div></div></nav><div class=mobile-menu id=mobileMenu><div class=menu-mask></div><div class="menu-content s-card"><div class=close-control><i class="iconfont icon-close"></i></div><div class=menu-list><div class=menu-item><span class=link-title>文库</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+<span class=name>文章归档</span></div><div class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+<span class=name>全部分类</span></div><div class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+<span class=name>全部标签</span></div></div></div><div class=menu-item><span class=link-title>书影音</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+<span class=name>读书</span></div><div class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+<span class=name>观影</span></div><div class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+<span class=name>听歌</span></div></div></div><div class=menu-item><span class=link-title>页面</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+<span class=name>友情链接</span></div><div class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+<span class=name>个人作品</span></div><div class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+<span class=name>站点统计</span></div></div></div><div class=menu-item><span class=link-title>更多</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+<span class=name>留言</span></div><div class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+<span class=name>关于本站</span></div></div></div></div></div></div><style>.mobile-menu{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;display:none}.mobile-menu .menu-mask{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;background-color:var(--main-mask-background)}.mobile-menu .menu-content{position:absolute;top:0;right:0;height:100%;width:100%;max-width:300px;border-radius:12px 0 0 12px;padding:20px;overflow:auto}.mobile-menu .close-control{position:absolute;top:10px;right:20px;display:flex;align-items:center;justify-content:center;width:35px;height:35px;padding:0;transition:background-color .3s,opacity .3s;border-radius:50%;cursor:pointer}.mobile-menu .close-control .iconfont{font-size:18px;line-height:1;color:var(--main-font-second-color);transition:color .3s,opacity .3s}.mobile-menu .close-control:hover{background-color:var(--main-color)}.mobile-menu .close-control:hover .iconfont{color:var(--main-card-background)}.mobile-menu .menu-list{margin-top:40px}.mobile-menu .menu-item{margin-bottom:12px}.mobile-menu .menu-item .link-title{font-size:14px;margin-bottom:12px;display:inline-block;color:var(--main-font-second-color)}.mobile-menu .menu-item .link-child{display:grid;gap:12px;grid-template-columns:1fr 1fr}.mobile-menu .menu-item .link-child-btn{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;border-radius:8px;padding:10px 12px;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);font-size:15px;cursor:pointer;transition:all .3s}.mobile-menu .menu-item .link-child-btn:hover{background-color:var(--main-color);color:var(--main-card-background)}.mobile-menu .menu-item .link-child-btn .iconfont{margin-right:6px;opacity:.6}.mobile-menu .menu-item .link-child-btn .name{max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><script>function toggleMobileMenu(){const e=document.getElementById("mobileMenu");e&&(e.style.display=e.style.display==="none"?"block":"none")}</script><div class=modal id=search-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:800px><div class=title><div class=title-left><i class="iconfont icon-search"></i>
+<span class=title-text>全局搜索</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=search-modal><div class=search-input><input type=text id=search-input placeholder=今天你想搜点什么？ autocomplete=off></div><div class=search-results><div class=search-list></div><div class=search-empty><i class="iconfont icon-search"></i><p>输入关键字，开始搜索</p></div></div><div class=search-hint><span class=text id=search-hint-text></span>
+<span class=text><a class=powered_by href=https://www.fusejs.io/ target=_blank>Fuse.js</a></span></div></div></div></div></div></header><main class=main-layout><div class=post><div class=post-meta><div class=meta><div class=categories><a href=/categories/%e6%b8%b8%e6%88%8f%e5%bc%80%e5%8f%91/ class=cat-item><i class="iconfont icon-folder"></i>
+<span class=name>游戏开发</span></a></div><div class=tags><a href=/tags/unity3d/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>Unity3D</span>
+</a><a href=/tags/sqlite/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>SQLite</span>
+</a><a href=/tags/%e6%95%b0%e6%8d%ae%e5%ba%93/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>数据库</span></a></div></div><h1 class=title>Unity3D 游戏开发之 SQLite 让数据库开发更简单</h1><div class=other-meta><span class="meta date"><i class="iconfont icon-date"></i>
+2015-07-09
+</span><span class="update meta"><i class="iconfont icon-time"></i>
+2015-07-09
+</span><span class="hot meta"><i class="iconfont icon-fire"></i>
+<span class=artalk-pv-count id=umami_value_page_pv>0</span>
+</span><span class="chat meta hover" data-scroll-to=comments><i class="iconfont icon-chat"></i>
+<span id=waline_comments_count class=artalk-comment-count>0</span></span></div></div><div class=post-content><article class="post-article s-card"><div class="expired s-card">本文发表于 <strong>3842</strong> 天前，其中的信息可能已经事过境迁</div><div class="article-gpt s-card"><div class=title><span class=name><i class="iconfont icon-robot"></i>
+文章摘要
+<i class="iconfont icon-up"></i>
+</span><span class=logo>FakeGPT</span></div><div class="content s-card"><span class=text></span></div><div class=meta></div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){new TypeIt(".article-gpt .content .text",{strings:"本文介绍了在Unity3D游戏开发中使用SQLite数据库的相关内容。SQLite是一款轻型的关系型数据库管理系统，适用于嵌入式设备和各种编程语言。文章详细介绍了SQLite的特性、选择原因，以及在Unity3D中使用SQLite的方法和示例代码。同时分享了一个SQLite辅助类SQLiteHelper.cs的代码，实现了数据库和数据表的创建以及基本操作。最后提供了不同平台上数据库存储路径的相关信息。",speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><div id=page-content class=markdown-main-style><p>各位朋友大家好，欢迎大家关注我的博客，我是秦元培，我是博客地址是<a href=http://blog.csdn.net/qinyuanpei>http://blog.csdn.net/qinyuanpei</a>。在经历了一段时间的忙碌后，博主终于有时间来研究新的东西啦，今天博客向和大家一起交流的内容是在 Unity3D 游戏开发中使用 SQLite 进行数据库开发，坦白来讲，在我的技术体系中 Web 和数据库是相对薄弱的两个部分，因此正好这段时间项目需要和服务器、数据库进行交互，因此在接下来的文章中博主可能会更加倾向于讲解这方面的内容，希望大家能够喜欢啊！</p><h1 id=什么是-sqlite>什么是 SQLite？</h1><p><a href=http://www.sqlite.org/>SQLite</a>是一款轻型的数据库，是遵守 ACID 的关系型数据库管理系统，它包含在一个相对小的 C 库中，以嵌入式作为它的设计目标，它占用资源非常的低，因此适合在嵌入式设备如 Android、Ruby on Rails 等中使用。它能够支持 Windows/Linux/Unix 等等主流的操作系统，同时能够跟和 C、C++、Ruby、Python、C#、PHP、Java 等编程语言相结合。SQLite 是一个以文件形式存在的关系型数据库，尽管无法实现分布式和横向扩展，可是作为一个轻量级的嵌入式数据库，它不需要系统提供服务支持，通过 SDK 直接操作文件避免了对数据库维护的相关事务，从这个角度来讲它是一个出色的数据库。</p><h1 id=为什么要选择-sqlite>为什么要选择 SQLite</h1><p>好了，在了解了 SQLite 后，我们来了解下 SQLite 有哪些让我们心动的特性，或者说我们为什么要选择 SQLite，因为在这个世界上我们有太多的数据库可以选择，诸如 Oracle、MySQL、SQLServer、DB2、NoSQL、MongoDB 等等：</p><blockquote><ul><li>ACID 事务</li><li>零配置 – 无需安装和管理配置</li><li>储存在单一磁盘文件中的一个完整的数据库</li><li>数据库文件可以在不同字节顺序的机器间自由的共享</li><li>支持数据库大小至 2TB</li><li>足够小, 大致 13 万行 C 代码, 4.43M</li></ul></blockquote><ul><li>比一些流行的数据库在大部分普通数据库操作要快&mdash;<a href=http://www.zhihu.com/question/31417262>SQLite 读写效率如此之高，会使用其他数据库的理由是？</a></li><li>简单, 轻松的 API</li><li>包含 TCL 绑定, 同时通过 Wrapper 支持其他语言的绑定</li><li>良好注释的源代码, 并且有着90%以上的测试覆盖率</li><li>独立: 没有额外依赖</li><li>源码完全的开源, 你可以用于任何用途, 包括出售它</li><li>支持多种开发语言，C, C++, PHP, Perl, Java, C#,Python, Ruby 等</li></ul><h1 id=unity3d-中的-sqlite>Unity3D 中的 SQLite</h1><p>在 Unity3D 中使用 SQLite，我们首先要明白这样一件事情，即我们这里的使用的 SQLite 并非是通常意义上的 SQLite.NET,而是经过移植后的 Mono.Data.Sqlite。因为 Unity3D 基于 Mono，因此使用移植后的 Mono.Data.Sqlite 能够减少我们的项目在不同平台上出现各种各样的问题。在 Unity3D 中使用的 SQLite 以 Mono.Data.Sqlite.dll 即动态链接库的形式给出，因此我们需要将这个文件放置在项目目录下的 Plugins 文件夹中，此外我们需要 System.Data.dll 或者 Mono.Data.dll 这两个文件添加到 Plugins 目录中，因为我们需要的部分数据相关的 API 或者类都定义在这两个文件当中，这些文件可以从<a href=http://pan.baidu.com/s/1sjLZyrj>这里</a>直接下载。</p><blockquote><p>PS：博主注意到在网上有使用 Mono.Data.SQLiteClient.dll 这个库实现在 Unity3D 操作 SQLite 数据库的相关文章，博主大概看了下，感觉和使用 Mono.Data.Sqlite.dll 这个库大同小异，大家喜欢哪个就用哪个吧！哈哈！博主在开源社区找到一个版本库，据说可以同时支持.NET 和 Mono，如果大家感兴趣欢迎大家去测试啊，哈哈!</p></blockquote><p>在正式开始写代码前，我们首先来回顾下通常情况下数据库读写的基本流程吧！</p><blockquote><ul><li>定义数据库连接字符串(ConnectionString)完成数据库连接的构造，建立或者打开一个数据库。</li><li>定义相关的 SQL 命令(Command)通过这些命令实现对数据库的增加、删除、更新、读取四种基本功能。</li><li>在完成各种数据库操作后及时关闭数据库连接，解除对数据库的连接和引用。</li></ul></blockquote><p>SQLite 作为一款优秀的数据库，在为其编写数据库相关代码时同样遵循这样的流程，考虑到对数据库的增加、删除、更新、读取四种操作具有类似性和统一性，因此在动手写 Unity3D 脚本前，首先让我们来编写一个 SQLite 的辅助类 SQLiteHelper.cs。该类代码定义如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=k>using</span> <span class=nn>UnityEngine</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>Mono.Data.Sqlite</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>SQLiteHelper</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 数据库连接定义</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=n>SqliteConnection</span> <span class=n>dbConnection</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// SQL命令定义</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=n>SqliteCommand</span> <span class=n>dbCommand</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 数据读取定义</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=n>SqliteDataReader</span> <span class=n>dataReader</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 构造函数	</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;connectionString&#34;&gt;数据库连接字符串&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>SQLiteHelper</span><span class=p>(</span><span class=kt>string</span> <span class=n>connectionString</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>try</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//构造数据库连接</span>
+</span></span><span class=line><span class=cl>			<span class=n>dbConnection</span><span class=p>=</span><span class=k>new</span> <span class=n>SqliteConnection</span><span class=p>(</span><span class=n>connectionString</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//打开数据库</span>
+</span></span><span class=line><span class=cl>			<span class=n>dbConnection</span><span class=p>.</span><span class=n>Open</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span><span class=k>catch</span><span class=p>(</span><span class=n>Exception</span> <span class=n>e</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=n>e</span><span class=p>.</span><span class=n>Message</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 执行SQL命令</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;returns&gt;The query.&lt;/returns&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;queryString&#34;&gt;SQL命令字符串&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>SqliteDataReader</span> <span class=n>ExecuteQuery</span><span class=p>(</span><span class=kt>string</span> <span class=n>queryString</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>dbCommand</span> <span class=p>=</span> <span class=n>dbConnection</span><span class=p>.</span><span class=n>CreateCommand</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=n>dbCommand</span><span class=p>.</span><span class=n>CommandText</span> <span class=p>=</span> <span class=n>queryString</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>dataReader</span> <span class=p>=</span> <span class=n>dbCommand</span><span class=p>.</span><span class=n>ExecuteReader</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>dataReader</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 关闭数据库连接</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=k>void</span> <span class=n>CloseConnection</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//销毁Command</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>dbCommand</span> <span class=p>!=</span> <span class=kc>null</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=n>dbCommand</span><span class=p>.</span><span class=n>Cancel</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=n>dbCommand</span> <span class=p>=</span> <span class=kc>null</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//销毁Reader</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>dataReader</span> <span class=p>!=</span> <span class=kc>null</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=n>dataReader</span><span class=p>.</span><span class=n>Close</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=n>dataReader</span> <span class=p>=</span> <span class=kc>null</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//销毁Connection</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>dbConnection</span> <span class=p>!=</span> <span class=kc>null</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=n>dbConnection</span><span class=p>.</span><span class=n>Close</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=n>dbConnection</span> <span class=p>=</span> <span class=kc>null</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 读取整张数据表</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;returns&gt;The full table.&lt;/returns&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;tableName&#34;&gt;数据表名称&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>SqliteDataReader</span> <span class=n>ReadFullTable</span><span class=p>(</span><span class=kt>string</span> <span class=n>tableName</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=kt>string</span> <span class=n>queryString</span> <span class=p>=</span> <span class=s>&#34;SELECT * FROM &#34;</span> <span class=p>+</span> <span class=n>tableName</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>ExecuteQuery</span> <span class=p>(</span><span class=n>queryString</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 向指定数据表中插入数据</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;returns&gt;The values.&lt;/returns&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;tableName&#34;&gt;数据表名称&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;values&#34;&gt;插入的数值&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>SqliteDataReader</span> <span class=n>InsertValues</span><span class=p>(</span><span class=kt>string</span> <span class=n>tableName</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>values</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//获取数据表中字段数目</span>
+</span></span><span class=line><span class=cl>		<span class=kt>int</span> <span class=n>fieldCount</span><span class=p>=</span><span class=n>ReadFullTable</span><span class=p>(</span><span class=n>tableName</span><span class=p>).</span><span class=n>FieldCount</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//当插入的数据长度不等于字段数目时引发异常</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>values</span><span class=p>.</span><span class=n>Length</span><span class=p>!=</span><span class=n>fieldCount</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=k>throw</span> <span class=k>new</span> <span class=n>SqliteException</span><span class=p>(</span><span class=s>&#34;values.Length!=fieldCount&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=kt>string</span> <span class=n>queryString</span> <span class=p>=</span> <span class=s>&#34;INSERT INTO &#34;</span> <span class=p>+</span> <span class=n>tableName</span> <span class=p>+</span> <span class=s>&#34; VALUES (&#34;</span> <span class=p>+</span> <span class=n>values</span><span class=p>[</span><span class=m>0</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span><span class=p>(</span><span class=kt>int</span> <span class=n>i</span><span class=p>=</span><span class=m>1</span><span class=p>;</span> <span class=n>i</span><span class=p>&lt;</span><span class=n>values</span><span class=p>.</span><span class=n>Length</span><span class=p>;</span> <span class=n>i</span><span class=p>++)</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>queryString</span><span class=p>+=</span><span class=s>&#34;, &#34;</span> <span class=p>+</span> <span class=n>values</span><span class=p>[</span><span class=n>i</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=n>queryString</span> <span class=p>+=</span> <span class=s>&#34; )&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>ExecuteQuery</span><span class=p>(</span><span class=n>queryString</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 更新指定数据表内的数据</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;returns&gt;The values.&lt;/returns&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;tableName&#34;&gt;数据表名称&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;colNames&#34;&gt;字段名&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;colValues&#34;&gt;字段名对应的数据&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;key&#34;&gt;关键字&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;value&#34;&gt;关键字对应的值&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>SqliteDataReader</span> <span class=n>UpdateValues</span><span class=p>(</span><span class=kt>string</span> <span class=n>tableName</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>colNames</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>colValues</span><span class=p>,</span><span class=kt>string</span> <span class=n>key</span><span class=p>,</span><span class=kt>string</span> <span class=n>operation</span><span class=p>,</span><span class=kt>string</span> <span class=k>value</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//当字段名称和字段数值不对应时引发异常</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>colNames</span><span class=p>.</span><span class=n>Length</span><span class=p>!=</span><span class=n>colValues</span><span class=p>.</span><span class=n>Length</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>throw</span> <span class=k>new</span> <span class=n>SqliteException</span><span class=p>(</span><span class=s>&#34;colNames.Length!=colValues.Length&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=kt>string</span> <span class=n>queryString</span> <span class=p>=</span> <span class=s>&#34;UPDATE &#34;</span> <span class=p>+</span> <span class=n>tableName</span> <span class=p>+</span> <span class=s>&#34; SET &#34;</span> <span class=p>+</span> <span class=n>colNames</span><span class=p>[</span><span class=m>0</span><span class=p>]</span> <span class=p>+</span> <span class=s>&#34;=&#34;</span> <span class=p>+</span> <span class=n>colValues</span><span class=p>[</span><span class=m>0</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span><span class=p>(</span><span class=kt>int</span> <span class=n>i</span><span class=p>=</span><span class=m>1</span><span class=p>;</span> <span class=n>i</span><span class=p>&lt;</span><span class=n>colValues</span><span class=p>.</span><span class=n>Length</span><span class=p>;</span> <span class=n>i</span><span class=p>++)</span> 
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>queryString</span><span class=p>+=</span><span class=s>&#34;, &#34;</span> <span class=p>+</span> <span class=n>colNames</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=p>+</span> <span class=s>&#34;=&#34;</span> <span class=p>+</span> <span class=n>colValues</span><span class=p>[</span><span class=n>i</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=n>queryString</span> <span class=p>+=</span> <span class=s>&#34; WHERE &#34;</span> <span class=p>+</span> <span class=n>key</span> <span class=p>+</span> <span class=n>operation</span> <span class=p>+</span> <span class=k>value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>ExecuteQuery</span><span class=p>(</span><span class=n>queryString</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 删除指定数据表内的数据</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;returns&gt;The values.&lt;/returns&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;tableName&#34;&gt;数据表名称&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;colNames&#34;&gt;字段名&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;colValues&#34;&gt;字段名对应的数据&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>SqliteDataReader</span> <span class=n>DeleteValuesOR</span><span class=p>(</span><span class=kt>string</span> <span class=n>tableName</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>colNames</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>operations</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>colValues</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//当字段名称和字段数值不对应时引发异常</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>colNames</span><span class=p>.</span><span class=n>Length</span><span class=p>!=</span><span class=n>colValues</span><span class=p>.</span><span class=n>Length</span> <span class=p>||</span> <span class=n>operations</span><span class=p>.</span><span class=n>Length</span><span class=p>!=</span><span class=n>colNames</span><span class=p>.</span><span class=n>Length</span> <span class=p>||</span> <span class=n>operations</span><span class=p>.</span><span class=n>Length</span><span class=p>!=</span><span class=n>colValues</span><span class=p>.</span><span class=n>Length</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>throw</span> <span class=k>new</span> <span class=n>SqliteException</span><span class=p>(</span><span class=s>&#34;colNames.Length!=colValues.Length || operations.Length!=colNames.Length || operations.Length!=colValues.Length&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=kt>string</span> <span class=n>queryString</span> <span class=p>=</span> <span class=s>&#34;DELETE FROM &#34;</span> <span class=p>+</span> <span class=n>tableName</span> <span class=p>+</span> <span class=s>&#34; WHERE &#34;</span> <span class=p>+</span> <span class=n>colNames</span><span class=p>[</span><span class=m>0</span><span class=p>]</span> <span class=p>+</span> <span class=n>operations</span><span class=p>[</span><span class=m>0</span><span class=p>]</span> <span class=p>+</span> <span class=n>colValues</span><span class=p>[</span><span class=m>0</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span><span class=p>(</span><span class=kt>int</span> <span class=n>i</span><span class=p>=</span><span class=m>1</span><span class=p>;</span> <span class=n>i</span><span class=p>&lt;</span><span class=n>colValues</span><span class=p>.</span><span class=n>Length</span><span class=p>;</span> <span class=n>i</span><span class=p>++)</span> 
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>queryString</span><span class=p>+=</span><span class=s>&#34;OR &#34;</span> <span class=p>+</span> <span class=n>colNames</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=p>+</span> <span class=n>operations</span><span class=p>[</span><span class=m>0</span><span class=p>]</span> <span class=p>+</span> <span class=n>colValues</span><span class=p>[</span><span class=n>i</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>ExecuteQuery</span><span class=p>(</span><span class=n>queryString</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 删除指定数据表内的数据</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;returns&gt;The values.&lt;/returns&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;tableName&#34;&gt;数据表名称&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;colNames&#34;&gt;字段名&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;colValues&#34;&gt;字段名对应的数据&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>SqliteDataReader</span> <span class=n>DeleteValuesAND</span><span class=p>(</span><span class=kt>string</span> <span class=n>tableName</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>colNames</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>operations</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>colValues</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//当字段名称和字段数值不对应时引发异常</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>colNames</span><span class=p>.</span><span class=n>Length</span><span class=p>!=</span><span class=n>colValues</span><span class=p>.</span><span class=n>Length</span> <span class=p>||</span> <span class=n>operations</span><span class=p>.</span><span class=n>Length</span><span class=p>!=</span><span class=n>colNames</span><span class=p>.</span><span class=n>Length</span> <span class=p>||</span> <span class=n>operations</span><span class=p>.</span><span class=n>Length</span><span class=p>!=</span><span class=n>colValues</span><span class=p>.</span><span class=n>Length</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>throw</span> <span class=k>new</span> <span class=n>SqliteException</span><span class=p>(</span><span class=s>&#34;colNames.Length!=colValues.Length || operations.Length!=colNames.Length || operations.Length!=colValues.Length&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=kt>string</span> <span class=n>queryString</span> <span class=p>=</span> <span class=s>&#34;DELETE FROM &#34;</span> <span class=p>+</span> <span class=n>tableName</span> <span class=p>+</span> <span class=s>&#34; WHERE &#34;</span> <span class=p>+</span> <span class=n>colNames</span><span class=p>[</span><span class=m>0</span><span class=p>]</span> <span class=p>+</span> <span class=n>operations</span><span class=p>[</span><span class=m>0</span><span class=p>]</span> <span class=p>+</span> <span class=n>colValues</span><span class=p>[</span><span class=m>0</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span><span class=p>(</span><span class=kt>int</span> <span class=n>i</span><span class=p>=</span><span class=m>1</span><span class=p>;</span> <span class=n>i</span><span class=p>&lt;</span><span class=n>colValues</span><span class=p>.</span><span class=n>Length</span><span class=p>;</span> <span class=n>i</span><span class=p>++)</span> 
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>queryString</span><span class=p>+=</span><span class=s>&#34; AND &#34;</span> <span class=p>+</span> <span class=n>colNames</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=p>+</span> <span class=n>operations</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=p>+</span> <span class=n>colValues</span><span class=p>[</span><span class=n>i</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>ExecuteQuery</span><span class=p>(</span><span class=n>queryString</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// 创建数据表</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt; +</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;returns&gt;The table.&lt;/returns&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;tableName&#34;&gt;数据表名&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;colNames&#34;&gt;字段名&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;colTypes&#34;&gt;字段名类型&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>SqliteDataReader</span> <span class=n>CreateTable</span><span class=p>(</span><span class=kt>string</span> <span class=n>tableName</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>colNames</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>colTypes</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=kt>string</span> <span class=n>queryString</span> <span class=p>=</span> <span class=s>&#34;CREATE TABLE &#34;</span> <span class=p>+</span> <span class=n>tableName</span> <span class=p>+</span> <span class=s>&#34;( &#34;</span> <span class=p>+</span> <span class=n>colNames</span> <span class=p>[</span><span class=m>0</span><span class=p>]</span> <span class=p>+</span> <span class=s>&#34; &#34;</span> <span class=p>+</span> <span class=n>colTypes</span> <span class=p>[</span><span class=m>0</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=n>i</span><span class=p>=</span><span class=m>1</span><span class=p>;</span> <span class=n>i</span><span class=p>&lt;</span><span class=n>colNames</span><span class=p>.</span><span class=n>Length</span><span class=p>;</span> <span class=n>i</span><span class=p>++)</span> 
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>queryString</span><span class=p>+=</span><span class=s>&#34;, &#34;</span> <span class=p>+</span> <span class=n>colNames</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=p>+</span> <span class=s>&#34; &#34;</span> <span class=p>+</span> <span class=n>colTypes</span><span class=p>[</span><span class=n>i</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=n>queryString</span><span class=p>+=</span> <span class=s>&#34;  ) &#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>ExecuteQuery</span><span class=p>(</span><span class=n>queryString</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// Reads the table.</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;returns&gt;The table.&lt;/returns&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;tableName&#34;&gt;Table name.&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;items&#34;&gt;Items.&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;colNames&#34;&gt;Col names.&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;operations&#34;&gt;Operations.&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;param name=&#34;colValues&#34;&gt;Col values.&lt;/param&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>SqliteDataReader</span> <span class=n>ReadTable</span><span class=p>(</span><span class=kt>string</span> <span class=n>tableName</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>items</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>colNames</span><span class=p>,</span><span class=kt>string</span><span class=p>[]</span> <span class=n>operations</span><span class=p>,</span> <span class=kt>string</span><span class=p>[]</span> <span class=n>colValues</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=kt>string</span> <span class=n>queryString</span> <span class=p>=</span> <span class=s>&#34;SELECT &#34;</span> <span class=p>+</span> <span class=n>items</span> <span class=p>[</span><span class=m>0</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=n>i</span><span class=p>=</span><span class=m>1</span><span class=p>;</span> <span class=n>i</span><span class=p>&lt;</span><span class=n>items</span><span class=p>.</span><span class=n>Length</span><span class=p>;</span> <span class=n>i</span><span class=p>++)</span> 
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>queryString</span><span class=p>+=</span><span class=s>&#34;, &#34;</span> <span class=p>+</span> <span class=n>items</span><span class=p>[</span><span class=n>i</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=n>queryString</span> <span class=p>+=</span> <span class=s>&#34; FROM &#34;</span> <span class=p>+</span> <span class=n>tableName</span> <span class=p>+</span> <span class=s>&#34; WHERE &#34;</span> <span class=p>+</span> <span class=n>colNames</span><span class=p>[</span><span class=m>0</span><span class=p>]</span> <span class=p>+</span> <span class=s>&#34; &#34;</span> <span class=p>+</span>  <span class=n>operations</span><span class=p>[</span><span class=m>0</span><span class=p>]</span> <span class=p>+</span> <span class=s>&#34; &#34;</span> <span class=p>+</span> <span class=n>colValues</span><span class=p>[</span><span class=m>0</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=n>i</span><span class=p>=</span><span class=m>0</span><span class=p>;</span> <span class=n>i</span><span class=p>&lt;</span><span class=n>colNames</span><span class=p>.</span><span class=n>Length</span><span class=p>;</span> <span class=n>i</span><span class=p>++)</span> 
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>queryString</span><span class=p>+=</span><span class=s>&#34; AND &#34;</span> <span class=p>+</span> <span class=n>colNames</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=p>+</span> <span class=s>&#34; &#34;</span> <span class=p>+</span> <span class=n>operations</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=p>+</span> <span class=s>&#34; &#34;</span> <span class=p>+</span> <span class=n>colValues</span><span class=p>[</span><span class=m>0</span><span class=p>]</span> <span class=p>+</span> <span class=s>&#34; &#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>ExecuteQuery</span><span class=p>(</span><span class=n>queryString</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>SQLiteHelper 类主要实现了数据库、数据表的创建以及数据表中记录的增加、删除、更新、读取四种基本功能。该类最初由国外的 Unity3D 开发者发布在<a href=http://forum.unity3d.com/threads/28500-SQLite-Class-Easier-Database-Stuff>Unity3D 官方论坛</a>,后来经<a href=http://www.xuanyusong.com/archives/831>宣雨松</a>使用C#进行重写，我在此基础上进行了完善，再此对两位大神的无私付出表示感谢。这里要说明的有三点：</p><ul><li><p>一、在 Unity3D 编辑器下生成数据库文件(.db)默认位于和 Assets 目录同级的位置，即项目的工程文件夹中。我们可以通过修改路径在改变数据库文件的存储位置，具体来讲：
+Windows 平台：data source=Application.dataPath/数据库名称.db
+IOS 平台：data source=Application.persistentDataPath/数据库名称.db
+Android 平台：URL=file:Application.persistentDataPath/数据库名称.db(我想说 Android 平台就是个奇葩，搞什么特殊化嘛)</p></li><li><p>二、确保 Unity3D 编辑器中的.NET 版本和 MonoDevelop 中的.NET 版本都为 2.0 版本，在 Unity3D 中打包导出的程序可能不会保留数据库文件，因此需要手动将数据库文件拷贝到相应的位置，当然更加合理的方案是将数据库文件存放到 StreamingAssets 文件夹下，然后在第一次加载游戏的时候将数据库文件复制到对应平台上的存放位置。</p></li><li><p>三、在使用 InsertValues 方法时请参考 SQLite 中字段类型与 C#中数据类型的对应关系，博主目前测试了 int 类型和 string 类型都没有什么问题，更多类型的数据请大家自行测试然后告诉博主测试的结果，如果大家有兴趣扩展这个辅助类的话可以自行去扩展哦，嘿嘿！</p></li></ul><p>好了，千呼万唤始出来的时候到了，下面我们以一个实例来完成今天的项目讲解，因为我们已经定义好了 SQLite 的辅助类，因此我们可以快速地编写出下面的脚本代码：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=k>using</span> <span class=nn>UnityEngine</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.IO</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>Mono.Data.Sqlite</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>SQLiteDemo</span> <span class=p>:</span> <span class=n>MonoBehaviour</span> 
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// SQLite数据库辅助类</span>
+</span></span><span class=line><span class=cl>	<span class=cs>/// &lt;/summary&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=n>SQLiteHelper</span> <span class=n>sql</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Start</span> <span class=p>()</span> 
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//创建名为sqlite4unity的数据库</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span> <span class=p>=</span> <span class=k>new</span> <span class=n>SQLiteHelper</span><span class=p>(</span><span class=s>&#34;data source=sqlite4unity.db&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//创建名为table1的数据表</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span><span class=p>.</span><span class=n>CreateTable</span><span class=p>(</span><span class=s>&#34;table1&#34;</span><span class=p>,</span><span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;ID&#34;</span><span class=p>,</span><span class=s>&#34;Name&#34;</span><span class=p>,</span><span class=s>&#34;Age&#34;</span><span class=p>,</span><span class=s>&#34;Email&#34;</span><span class=p>},</span><span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;INTEGER&#34;</span><span class=p>,</span><span class=s>&#34;TEXT&#34;</span><span class=p>,</span><span class=s>&#34;INTEGER&#34;</span><span class=p>,</span><span class=s>&#34;TEXT&#34;</span><span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//插入两条数据</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span><span class=p>.</span><span class=n>InsertValues</span><span class=p>(</span><span class=s>&#34;table1&#34;</span><span class=p>,</span><span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;&#39;1&#39;&#34;</span><span class=p>,</span><span class=s>&#34;&#39;张三&#39;&#34;</span><span class=p>,</span><span class=s>&#34;&#39;22&#39;&#34;</span><span class=p>,</span><span class=s>&#34;&#39;Zhang3@163.com&#39;&#34;</span><span class=p>});</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span><span class=p>.</span><span class=n>InsertValues</span><span class=p>(</span><span class=s>&#34;table1&#34;</span><span class=p>,</span><span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;&#39;2&#39;&#34;</span><span class=p>,</span><span class=s>&#34;&#39;李四&#39;&#34;</span><span class=p>,</span><span class=s>&#34;&#39;25&#39;&#34;</span><span class=p>,</span><span class=s>&#34;&#39;Li4@163.com&#39;&#34;</span><span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//更新数据，将Name=&#34;张三&#34;的记录中的Name改为&#34;Zhang3&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span><span class=p>.</span><span class=n>UpdateValues</span><span class=p>(</span><span class=s>&#34;table1&#34;</span><span class=p>,</span> <span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;Name&#34;</span><span class=p>},</span> <span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;&#39;Zhang3&#39;&#34;</span><span class=p>},</span> <span class=s>&#34;Name&#34;</span><span class=p>,</span> <span class=s>&#34;=&#34;</span><span class=p>,</span> <span class=s>&#34;&#39;张三&#39;&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//插入3条数据</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span><span class=p>.</span><span class=n>InsertValues</span><span class=p>(</span><span class=s>&#34;table1&#34;</span><span class=p>,</span><span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;3&#34;</span><span class=p>,</span><span class=s>&#34;&#39;王五&#39;&#34;</span><span class=p>,</span><span class=s>&#34;25&#34;</span><span class=p>,</span><span class=s>&#34;&#39;Wang5@163.com&#39;&#34;</span><span class=p>});</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span><span class=p>.</span><span class=n>InsertValues</span><span class=p>(</span><span class=s>&#34;table1&#34;</span><span class=p>,</span><span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;4&#34;</span><span class=p>,</span><span class=s>&#34;&#39;王五&#39;&#34;</span><span class=p>,</span><span class=s>&#34;26&#34;</span><span class=p>,</span><span class=s>&#34;&#39;Wang5@163.com&#39;&#34;</span><span class=p>});</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span><span class=p>.</span><span class=n>InsertValues</span><span class=p>(</span><span class=s>&#34;table1&#34;</span><span class=p>,</span><span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;5&#34;</span><span class=p>,</span><span class=s>&#34;&#39;王五&#39;&#34;</span><span class=p>,</span><span class=s>&#34;27&#34;</span><span class=p>,</span><span class=s>&#34;&#39;Wang5@163.com&#39;&#34;</span><span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//删除Name=&#34;王五&#34;且Age=26的记录,DeleteValuesOR方法类似</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span><span class=p>.</span><span class=n>DeleteValuesAND</span><span class=p>(</span><span class=s>&#34;table1&#34;</span><span class=p>,</span> <span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;Name&#34;</span><span class=p>,</span><span class=s>&#34;Age&#34;</span><span class=p>},</span> <span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;=&#34;</span><span class=p>,</span><span class=s>&#34;=&#34;</span><span class=p>},</span> <span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;&#39;王五&#39;&#34;</span><span class=p>,</span><span class=s>&#34;&#39;26&#39;&#34;</span><span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//读取整张表</span>
+</span></span><span class=line><span class=cl>		<span class=n>SqliteDataReader</span> <span class=n>reader</span> <span class=p>=</span> <span class=n>sql</span><span class=p>.</span><span class=n>ReadFullTable</span> <span class=p>(</span><span class=s>&#34;table1&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>while</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>Read</span><span class=p>())</span> 
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//读取ID</span>
+</span></span><span class=line><span class=cl>			<span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetInt32</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetOrdinal</span><span class=p>(</span><span class=s>&#34;ID&#34;</span><span class=p>)));</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//读取Name</span>
+</span></span><span class=line><span class=cl>			<span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetString</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetOrdinal</span><span class=p>(</span><span class=s>&#34;Name&#34;</span><span class=p>)));</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//读取Age</span>
+</span></span><span class=line><span class=cl>			<span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetInt32</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetOrdinal</span><span class=p>(</span><span class=s>&#34;Age&#34;</span><span class=p>)));</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//读取Email</span>
+</span></span><span class=line><span class=cl>			<span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetString</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetOrdinal</span><span class=p>(</span><span class=s>&#34;Email&#34;</span><span class=p>)));</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//读取数据表中Age&gt;=25的所有记录的ID和Name</span>
+</span></span><span class=line><span class=cl>		<span class=n>reader</span> <span class=p>=</span> <span class=n>sql</span><span class=p>.</span><span class=n>ReadTable</span> <span class=p>(</span><span class=s>&#34;table1&#34;</span><span class=p>,</span> <span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;ID&#34;</span><span class=p>,</span><span class=s>&#34;Name&#34;</span><span class=p>},</span> <span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;Age&#34;</span><span class=p>},</span> <span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;&gt;=&#34;</span><span class=p>},</span> <span class=k>new</span> <span class=kt>string</span><span class=p>[]{</span><span class=s>&#34;&#39;25&#39;&#34;</span><span class=p>});</span>
+</span></span><span class=line><span class=cl>		<span class=k>while</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>Read</span><span class=p>())</span> 
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//读取ID</span>
+</span></span><span class=line><span class=cl>			<span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetInt32</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetOrdinal</span><span class=p>(</span><span class=s>&#34;ID&#34;</span><span class=p>)));</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//读取Name</span>
+</span></span><span class=line><span class=cl>			<span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetString</span><span class=p>(</span><span class=n>reader</span><span class=p>.</span><span class=n>GetOrdinal</span><span class=p>(</span><span class=s>&#34;Name&#34;</span><span class=p>)));</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//自定义SQL,删除数据表中所有Name=&#34;王五&#34;的记录</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span><span class=p>.</span><span class=n>ExecuteQuery</span><span class=p>(</span><span class=s>&#34;DELETE FROM table1 WHERE NAME=&#39;王五&#39;&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//关闭数据库连接</span>
+</span></span><span class=line><span class=cl>		<span class=n>sql</span><span class=p>.</span><span class=n>CloseConnection</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在上面的代码中我们是在 Start 方法中创建了数据库和数据表，然而在实际使用中我们需要判断数据库和数据表是否存在，因此如果你使用这段脚本提示错误信息，请确保数据库和数据表是否已经存在。好了，下面的截图展示了程序运行的结果：</p><p><a class=img-fancybox href=https://ww1.sinaimg.cn/large/None.jpg data-fancybox=gallery data-src=https://ww1.sinaimg.cn/large/None.jpg data-caption=数据库效果演示><img src=https://ww1.sinaimg.cn/large/None.jpg alt=数据库效果演示 class=post-img loading=lazy>
+<span class=post-img-tip>数据库效果演示</span></a></p><p><a class=img-fancybox href=https://ww1.sinaimg.cn/large/None.jpg data-fancybox=gallery data-src=https://ww1.sinaimg.cn/large/None.jpg data-caption=Unity3D效果展示><img src=https://ww1.sinaimg.cn/large/None.jpg alt=Unity3D效果展示 class=post-img loading=lazy>
+<span class=post-img-tip>Unity3D效果展示</span></a></p><p>作为一个强大的数据库怎么能没有图形化的数据库管理工具呢？所以这里博主向大家推荐一个免安装的小工具 SqliteStudio，使用这个工具可以帮助我们方便地管理 Sqlite 数据库里的数据，这样是不是比较方便呢？哈哈！这个工具可以从<a href=http://pan.baidu.com/s/1hqldZ3A>这里</a>下载哦！</p><p><a class=img-fancybox href=https://ww1.sinaimg.cn/large/4c36074fly1fz68jpgvl4j20s00ibdik.jpg data-fancybox=gallery data-src=https://ww1.sinaimg.cn/large/4c36074fly1fz68jpgvl4j20s00ibdik.jpg data-caption=SQLiteStudio界面演示><img src=https://ww1.sinaimg.cn/large/4c36074fly1fz68jpgvl4j20s00ibdik.jpg alt=SQLiteStudio界面演示 class=post-img loading=lazy>
+<span class=post-img-tip>SQLiteStudio界面演示</span></a></p><p>好了，今天的内容就是这样了，为了写这篇文章花了三个晚上准备，希望大家喜欢啊！如果大家觉得这篇文章有用，请继续关注我的博客，我是秦元培，我的博客地址是<a href=http://blog.csdn.net/qinyuanpei>http://blog.csdn.net/qinyuanpei</a>。</p><p><strong>2015 年 11 月 3 日更新内容如下</strong>：不同平台上的数据库存储路径</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl>        <span class=c1>//各平台下数据库存储的绝对路径(通用)</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//PC：sql = new SQLiteHelper(&#34;data source=&#34; + Application.dataPath + &#34;/sqlite4unity.db&#34;);</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//Mac：sql = new SQLiteHelper(&#34;data source=&#34; + Application.dataPath + &#34;/sqlite4unity.db&#34;);</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//Android：sql = new SQLiteHelper(&#34;URI=file:&#34; + Application.persistentDataPath + &#34;/sqlite4unity.db&#34;);</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//iOS：sql = new SQLiteHelper(&#34;data source=&#34; + Application.persistentDataPath + &#34;/sqlite4unity.db&#34;);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>//PC平台下的相对路径</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//sql = new SQLiteHelper(&#34;data source=&#34;sqlite4unity.db&#34;);</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//编辑器：Assets/sqlite4unity.db</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//编译后：和AppName.exe同级的目录下，这里比较奇葩</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//当然可以用更随意的方式sql = new SQLiteHelper(&#34;data source=&#34;D://SQLite//sqlite4unity.db&#34;);</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//确保路径存在即可否则会发生错误</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>//如果是事先创建了一份数据库</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//可以将这个数据库放置在StreamingAssets目录下然后再拷贝到</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//Application.persistentDataPath + &#34;/sqlite4unity.db&#34;路径即可</span>
+</span></span></code></pre></div></div><div class="copyright s-card"><div class=title><span class=post-name>Unity3D 游戏开发之 SQLite 让数据库开发更简单</span>
+<a :href=https://blog.yuanpei.me/posts/582264328/ class=post-link target=_blank>https://blog.yuanpei.me/posts/582264328/</a></div><div class=post-meta><div class=meta-item><span class=tip>作者</span>
+<span class=name>飞鸿踏雪</span></div><div class=meta-item><span class=tip>发布于</span>
+<span class=name>2015-07-09</span></div><div class=meta-item><span class=tip>更新于</span>
+<span class=name>2015-07-09</span></div><div class="meta-item cc"><span class=tip>许可协议</span>
+<a class=name href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank>CC BY-NC-SA 4.0</a></div></div><span class=meta-tip>署名-非商业性使用-相同方式共享 4.0 国际</span></div><div class=other-meta><div class=all-tags><a href=/tags/unity3d class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>Unity3D</span>
+</a><a href=/tags/sqlite class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>SQLite</span>
+</a><a href=/tags/%E6%95%B0%E6%8D%AE%E5%BA%93 class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>数据库</span></a></div><a href=https://eqnxweimkr5.feishu.cn/share/base/form/shrcnCXCPmxCKKJYI3RKUfefJre class=report target=_blank><i class="iconfont icon-report"></i>
+反馈与投诉</a></div><div class=reward><div class=reward-btn onclick='window.$Modal.show("reward-modal")'><i class="iconfont icon-reward"></i>
+<span class=text>赞赏博主</span></div></div><div class=modal id=reward-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:430px><div class=title><div class=title-left><i class="iconfont icon-reward"></i>
+<span class=title-text>赞赏博主</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=reward-card><div class=thank>🙏 请博主喝一杯咖啡</div><div class=qr><a class=qr-img href=/images/reward/alipay.jpg target=_blank><img src=/images/reward/alipay.jpg alt=支付宝赞赏码><div class=tip><i class="iconfont icon-alipay"></i>
+<span>支付宝</span></div></a><a class=qr-img href=/images/reward/wechat.jpg target=_blank><img src=/images/reward/wechat.jpg alt=微信赞赏码><div class=tip><i class="iconfont icon-wechat"></i>
+<span>微信</span></div></a></div><div class="all-list s-card hover"><div class=title>赞赏记录</div><div class=tip>赞赏金额将全部用于开源项目维护，以及服务器、域名及各类云服务的开销</div></div></div></div></div></div><div class=related-post><div class=title><span class=name><i class="iconfont icon-star"></i>
+相关推荐
+</span><span class=shuffle onclick='window.location.href="/posts/3695777215/"'>随便逛逛</span></div><div class=post-lists><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/1124152964/"'><div class=post-content><span class=post-title>解析 OBJ 模型并将其加载到 Unity3D 场景中</span></div></article><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/3019914405/"'><div class=post-content><span class=post-title>Unity3D 游戏开发之 Unity3D 场景编辑器扩展开发</span>
+<span class=post-desc>Unity3D 场景编辑器扩展开发涉及对 Editor、EditorWindow、GUILayout、EditorGUILayout、GUIUtility、EditorGUIUtility、Handles、Event 等类的运用。通过基于 Editor 的扩展方式，可以针对脚本实现在 Inspector 中显示布局和在 Scene 视图进行可视化编辑。示例中创建了一个扩展的 Transform 组件，展示了如何利用可序列化对象和 Editor 类的属性和方法来实现自定义编辑器功能。另外，还介绍了如何创建一个 NPC 寻路节点编辑工具，通过 Handles 和 Event 类在场景中绘制和编辑寻路节点。</span></div></article></div><style>.post-lists{width:100%}.post-lists .post-item{padding:0!important;display:flex;margin-bottom:1rem;animation:fade-up .6s backwards;cursor:pointer;overflow:hidden;height:200px}.post-lists .post-item .post-cover{flex:0 0 35%;overflow:hidden;transform:translateZ(0)}.post-lists .post-item .post-cover img{width:100%;height:100%;object-fit:cover;transform-origin:center center;transition:transform .5s ease-out,filter .5s ease-out;backface-visibility:hidden}.post-lists .post-item .post-content{flex:1;padding:1.6rem 2rem;display:flex;flex-direction:column;justify-content:space-between}.post-lists .post-item .post-category{display:flex;flex-wrap:wrap;width:100%;color:var(--main-font-second-color);font-size:14px}.post-lists .post-item .post-category .cat-name{display:flex;flex-direction:row;align-items:center}.post-lists .post-item .post-category .cat-name .iconfont{opacity:.8;margin-right:6px;color:var(--main-font-second-color)}.post-lists .post-item .post-category .top{margin-left:12px;color:var(--main-color)}.post-lists .post-item .post-category .top .iconfont{opacity:.8;color:var(--main-color)}.post-lists .post-item .post-title{font-size:20px;line-height:30px;font-weight:700;margin:.6rem 0;transition:color .3s;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-desc{margin-top:-.4rem;margin-bottom:.8rem;opacity:.8;line-height:30px;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-meta{display:flex;flex-direction:row;align-items:center;justify-content:space-between;color:var(--main-font-second-color)}.post-lists .post-item .post-tags{display:flex;flex-wrap:wrap;opacity:.8;margin-right:20px;overflow:hidden;mask:linear-gradient(90deg,#fff 0,#fff 90%,hsla(0,0%,100%,.6) 95%,hsla(0,0%,100%,0) 100%)}.post-lists .post-item .post-tags .tags-name{display:flex;flex-direction:row;align-items:center;margin-right:12px;white-space:nowrap;transition:color .3s}.post-lists .post-item .post-time{opacity:.6;font-size:13px;white-space:nowrap}.post-lists .post-item:hover .post-cover img{filter:brightness(.8);transform:scale(1.05)}.post-lists .post-item:hover .post-title{color:var(--main-color)}.post-lists .post-item:active{transform:scale(.98)}.post-lists .post-item.cover-left{flex-direction:row}.post-lists .post-item.cover-right{flex-direction:row-reverse}.post-lists .post-item.cover-both:nth-child(odd){flex-direction:row}.post-lists .post-item.cover-both:nth-child(even){flex-direction:row-reverse}.post-lists.layout-grid{display:grid;grid-template-columns:repeat(var(--grid-columns,2),1fr);gap:var(--grid-gap,1rem)}.post-lists.layout-grid .post-item{margin:0;flex-direction:column;height:auto}.post-lists.layout-grid .post-item .post-cover{flex:none;width:100%;height:225px}@media(max-width:768px){.post-lists .post-item{flex-direction:column;height:auto}.post-lists .post-item .post-cover{flex:none;width:100%;height:200px}.post-lists .post-item.cover-left,.post-lists .post-item.cover-right,.post-lists .post-item.cover-both{flex-direction:column!important}.post-lists.layout-grid{grid-template-columns:1fr}.post-lists .post-item .post-tags{flex-wrap:nowrap}}.post-lists .post-item .simple{animation:none;padding:.5rem 1.4rem!important;background-color:var(--main-card-second-background);height:auto;margin-bottom:.5rem}.post-lists .post-item .simple .post-content{padding:.5rem 0}.post-lists .post-item .simple .post-title{margin:0;font-size:16px}.post-lists .post-item .simple .post-desc{margin:.3rem 0 0;font-size:14px;opacity:.6}</style></div><style>.related-post{margin-top:1rem}.related-post .title{display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;margin:3rem 0 1rem;padding:0 6px}.related-post .title .name{display:flex;align-items:center;font-size:24px;font-weight:700}.related-post .title .name .iconfont{font-size:26px;font-weight:400;margin-right:8px}.related-post .title .shuffle{opacity:.6;font-size:14px;transition:color .3s,opacity .3s;cursor:pointer}.related-post .title .shuffle:hover{opacity:1;color:var(--main-color)}</style><div id=comments><div id=main-comment class=comment style=padding-left:1.5rem;padding-right:1.5rem><div v-if=!fill class=title><span class=name><i class="iconfont icon-chat"></i>
+评论
+</span><span class=tool>隐私政策</span></div><link rel=stylesheet href=https://unpkg.com/@waline/client@v3/dist/waline.css><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}.waline-container .wl-content img{width:unset!important;max-width:unset!important;max-height:unset!important;border-radius:unset!important}.waline-container .wl-content p{font-size:.9rem!important}.wl-header label{font-size:.8em}.wl-sort li{font-size:.8em}</style><script type=module>
+        import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+        init({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+            emoji: [
+                '//unpkg.com/@waline/emojis@1.2.0/weibo'
+            ],
+            reaction: false,
+        });
+      </script></div></div><div class="next-post s-card" id=next-post data-is-next=true><a href=/posts/1118169753/ class=next-post-link><span class=post-tip>下一篇阅读
+</span><span class=post-title>《仙剑奇侠传六》游戏感言</span></a></div></article><aside class=main-aside><div class="hello s-card weidgets"><span class=tip id=hello-weidget-tip>好久不见</span><div class=content><div class=site-logo><div class=avatar><img src=/images/avatar.jpg alt=avatar loading=lazy></div></div><span class=site-desc>谢谢你，在这世界的角落，找到我。我是一位穿梭于数字与人文领域交界处的观察者，热衷于在数字迷雾中剖析谜题背后的真相，同时在人文星河中重拾温暖和光明。我期待，在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点。</span></div><div class=info><div class=name><span class=author>飞鸿踏雪</span>
+<span class=desc>纵有疾风起，人生不言弃</span></div><div class=link><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuapei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i></a></div></div></div><div class=sticky><div class="toc s-card weidgets" id=weidget-toc><div class=toc-title><i class="iconfont icon-toc"></i>
+<span class=name>目录</span></div><div id=toc-all class=toc-list></div></div><script>document.addEventListener("DOMContentLoaded",function(){const o=[];let e=null,t=null,n=0;const s=document.getElementById("toc-all"),i=()=>{try{if(e=document.getElementById("page-content"),!e)return!1;const t=Array.from(e.querySelectorAll("h1, h2, h3, h4")).filter(e=>e.parentElement.tagName.toLowerCase()==="div");return t}catch(e){console.error("获取所有目录数据出错：",e)}},r=()=>{const e=i();if(!e)return!1;s.innerHTML="",e.forEach((e,t)=>{const n={id:e.id,type:e.tagName,text:e.textContent?.replace(/\u200B/g,"").trim()},i=document.createElement("span");i.id="toc-"+n.id,i.className=`toc-item ${n.type} ${t===0?"active":""}`,i.textContent=n.text,i.addEventListener("click",()=>d(n.id)),s.appendChild(i),o.push(n)}),e&&e.length>0&&(t=e[0].id)},c=(e,t)=>{let n;return function(){const s=arguments,o=this;n||(e.apply(o,s),n=!0,setTimeout(()=>n=!1,t))}},l=c(()=>{if(!o.length)return!1;const e=i();if(!e)return!1;const s=120;if(window.scrollY===0){n=0,t=e[0]?.id,a();return}for(let n of e){const o=n.getBoundingClientRect();o.top-s<=0&&o.bottom+s>=0&&t!==n.id&&(t=n.id,a())}},100),a=()=>{document.querySelectorAll(".toc-item.active").forEach(e=>{e.classList.remove("active")});const e=document.getElementById("toc-"+t);if(!e)return!1;e.classList.add("active"),n=e.offsetTop-2||0,s.style.setProperty("--height",n+"px"),s.scrollTo({top:n-80,behavior:"smooth"})},d=t=>{try{const n=document.getElementById(t);if(!n||!e)return!1;const s=n.offsetTop,o=s+e.offsetTop-80;window.scroll({top:o,behavior:"smooth"})}catch(e){console.error("目录滚动失败：",e)}};r(),window.addEventListener("scroll",l)})</script><style lang=scss scoped>.toc{position:relative;padding:0!important;overflow:hidden;.toc-title { display: flex; flex-direction: row; align-items: center; padding: 18px; height: 58px; .iconfont { margin-right: 8px; font-weight: bold; opacity: 0.6; } .name { font-weight: bold; } } .toc-list { position: relative; padding: 20px; padding-top: 0; padding-left: 24px; display: flex; flex-direction: column; max-height: calc(70vh - 58px); overflow: auto; .toc-item { margin: 4px 0; padding: 6px 12px; border-radius: 8px; opacity: 0.6; transition: color 0.3s, opacity 0.3s, font-size 0.3s, background-color 0.3s; cursor: pointer; &:first-child { margin-top: 0; } &:last-child { margin-bottom: 0; } &.H1 { font-weight: bold; } &.H2 { font-size: 14px; margin-left: 15px; font-weight: normal; } &.H3 { font-size: 12px; margin-left: 25px; } &.active { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); &.H2 { font-size: 14px; } &.H3 { font-size: 12px; } } &:hover { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); } } &::after { content: ""; position: absolute; left: 12px; top: var(--height); width: 4px; height: 20px; margin: 8px 0; background-color: var(--main-color); border-radius: 8px; transition: top 0.3s; } } &::before { content: ""; position: absolute; left: 12px; bottom: 20px; width: 4px; height: calc(100% - 78px); background-color: var(--main-card-border); border-radius: 8px; }}</style><div class="tags-cloud s-card weidgets"><div class=title><i class="iconfont icon-hashtag"></i>
+<span class=title-name>热门标签</span></div><div class=all-tags><a href=/tags/%E8%A1%A8%E5%8D%95/ class=tags><span class=name>表单</span>
+<sup class=num>1</sup>
+</a><a href=/tags/mysql/ class=tags><span class=name>MySQL</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E8%AE%B0%E5%BD%95/ class=tags><span class=name>记录</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%98%B2%E7%96%AB/ class=tags><span class=name>防疫</span>
+<sup class=num>1</sup>
+</a><a href=/tags/consul/ class=tags><span class=name>Consul</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%A3%85%E9%A5%B0%E5%99%A8/ class=tags><span class=name>装饰器</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%9B%9E%E9%A1%BE/ class=tags><span class=name>回顾</span>
+<sup class=num>1</sup>
+</a><a href=/tags/webassembly/ class=tags><span class=name>WebAssembly</span>
+<sup class=num>1</sup>
+</a><a href=/tags/envoy/ class=tags><span class=name>Envoy</span>
+<sup class=num>8</sup>
+</a><a href=/tags/langchain/ class=tags><span class=name>LangChain</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%97%A5%E5%BF%97/ class=tags><span class=name>日志</span>
+<sup class=num>5</sup>
+</a><a href=/tags/%E4%B8%80%E5%87%BA%E5%A5%BD%E6%88%8F/ class=tags><span class=name>一出好戏</span>
+<sup class=num>1</sup>
+</a><a href=/tags/wsl/ class=tags><span class=name>WSL</span>
+<sup class=num>2</sup>
+</a><a href=/tags/swagger/ class=tags><span class=name>Swagger</span>
+<sup class=num>2</sup>
+</a><a href=/tags/nginx/ class=tags><span class=name>Nginx</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E5%BE%AE%E4%BF%A1/ class=tags><span class=name>微信</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%90%91%E9%87%8F/ class=tags><span class=name>向量</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%8F%8C%E5%8D%81%E4%B8%80/ class=tags><span class=name>双十一</span>
+<sup class=num>1</sup>
+</a><a href=/tags/sqlite/ class=tags><span class=name>SQLite</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%A9%B9%E4%B9%8B%E6%89%89/ class=tags><span class=name>穹之扉</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF/ class=tags><span class=name>贝塞尔曲线</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%BF%83%E6%83%85/ class=tags><span class=name>心情</span>
+<sup class=num>1</sup>
+</a><a href=/tags/castle/ class=tags><span class=name>Castle</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%A4%A7%E6%8A%A4%E6%B3%95/ class=tags><span class=name>大护法</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%BE%8E%E6%9C%AF/ class=tags><span class=name>美术</span>
+<sup class=num>1</sup>
+</a><a href=/tags/ar/ class=tags><span class=name>AR</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E6%B5%AA%E5%AE%A2%E5%89%91%E5%BF%83/ class=tags><span class=name>浪客剑心</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%8F%90%E7%BA%B2/ class=tags><span class=name>提纲</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%9E%B6%E6%9E%84/ class=tags><span class=name>架构</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E4%B8%8B%E8%BD%BD/ class=tags><span class=name>下载</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%8D%B0%E5%BA%A6/ class=tags><span class=name>印度</span>
+<sup class=num>1</sup>
+</a><a href=/tags/llama/ class=tags><span class=name>LLaMA</span>
+<sup class=num>2</sup>
+</a><a href=/tags/efcore/ class=tags><span class=name>EFCore</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/ class=tags><span class=name>中间件</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E6%8F%92%E4%BB%B6/ class=tags><span class=name>插件</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E6%A2%A6%E6%83%B3/ class=tags><span class=name>梦想</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E5%8F%AF%E8%A7%86%E5%8C%96/ class=tags><span class=name>可视化</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E6%BA%90%E7%A0%81/ class=tags><span class=name>源码</span>
+<sup class=num>5</sup>
+</a><a href=/tags/ci/ class=tags><span class=name>CI</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E4%BA%BA%E7%94%9F/ class=tags><span class=name>人生</span>
+<sup class=num>2</sup>
+</a><a href=/tags/cts/ class=tags><span class=name>CTS</span>
+<sup class=num>1</sup>
+</a><a href=/tags/orm/ class=tags><span class=name>ORM</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%85%AC%E4%BC%97%E5%8F%B7/ class=tags><span class=name>公众号</span>
+<sup class=num>1</sup>
+</a><a href=/tags/valine/ class=tags><span class=name>Valine</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%9D%99%E6%80%81%E7%BC%96%E7%BB%87/ class=tags><span class=name>静态编织</span>
+<sup class=num>1</sup>
+</a><a href=/tags/script/ class=tags><span class=name>Script</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%8E%A8%E8%8D%90/ class=tags><span class=name>推荐</span>
+<sup class=num>1</sup>
+</a><a href=/tags/trace/ class=tags><span class=name>Trace</span>
+<sup class=num>1</sup>
+</a><a href=/tags/chatgpt/ class=tags><span class=name>ChatGPT</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E4%B8%89%E4%BD%93/ class=tags><span class=name>三体</span>
+<sup class=num>1</sup></a></div><a href=/tags class=more-tags>查看全部</a></div><div class="site-data s-card weidgets"><div class=title><i class="iconfont icon-chart"></i>
+<span class=title-name>站点数据</span></div><div class=all-data><div class=data-item><span class=name><i class="iconfont icon-article"></i>
+文章总数
+</span><span class=num>282 篇</span></div><div class=data-item><span class=name><i class="iconfont icon-date"></i>
+建站天数
+</span><span class=num>4033 天</span></div><div class=data-item><span class=name><i class="iconfont icon-words"></i>
+全站字数
+</span><span class=num>109213 字</span></div><div class=data-item><span class=name><i class="iconfont icon-visibility"></i>
+总访问量
+</span><span class=num id=umami_value_site_pv></span></div><div class=data-item><span class=name><i class="iconfont icon-account"></i>
+总访客数
+</span><span class=num id=umami_value_site_uv></span></div></div></div></div></aside><style>.main-aside{padding-left:1rem;display:flex;flex-direction:column;animation:fade-up .6s .3s backwards;.weidgets { padding: 18px; margin-bottom: 1rem; :deep(.title) { margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; opacity: 0.75; .iconfont { opacity: 0.6; margin-right: 6px; } .title-name { opacity: 0.8; } } } .sticky { position: sticky; top: calc(60px + 1rem); .weidgets { animation: fade-up 0.6s 0.4s backwards; &:last-child { margin-bottom: 0; } } }}</style></div></div></main><div class=footer-link><div class=footer-bar><span class=site-title>元视角</span>
+<span class=site-desc>纵有疾风起，人生不言弃</span>
+<a href=/ class=to-home>了解更多</a></div><div class=footer-social><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuanpei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i>
+</a><a href=/index.xml target=_blank class=social-link aria-label=RSS><i class="iconfont icon-rss"></i></a><div class=logo title=返回顶部 onclick='window.scrollTo({top:0,behavior:"smooth"})'><img src=/images/icons8-stellar-128.png alt=author class=author></div><a href=https://weibo.com/1278609231 target=_blank class=social-link aria-label=微博><i class="iconfont icon-weibo"></i>
+</a><a href=https://www.douban.com/people/60029335/ target=_blank class=social-link aria-label=豆瓣><i class="iconfont icon-douban"></i>
+</a><a href=https://www.zhihu.com/people/qinyuanpei target=_blank class=social-link aria-label=知乎><i class="iconfont icon-zhihu"></i></a></div><div class=footer-sitemap><div class=sitemap-item><span class=title>博客</span><div class=links><a href=/archives class=link-text>文章归档
+</a><a href=/categories class=link-text>全部分类
+</a><a href=/tags class=link-text>全部标签</a></div></div><div class=sitemap-item><span class=title>项目</span><div class=links><a href=https://github.com/qinyuanpei/mcp-server-weibo target=_blank class=link-text>mcp-server-weibo</a></div></div><div class=sitemap-item><span class=title>专栏</span><div class=links><a href=https://blog.csdn.net/qinyuanpei/category_10852603.html target=_blank class=link-text>.NET 源代码探案系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_7444699.html target=_blank class=link-text>Python 数据挖掘系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_11484903.html target=_blank class=link-text>分布式丛林探险系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_1708629.html target=_blank class=link-text>Unity3D 游戏开发系列</a></div></div><div class=sitemap-item><span class=title>页面</span><div class=links><a href=/comments class=link-text>留言
+</a><a href=/books class=link-text>读书
+</a><a href=/movies class=link-text>观影
+</a><a href=/musics class=link-text>听歌</a></div></div><div class=sitemap-item><span class=title>友情链接</span><div class=links><a href=https://gudong.site/ target=_blank class=link-text>咕咚同学
+</a><a href=https://coolshell.cn/ target=_blank class=link-text>酷壳
+</a><a href=https://blog.zhheo.com/ target=_blank class=link-text>张洪
+</a><a href=/links class=link-text>更多</a></div></div></div></div><footer id=main-footer class=main-footer><div class=footer-content><div class=footer-copyright><span class=time data-v-6001e979>@ 2014 - 2025 </span><a href=/ class="author link" target=_blank>飞鸿踏雪</a></div><div class=meta><a class="power link" href=https://gohugo.io/ target=_blank><span class=by>Powered by</span>
+<span class=name>Hugo</span>
+</a><a class="theme link" href=https://github.com/imsyy/vitepress-theme-curve><span class=name>主题</span>
+</a><a class="rss link" href=/index.xml target=_blank><i class="iconfont icon-rss"></i>
+<span class=name data-v-6001e979>订阅</span>
+</a><a class="cc link" href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank aria-label="Creative Commons"><i class="iconfont icon-line"></i>
+<i class="iconfont icon-by-line"></i>
+<i class="iconfont icon-nc-line"></i>
+<i class="iconfont icon-nd-line"></i></a></div></div></footer><script type=module src=/scripts/main.js></script><script src=https://cdn.jsdelivr.net/npm/fuse.js@7.1.0></script><script src=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js></script><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css media="(prefers-color-scheme: dark)"><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css media="(prefers-color-scheme: light)"><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css><script src=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js></script><script src=https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js></script><script type=text/javascript src=/scripts/modules/badge.js></script><script type=text/javascript>window.createBadge("Hugo","v0.126.1","#35495e","#41b883"),window.createBadge("Github","1ae5ebb","#35495e","#ffc107")</script></body></html>

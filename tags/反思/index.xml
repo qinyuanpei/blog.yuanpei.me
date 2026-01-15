@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>反思 on 元视角</title><link>https://blog.yuanpei.me/tags/%E5%8F%8D%E6%80%9D/</link><description>Recent content in 反思 on 元视角</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Tue, 13 Jan 2026 22:00:00 +0000</lastBuildDate><atom:link href="https://blog.yuanpei.me/tags/%E5%8F%8D%E6%80%9D/index.xml" rel="self" type="application/rss+xml"/><item><title>当我用 2000 条聊天记录，让 AI 为我画一幅自画像</title><link>https://blog.yuanpei.me/posts/ai-mirror-self-analysis/</link><pubDate>Tue, 13 Jan 2026 22:00:00 +0000</pubDate><guid>https://blog.yuanpei.me/posts/ai-mirror-self-analysis/</guid><description>或许，最了解我们的，不是自己，而是我们说过的话。
+起因 大概是年前那段时间，我脑子里反复盘旋着一个问题：
+我和 AI 聊了这么多，它们会不会比我自己更了解我？
+这个念头一旦冒出来，就像一颗种子，在我脑海里生根发芽。我手里有三个平台的聊天记录——DeepSeek、ChatGPT 和 Kimi，加起来一共 2050 条对话，4394 条消息。如果把这些数据完整交给另一个 AI，让它从第三视角分析我，会得到怎样的结论？坦白讲，我并不期待什么石破天惊的发现，更多只是好奇：当所有零散的对话被汇总、被量化、被抽象之后，那个被 AI 描绘出来的「我」，会不会和我以为的自己不太一样。
+数据概览 第一次分析：DeepSeek 的初见 一开始，我先让 AI 单独分析了 DeepSeek 的记录。这是我最常用的代码助手，我原本以为它会直接给我贴上「技术宅」的标签。但是，结果比我想象中具体得多：
+上午 9-11 点最活跃 51% 的对话是「短平快」型（3 句话以内结束） 高频请求是「写代码」「解释原理」 关键词集中在 Python、SQL、AI、机器学习 AI 给出的总结是：「你是一个追求效率、喜欢直接要结果的开发者。」
+年度关键词 活跃度热力图 我看完愣了几秒，然后不自觉地笑了，好像&amp;hellip;&amp;hellip;确实是这样。
+第二次分析：三个平台，三个「我」 当我把三个平台的数据放在一起对比时，发现了一件非常有意思的事。同一个我，在不同工具上，竟然表现出完全不同的状态：
+平台 对话特征 我的状态 DeepSeek 51% 短对话 执行模式：快速出活 ChatGPT 36% 长对话 思考模式：深入探讨 Kimi 100% 极短对话 闲聊模式：翻译、润色 这感觉有点像工作中的角色切换——面对不同的人，我们会自然调整说话方式:
+DeepSeek 更像「我的手」，负责把想法快速落地 ChatGPT 更像「我的大脑」，陪我拆解问题、反复推演 Kimi 则像「速记本」，处理零碎但必须完成的小事 意识到这一点时，我突然明白了一件事：工具不只是被使用的对象，它同样在反向塑造我们的行为模式。
+不同平台的 “我” 第三次分析：AI 眼中的「我」 当 AI 整合了所有数据后，给出了几段让我印象深刻的描述：</description></item></channel></rss>

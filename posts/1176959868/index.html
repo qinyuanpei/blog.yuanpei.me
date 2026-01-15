@@ -1,0 +1,658 @@
+<!doctype html><html lang=zh-cn><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=referrer content="no-referrer"><meta content="飞鸿踏雪" name=author><title>Unity3D 塔防游戏开发项目讲解(下) - 元视角</title>
+<meta name=description content="本文介绍了Unity3D中塔防游戏开发项目的敌人和防守单位部分。针对敌人，详细说明了敌人自动寻路实现和按波次进攻的实现，包括敌人寻路移动逻辑、血条显示、敌人波次生成等。对防守单位部分讲解了发现敌人后转向和攻击的逻辑，展示了防守单位代码。文章还提到了UGUI系统的使用和对XML文件的解析，以及游戏中的可玩性设计。整体介绍了塔防游戏中敌人和防守单位的重要性和开发实现方法。"><link rel=icon type=image/png href=/images/favicons/favicon-96x96.png sizes=96x96><link rel=icon type=image/svg+xml href=/images/favicons/favicon.svg><link rel="shortcut icon" href=/images/favicons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/images/favicons/apple-touch-icon.png><meta name=apple-mobile-web-app-title content="元视角"><link rel=manifest href=/site.webmanifest><meta name=keywords content="游戏开发,Unity3D,塔防,教程"><meta property="og:title" content="Unity3D 塔防游戏开发项目讲解(下) - 元视角"><meta property="og:description" content="本文介绍了Unity3D中塔防游戏开发项目的敌人和防守单位部分。针对敌人，详细说明了敌人自动寻路实现和按波次进攻的实现，包括敌人寻路移动逻辑、血条显示、敌人波次生成等。对防守单位部分讲解了发现敌人后转向和攻击的逻辑，展示了防守单位代码。文章还提到了UGUI系统的使用和对XML文件的解析，以及游戏中的可玩性设计。整体介绍了塔防游戏中敌人和防守单位的重要性和开发实现方法。"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.yuanpei.me/posts/1176959868/"><meta property='og:site_name' content='元视角'><meta property="og:image" content="/images/avatar.jpg"><meta property="twitter:image" content="/images/avatar.jpg"><meta property='article:section' content='Posts'><meta property='article:tag' content='游戏开发'><meta property='article:tag' content='Unity3D'><meta property='article:tag' content='塔防'><meta property='article:tag' content='教程'><meta property='article:published_time' content='2015-01-21T13:50:48+00:00'><meta property='article:modified_time' content='2015-01-21T13:50:48+00:00'><meta property="twitter:domain" content="https://blog.yuanpei.me/"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.yuanpei.me/posts/1176959868/"><meta property="twitter:title" content="Unity3D 塔防游戏开发项目讲解(下) - 元视角"><meta property="twitter:description" content="本文介绍了Unity3D中塔防游戏开发项目的敌人和防守单位部分。针对敌人，详细说明了敌人自动寻路实现和按波次进攻的实现，包括敌人寻路移动逻辑、血条显示、敌人波次生成等。对防守单位部分讲解了发现敌人后转向和攻击的逻辑，展示了防守单位代码。文章还提到了UGUI系统的使用和对XML文件的解析，以及游戏中的可玩性设计。整体介绍了塔防游戏中敌人和防守单位的重要性和开发实现方法。"><meta name=twitter:site content="飞鸿踏雪"><meta name=twitter:creator content="飞鸿踏雪"><link rel=stylesheet href=/styles/main.min.bb9e9eadbf718b0c91c89c85c701c072a4eaa3846575271b714abf3bc7bb8210.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css><link rel=stylesheet href=/styles/iconfont.css><link rel=stylesheet href=/styles/iconfont-patch.css><script defer src=https://umami.yuanpei.me/JXOS5H5V data-website-id=445bd2eb-68f9-47fd-b93a-5dfa92be333d></script></head><body><div class="background patterns"><div class=bg-mask></div></div><style>.background{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:-2;&.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23494849' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } &.dark { &.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23fcfcfc' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } .cover { filter: brightness(0.6); } } .cover { width: auto; height: auto; min-height: 100%; opacity: 0; transition: filter 0.3s, opacity 0.3s; &.loaded { opacity: 1; } }}</style><header class=main-header><nav class="main-nav up top"><div class=nav-all><div class=left-nav><div class=site-name onclick='location.href="/"'>元视角</div></div><div class=nav-center><div class=site-menu><div class=site-menu><div class=menu-item><span class=link-btn>文库</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+文章归档
+</span><span class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+全部分类
+</span><span class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+全部标签</span></div></div><div class=menu-item><span class=link-btn>书影音</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+读书
+</span><span class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+观影
+</span><span class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+听歌</span></div></div><div class=menu-item><span class=link-btn>页面</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+友情链接
+</span><span class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+个人作品
+</span><span class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+站点统计</span></div></div><div class=menu-item><span class=link-btn>更多</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+留言
+</span><span class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+关于本站</span></div></div></div></div><span class=site-title>Unity3D 塔防游戏开发项目讲解(下)</span></div><div class=right-nav><a class="menu-btn nav-btn travellings" title=开往-友链接力 href=https://www.travellings.cn/go.html target=_blank><i class="iconfont icon-subway"></i></a><div class="menu-btn nav-btn" title=随机前往一篇文章 id=randomToggle><i class="iconfont icon-shuffle"></i></div><div class="menu-btn nav-btn" title=全站搜索><i class="iconfont icon-search"></i></div><div class="menu-btn nav-btn" id=themeToggle title=切换主题模式><i class="iconfont icon-sun" id=themeIcon></i></div><div id=open-control class="menu-btn nav-btn pc" title=打开中控台><i class="iconfont icon-dashboard"></i></div><div class="to-top menu-btn hidden" title=返回顶部><div class=to-top-btn><span class=num>0</span>
+<i class="iconfont icon-up"></i></div></div><div class="menu-btn nav-btn mobile" title=打开菜单><i class="iconfont icon-toc"></i></div></div></div></nav><div class=mobile-menu id=mobileMenu><div class=menu-mask></div><div class="menu-content s-card"><div class=close-control><i class="iconfont icon-close"></i></div><div class=menu-list><div class=menu-item><span class=link-title>文库</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+<span class=name>文章归档</span></div><div class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+<span class=name>全部分类</span></div><div class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+<span class=name>全部标签</span></div></div></div><div class=menu-item><span class=link-title>书影音</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+<span class=name>读书</span></div><div class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+<span class=name>观影</span></div><div class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+<span class=name>听歌</span></div></div></div><div class=menu-item><span class=link-title>页面</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+<span class=name>友情链接</span></div><div class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+<span class=name>个人作品</span></div><div class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+<span class=name>站点统计</span></div></div></div><div class=menu-item><span class=link-title>更多</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+<span class=name>留言</span></div><div class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+<span class=name>关于本站</span></div></div></div></div></div></div><style>.mobile-menu{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;display:none}.mobile-menu .menu-mask{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;background-color:var(--main-mask-background)}.mobile-menu .menu-content{position:absolute;top:0;right:0;height:100%;width:100%;max-width:300px;border-radius:12px 0 0 12px;padding:20px;overflow:auto}.mobile-menu .close-control{position:absolute;top:10px;right:20px;display:flex;align-items:center;justify-content:center;width:35px;height:35px;padding:0;transition:background-color .3s,opacity .3s;border-radius:50%;cursor:pointer}.mobile-menu .close-control .iconfont{font-size:18px;line-height:1;color:var(--main-font-second-color);transition:color .3s,opacity .3s}.mobile-menu .close-control:hover{background-color:var(--main-color)}.mobile-menu .close-control:hover .iconfont{color:var(--main-card-background)}.mobile-menu .menu-list{margin-top:40px}.mobile-menu .menu-item{margin-bottom:12px}.mobile-menu .menu-item .link-title{font-size:14px;margin-bottom:12px;display:inline-block;color:var(--main-font-second-color)}.mobile-menu .menu-item .link-child{display:grid;gap:12px;grid-template-columns:1fr 1fr}.mobile-menu .menu-item .link-child-btn{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;border-radius:8px;padding:10px 12px;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);font-size:15px;cursor:pointer;transition:all .3s}.mobile-menu .menu-item .link-child-btn:hover{background-color:var(--main-color);color:var(--main-card-background)}.mobile-menu .menu-item .link-child-btn .iconfont{margin-right:6px;opacity:.6}.mobile-menu .menu-item .link-child-btn .name{max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><script>function toggleMobileMenu(){const e=document.getElementById("mobileMenu");e&&(e.style.display=e.style.display==="none"?"block":"none")}</script><div class=modal id=search-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:800px><div class=title><div class=title-left><i class="iconfont icon-search"></i>
+<span class=title-text>全局搜索</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=search-modal><div class=search-input><input type=text id=search-input placeholder=今天你想搜点什么？ autocomplete=off></div><div class=search-results><div class=search-list></div><div class=search-empty><i class="iconfont icon-search"></i><p>输入关键字，开始搜索</p></div></div><div class=search-hint><span class=text id=search-hint-text></span>
+<span class=text><a class=powered_by href=https://www.fusejs.io/ target=_blank>Fuse.js</a></span></div></div></div></div></div></header><main class=main-layout><div class=post><div class=post-meta><div class=meta><div class=categories><a href=/categories/%e6%b8%b8%e6%88%8f%e5%bc%80%e5%8f%91/ class=cat-item><i class="iconfont icon-folder"></i>
+<span class=name>游戏开发</span></a></div><div class=tags><a href=/tags/%e6%b8%b8%e6%88%8f%e5%bc%80%e5%8f%91/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>游戏开发</span>
+</a><a href=/tags/unity3d/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>Unity3D</span>
+</a><a href=/tags/%e5%a1%94%e9%98%b2/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>塔防</span>
+</a><a href=/tags/%e6%95%99%e7%a8%8b/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>教程</span></a></div></div><h1 class=title>Unity3D 塔防游戏开发项目讲解(下)</h1><div class=other-meta><span class="meta date"><i class="iconfont icon-date"></i>
+2015-01-21
+</span><span class="update meta"><i class="iconfont icon-time"></i>
+2015-01-21
+</span><span class="hot meta"><i class="iconfont icon-fire"></i>
+<span class=artalk-pv-count id=umami_value_page_pv>0</span>
+</span><span class="chat meta hover" data-scroll-to=comments><i class="iconfont icon-chat"></i>
+<span id=waline_comments_count class=artalk-comment-count>0</span></span></div></div><div class=post-content><article class="post-article s-card"><div class="expired s-card">本文发表于 <strong>4011</strong> 天前，其中的信息可能已经事过境迁</div><div class="article-gpt s-card"><div class=title><span class=name><i class="iconfont icon-robot"></i>
+文章摘要
+<i class="iconfont icon-up"></i>
+</span><span class=logo>FakeGPT</span></div><div class="content s-card"><span class=text></span></div><div class=meta></div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){new TypeIt(".article-gpt .content .text",{strings:"本文介绍了Unity3D中塔防游戏开发项目的敌人和防守单位部分。针对敌人，详细说明了敌人自动寻路实现和按波次进攻的实现，包括敌人寻路移动逻辑、血条显示、敌人波次生成等。对防守单位部分讲解了发现敌人后转向和攻击的逻辑，展示了防守单位代码。文章还提到了UGUI系统的使用和对XML文件的解析，以及游戏中的可玩性设计。整体介绍了塔防游戏中敌人和防守单位的重要性和开发实现方法。",speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><div id=page-content class=markdown-main-style><p>各位朋友，大家好，我是秦元培，欢迎大家关注我的博客，我的博客地址是<a href=http://blog.csdn.net/qinyuanpei>http://blog.csdn.net/qinyuanpei</a>。我们知道一个完整的塔防游戏由地图、敌人、防守单位三个部分组成，在上一篇文章中我们已经对地图这块儿进行了全面的讲解，今天我们来说说敌人和防守单位。</p><h1 id=敌人篇>敌人篇</h1><h2 id=敌人自动寻路的实现>敌人自动寻路的实现</h2><p>敌人在游戏中有一个基本的行为，即沿着寻路路径向我方阵地移动并发起攻击。在地图篇中，我们详细地介绍了敌人寻路路径的生成原理。既然有了敌人寻路的路线，那么怎么让敌人沿着路线移动呢？其实只要指定敌人寻路的起点就可以了，因为在寻路路径的设计中，我们使用的是一个类似于链表的结构，这样我们就能根据每个结点获取它的目标结点，从而实现敌人沿着寻路路径移动的效果了。因为敌人寻路的路线是定义在PathNode类中的，因此我们可以写出下面这样的代码：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>void</span> <span class=n>Move</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=n>Vector3</span> <span class=n>mPos1</span><span class=p>=</span><span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>Vector3</span> <span class=n>mPos2</span><span class=p>=</span><span class=k>this</span><span class=p>.</span><span class=n>StartNode</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//计算敌人与路径节点间的距离</span>
+</span></span><span class=line><span class=cl>	<span class=kt>float</span> <span class=n>mDis</span><span class=p>=</span><span class=n>Vector2</span><span class=p>.</span><span class=n>Distance</span><span class=p>(</span><span class=k>new</span> <span class=n>Vector2</span><span class=p>(</span><span class=n>mPos1</span><span class=p>.</span><span class=n>x</span><span class=p>,</span><span class=n>mPos1</span><span class=p>.</span><span class=n>y</span><span class=p>),</span><span class=k>new</span> <span class=n>Vector2</span><span class=p>(</span><span class=n>mPos2</span><span class=p>.</span><span class=n>x</span><span class=p>,</span><span class=n>mPos2</span><span class=p>.</span><span class=n>y</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span><span class=p>(</span><span class=n>mDis</span><span class=p>&lt;</span><span class=m>0.1F</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>StartNode</span><span class=p>.</span><span class=n>ThatNode</span><span class=p>==</span><span class=kc>null</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//对防守阵地进行摧毁</span>
+</span></span><span class=line><span class=cl>			<span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>PlayerHP</span><span class=p>-=</span><span class=m>20</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//从敌人列表中移除自身</span>
+</span></span><span class=line><span class=cl>			<span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>Enemys</span><span class=p>.</span><span class=n>Remove</span><span class=p>(</span><span class=k>this</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//销毁自身</span>
+</span></span><span class=line><span class=cl>			<span class=n>Destroy</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>gameObject</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//销毁血条</span>
+</span></span><span class=line><span class=cl>			<span class=n>Destroy</span><span class=p>(</span><span class=n>mHPBar</span><span class=p>.</span><span class=n>gameObject</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span><span class=k>else</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>StartNode</span><span class=p>=</span><span class=n>StartNode</span><span class=p>.</span><span class=n>ThatNode</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//计算敌人的移动方向</span>
+</span></span><span class=line><span class=cl>	<span class=n>Vector3</span> <span class=n>mDir</span><span class=p>=</span><span class=k>new</span> <span class=n>Vector3</span><span class=p>(</span><span class=n>mPos2</span><span class=p>.</span><span class=n>x</span><span class=p>-</span><span class=n>mPos1</span><span class=p>.</span><span class=n>x</span><span class=p>,</span><span class=n>mPos2</span><span class=p>.</span><span class=n>y</span><span class=p>-</span><span class=n>mPos1</span><span class=p>.</span><span class=n>y</span><span class=p>,</span><span class=m>0</span><span class=p>).</span><span class=n>normalized</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>transform</span><span class=p>.</span><span class=n>Translate</span><span class=p>(</span><span class=n>mDir</span> <span class=p>*</span> <span class=n>MoveSpeed</span> <span class=p>*</span> <span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span> 
+</span></span></code></pre></div><p>好了，现在我们来一起分析这段代码。首先，我们计算了敌人与路径结点间的距离，这里我们用0.1来近似地表示敌人已经到了路径结点上，此时如果该结点的目标结点为null则表示此时敌人已经到了最后一个结点处，所以敌人会对我方的阵地造成20点的伤害并销毁敌人。在GameManager我们使用了一个列表来管理和维护当前场景中的所有敌人，因此当当前敌人销毁时需要从列表中移除，GameManager类是一个静态类，负责对游戏的全局维护，这个类我们放到稍后来讲啊。那么如果敌人没有走到最后一个结点怎么办呢？我们只需要将StartNode指向StartNode的目标节点，这样我们就可以对整个路径结点实现遍历。这里是不是有种数据结构的感觉呢？哈哈，数据结构和算法是编程中最基础、最重要的内容，这些内容到了游戏开发领域同样是适用的。那么，好了，既然知道敌人是怎么移动的，现在我们就来对敌人进行移动吧，这里是采用计算移动方向的方式来实现，这个很简单啦。</p><p>好了，现在我们来说说敌人的血条吧，我们知道当怪物沿着寻路路径向我方阵地发起攻击的时候，我方防守单位会自动地对敌人进行防御性攻击，那么此时血条就可以显示敌人的实时血量，从而方便玩家根据战场的情况来调整兵力部署情况。我们知道从Unity4.6以后Unity开始使用全新的GUI系统UGUI，因为博主在之前的项目中一直使用NGUI，加上博主不是很喜欢做UI，所以每次用NGUI的时候整个人的心情都是不好的，有段时间被NGUI虐得体无完肤，感觉整个人都不好了。好了，既然现在我们有了新的选择UGUI，那么就让我们先睹为快吧！如图，全新的NGUI位于GameObect->UI菜单下，基本覆盖了常用的如Button、Image、Slider、ScrollBar等控件，因为UGUI刚推出不久，所以博主希望大家还是能客观、公正的对待UGUI和NGUI，博主认为在短期内这两个GUI系统将处于共存的状态，不存在相互替代的可能性。
+好了，UGUI所有的控件都是放到一个叫做Canvas的父控件下的，这一点和NGUI的UIRoot有些类似吧！Canvas提供了三种模式的UI系统，即Screen Space-Overlay、Screen Space-Camera、World Space。第一种Screen Space-Overlay它是完全以当前屏幕的像素大小创建的一个矩形范围，即控件是以屏幕坐标来绘制的；第二种Screen Space-Camera它是根据相机的视线范围来确定的一个矩形范围，其控件是根据Camera的ViewPortPoint坐标来绘制的;第三种从名称我们就可以知道，它是完全3D化的UI,使用的是常用的世界坐标。博主是刚开始研究UGUI,如果有不对的地方还希望大家能够原谅啊。好了，下面我们正式来做血条吧，在这里我们使用的是默认的Slider控件，用Slider控件来制作血条需要将Slider控件自带的滑块删除，然后我们通过改变value就可以实现一个简单的血条了。在UGUI中所有的图片素材都是以Sprite的形式来出现的，所以UGUI可以自己生成图集，不需要像NGUI在做UI前首先要生成图集。这是博主做的一个简单的血条。现在血条做好了，可是问题来了：这UGUI的所有控件都必须要放到Canvas下面啊，所以我们没法像NGUI一样直接把做好的血条放到怪物下面。怎么办呢？既然不能放到怪物下面，那我们就放到Canvas下面吧，不过我们需要自己计算血条的位置。好了，下面来看代码：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>Enemy</span> <span class=p>:</span> <span class=n>MonoBehaviour</span> 
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//敌人的生命值</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>float</span> <span class=n>MaxHP</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>float</span> <span class=n>HP</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//敌人的初始路径节点</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>PathNode</span> <span class=n>StartNode</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//敌人的移动速度</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>float</span> <span class=n>MoveSpeed</span><span class=p>=</span><span class=m>0.15F</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//敌人的旋转速度</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>float</span> <span class=n>RotateSpeed</span><span class=p>=</span><span class=m>0.3F</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//敌人血条预制件</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>GameObject</span> <span class=n>HPBar</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//敌人血条组件</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=n>Slider</span> <span class=n>mHPBar</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//public EnemySpawn mSpawn;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Awake</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//在敌人列表中增加一个敌人</span>
+</span></span><span class=line><span class=cl>		<span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>Enemys</span><span class=p>.</span><span class=n>Add</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>GetComponent</span><span class=p>&lt;</span><span class=n>Enemy</span><span class=p>&gt;());</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//查找UI</span>
+</span></span><span class=line><span class=cl>		<span class=n>Transform</span> <span class=n>mUiRoot</span><span class=p>=</span><span class=n>GameObject</span><span class=p>.</span><span class=n>Find</span><span class=p>(</span><span class=s>&#34;UIManager&#34;</span><span class=p>).</span><span class=n>transform</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//计算血条位置</span>
+</span></span><span class=line><span class=cl>		<span class=n>Vector3</span> <span class=n>mPos</span><span class=p>=</span><span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>FindChild</span><span class=p>(</span><span class=s>&#34;EnemyHP&#34;</span><span class=p>).</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//mPos=Camera.main.WorldToViewportPoint(mPos);</span>
+</span></span><span class=line><span class=cl>		<span class=n>mPos</span><span class=p>.</span><span class=n>z</span><span class=p>=-</span><span class=m>5</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//生成血条</span>
+</span></span><span class=line><span class=cl>		<span class=n>GameObject</span> <span class=n>go</span><span class=p>=(</span><span class=n>GameObject</span><span class=p>)</span><span class=n>Instantiate</span><span class=p>(</span><span class=n>HPBar</span><span class=p>,</span><span class=n>mPos</span><span class=p>,</span><span class=n>Quaternion</span><span class=p>.</span><span class=n>identity</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//使血条成为Canvas的子物体</span>
+</span></span><span class=line><span class=cl>		<span class=n>go</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>parent</span><span class=p>=</span><span class=n>mUiRoot</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//对血条进行放缩</span>
+</span></span><span class=line><span class=cl>		<span class=n>go</span><span class=p>.</span><span class=n>GetComponent</span><span class=p>&lt;</span><span class=n>RectTransform</span><span class=p>&gt;().</span><span class=n>localScale</span><span class=p>=</span><span class=k>new</span> <span class=n>Vector3</span><span class=p>(</span><span class=m>0.5F</span><span class=p>,</span><span class=m>0.30F</span><span class=p>,</span><span class=m>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//获取Slider</span>
+</span></span><span class=line><span class=cl>		<span class=n>mHPBar</span><span class=p>=</span><span class=n>go</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>GetComponent</span><span class=p>&lt;</span><span class=n>Slider</span><span class=p>&gt;();</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Move</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>Vector3</span> <span class=n>mPos1</span><span class=p>=</span><span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>Vector3</span> <span class=n>mPos2</span><span class=p>=</span><span class=k>this</span><span class=p>.</span><span class=n>StartNode</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//计算敌人与路径节点间的距离</span>
+</span></span><span class=line><span class=cl>		<span class=kt>float</span> <span class=n>mDis</span><span class=p>=</span><span class=n>Vector2</span><span class=p>.</span><span class=n>Distance</span><span class=p>(</span><span class=k>new</span> <span class=n>Vector2</span><span class=p>(</span><span class=n>mPos1</span><span class=p>.</span><span class=n>x</span><span class=p>,</span><span class=n>mPos1</span><span class=p>.</span><span class=n>y</span><span class=p>),</span><span class=k>new</span> <span class=n>Vector2</span><span class=p>(</span><span class=n>mPos2</span><span class=p>.</span><span class=n>x</span><span class=p>,</span><span class=n>mPos2</span><span class=p>.</span><span class=n>y</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>mDis</span><span class=p>&lt;</span><span class=m>0.1F</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span><span class=p>(</span><span class=n>StartNode</span><span class=p>.</span><span class=n>ThatNode</span><span class=p>==</span><span class=kc>null</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//对防守阵地进行摧毁</span>
+</span></span><span class=line><span class=cl>				<span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>PlayerHP</span><span class=p>-=</span><span class=m>20</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//从敌人列表中移除自身</span>
+</span></span><span class=line><span class=cl>				<span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>Enemys</span><span class=p>.</span><span class=n>Remove</span><span class=p>(</span><span class=k>this</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//销毁自身</span>
+</span></span><span class=line><span class=cl>				<span class=n>Destroy</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>gameObject</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//销毁血条</span>
+</span></span><span class=line><span class=cl>				<span class=n>Destroy</span><span class=p>(</span><span class=n>mHPBar</span><span class=p>.</span><span class=n>gameObject</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span><span class=k>else</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=n>StartNode</span><span class=p>=</span><span class=n>StartNode</span><span class=p>.</span><span class=n>ThatNode</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//计算敌人的移动方向</span>
+</span></span><span class=line><span class=cl>		<span class=n>Vector3</span> <span class=n>mDir</span><span class=p>=</span><span class=k>new</span> <span class=n>Vector3</span><span class=p>(</span><span class=n>mPos2</span><span class=p>.</span><span class=n>x</span><span class=p>-</span><span class=n>mPos1</span><span class=p>.</span><span class=n>x</span><span class=p>,</span><span class=n>mPos2</span><span class=p>.</span><span class=n>y</span><span class=p>-</span><span class=n>mPos1</span><span class=p>.</span><span class=n>y</span><span class=p>,</span><span class=m>0</span><span class=p>).</span><span class=n>normalized</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>transform</span><span class=p>.</span><span class=n>Translate</span><span class=p>(</span><span class=n>mDir</span> <span class=p>*</span> <span class=n>MoveSpeed</span> <span class=p>*</span> <span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span> 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Rotate</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//初始角度</span>
+</span></span><span class=line><span class=cl>		<span class=kt>float</span> <span class=n>mStartAngle</span><span class=p>=</span><span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>eulerAngles</span><span class=p>.</span><span class=n>z</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>transform</span><span class=p>.</span><span class=n>LookAt</span><span class=p>(</span><span class=n>StartNode</span><span class=p>.</span><span class=n>transform</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//目标角度</span>
+</span></span><span class=line><span class=cl>		<span class=kt>float</span> <span class=n>mTargetAngle</span><span class=p>=</span><span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>eulerAngles</span><span class=p>.</span><span class=n>z</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//计算旋转量</span>
+</span></span><span class=line><span class=cl>		<span class=kt>float</span> <span class=n>mAngle</span><span class=p>=</span><span class=n>Mathf</span><span class=p>.</span><span class=n>MoveTowardsAngle</span><span class=p>(</span><span class=n>mStartAngle</span><span class=p>,</span><span class=n>mTargetAngle</span><span class=p>,</span><span class=n>RotateSpeed</span> <span class=p>*</span><span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>eulerAngles</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Vector3</span><span class=p>(</span><span class=m>0</span><span class=p>,</span><span class=m>0</span><span class=p>,</span><span class=n>mAngle</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Update</span> <span class=p>()</span> 
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>Move</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=n>UpdateHPBar</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=k>void</span> <span class=n>UpdateHPBar</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//更新血条位置</span>
+</span></span><span class=line><span class=cl>		<span class=n>Vector3</span> <span class=n>mPos</span><span class=p>=</span><span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>FindChild</span><span class=p>(</span><span class=s>&#34;EnemyHP&#34;</span><span class=p>).</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//使血条位于顶层</span>
+</span></span><span class=line><span class=cl>		<span class=n>mPos</span><span class=p>.</span><span class=n>z</span><span class=p>=-</span><span class=m>5</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>mHPBar</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>=</span><span class=n>mPos</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//更新血量</span>
+</span></span><span class=line><span class=cl>		<span class=n>mHPBar</span><span class=p>.</span><span class=k>value</span><span class=p>=(</span><span class=kt>float</span><span class=p>)</span><span class=n>HP</span><span class=p>/</span><span class=n>MaxHP</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=k>void</span> <span class=n>SetDamage</span><span class=p>(</span><span class=kt>int</span> <span class=n>mValue</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>HP</span><span class=p>-=</span><span class=n>mValue</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>HP</span><span class=p>&lt;=</span><span class=m>0</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>		  <span class=n>Destroy</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>gameObject</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		  <span class=n>Destroy</span><span class=p>(</span><span class=n>mHPBar</span><span class=p>.</span><span class=n>gameObject</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		  <span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>Enemys</span><span class=p>.</span><span class=n>Remove</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>GetCopmonent</span><span class=p>&lt;</span><span class=n>Enemy</span><span class=p>&gt;());</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在这里我们做了三件事情：</p><ul><li>第一，在Awake方法中我们首先计算出血条的位置然后在这个位置生成血条，并取得相关的变量备用。</li><li>第二，在Update方法中增加一个UpdateHPBar方法以实现对血条血量的更新。</li><li>第三，增加了一个SetDamage方法，当敌人血量为0时销毁自身、销毁血条、从敌人列表中移除敌人</li></ul><h2 id=敌人按波次进攻的实现>敌人按波次进攻的实现</h2><p>好了，到现在为止，对于敌人的逻辑我们就全部实现了。可是我们知道在塔防游戏中敌人通常是一波一波出现的，所以我们需要一个敌人生成器EnemySpawn。那么，怎么来生成敌人呢，这里我们使用Xml文件来配置要生成的敌人列表，首先我们来构建一个Xml文件：</p><pre tabindex=0><code>&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34; standalone=&#34;yes&#34;?&gt;
+&lt;Enemies&gt;
+	&lt;Enemy Wave=&#34;1&#34; EnemyName=&#34;Enemy&#34; Level=&#34;1&#34; Wait=&#34;0.5&#34;/&gt;
+	&lt;Enemy Wave=&#34;2&#34; EnemyName=&#34;Enemy&#34; Level=&#34;2&#34; Wait=&#34;0.45&#34;/&gt;
+	&lt;Enemy Wave=&#34;2&#34; EnemyName=&#34;Enemy&#34; Level=&#34;2&#34; Wait=&#34;0.45&#34;/&gt;
+	&lt;Enemy Wave=&#34;3&#34; EnemyName=&#34;Enemy&#34; Level=&#34;3&#34; Wait=&#34;0.4&#34;/&gt;
+	&lt;Enemy Wave=&#34;3&#34; EnemyName=&#34;Enemy&#34; Level=&#34;3&#34; Wait=&#34;0.4&#34;/&gt;
+	&lt;Enemy Wave=&#34;3&#34; EnemyName=&#34;Enemy&#34; Level=&#34;3&#34; Wait=&#34;0.4&#34;/&gt;
+	&lt;Enemy Wave=&#34;4&#34; EnemyName=&#34;Enemy&#34; Level=&#34;4&#34; Wait=&#34;0.35&#34;/&gt;
+	&lt;Enemy Wave=&#34;4&#34; EnemyName=&#34;Enemy&#34; Level=&#34;4&#34; Wait=&#34;0.35&#34;/&gt;
+	&lt;Enemy Wave=&#34;4&#34; EnemyName=&#34;Enemy&#34; Level=&#34;4&#34; Wait=&#34;0.35&#34;/&gt;
+	&lt;Enemy Wave=&#34;4&#34; EnemyName=&#34;Enemy&#34; Level=&#34;4&#34; Wait=&#34;0.35&#34;/&gt;
+	&lt;Enemy Wave=&#34;5&#34; EnemyName=&#34;Enemy&#34; Level=&#34;5&#34; Wait=&#34;0.3&#34;/&gt;
+	&lt;Enemy Wave=&#34;5&#34; EnemyName=&#34;Enemy&#34; Level=&#34;5&#34; Wait=&#34;0.3&#34;/&gt;
+	&lt;Enemy Wave=&#34;5&#34; EnemyName=&#34;Enemy&#34; Level=&#34;5&#34; Wait=&#34;0.3&#34;/&gt;
+	&lt;Enemy Wave=&#34;5&#34; EnemyName=&#34;Enemy&#34; Level=&#34;5&#34; Wait=&#34;0.3&#34;/&gt;
+	&lt;Enemy Wave=&#34;5&#34; EnemyName=&#34;Enemy&#34; Level=&#34;5&#34; Wait=&#34;0.3&#34;/&gt;
+	&lt;Enemy Wave=&#34;6&#34; EnemyName=&#34;Enemy&#34; Level=&#34;99&#34; Wait=&#34;0.15&#34;/&gt;
+&lt;/Enemies&gt;
+</code></pre><p>从这个Xml文件中我们可以看到这样一个结构：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>using</span> <span class=nn>UnityEngine</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections.Generic</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Xml</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>SpawnData</span> 
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//敌人进攻波数</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>int</span> <span class=n>Wave</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=cs>///敌人名称，我们将根据这个名称来生成不同的敌人</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>string</span> <span class=n>EnemyName</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//敌人等级，我们将根据这个值来调整敌人的生命值和移动速度</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>int</span> <span class=n>Level</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>float</span> <span class=n>Wait</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在SpawnData这个结构中，我们可以得到敌人攻击的波数、敌人的名称、敌人等级、敌人生成需要等待的时间，因为博主在游戏中只有一种敌人，所以敌人的名称都是一样的。好了，现在我们可以开始解析Xml了：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=c1>//解析Xml文件</span>
+</span></span><span class=line><span class=cl><span class=k>void</span> <span class=n>ReadXml</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//创建一个字典以存储敌人列表</span>
+</span></span><span class=line><span class=cl>	<span class=n>mEnemyDatas</span><span class=p>=</span><span class=k>new</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>SpawnData</span><span class=p>&gt;();</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//加载Xml文档</span>
+</span></span><span class=line><span class=cl>	<span class=n>XmlDocument</span> <span class=n>mDocument</span><span class=p>=</span><span class=k>new</span> <span class=n>XmlDocument</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>mDocument</span><span class=p>.</span><span class=n>LoadXml</span><span class=p>(</span><span class=n>ConfigFile</span><span class=p>.</span><span class=n>text</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=n>XmlElement</span> <span class=n>mRoot</span><span class=p>=</span><span class=n>mDocument</span><span class=p>.</span><span class=n>DocumentElement</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//解析Xml文档</span>
+</span></span><span class=line><span class=cl>	<span class=n>XmlNodeList</span> <span class=n>mNodes</span><span class=p>=</span><span class=n>mRoot</span><span class=p>.</span><span class=n>SelectNodes</span><span class=p>(</span><span class=s>&#34;/Enemies/Enemy&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>foreach</span><span class=p>(</span><span class=n>XmlNode</span> <span class=n>mNode</span> <span class=k>in</span> <span class=n>mNodes</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//为每一个SpawnData赋值</span>
+</span></span><span class=line><span class=cl>		<span class=n>SpawnData</span> <span class=n>mData</span><span class=p>=</span><span class=k>new</span> <span class=n>SpawnData</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=n>mData</span><span class=p>.</span><span class=n>Wave</span><span class=p>=</span><span class=kt>int</span><span class=p>.</span><span class=n>Parse</span><span class=p>(</span><span class=n>mNode</span><span class=p>.</span><span class=n>Attributes</span><span class=p>[</span><span class=m>0</span><span class=p>].</span><span class=n>Value</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=n>mData</span><span class=p>.</span><span class=n>EnemyName</span><span class=p>=</span><span class=n>mNode</span><span class=p>.</span><span class=n>Attributes</span><span class=p>[</span><span class=m>1</span><span class=p>].</span><span class=n>Value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>mData</span><span class=p>.</span><span class=n>Level</span><span class=p>=</span><span class=kt>int</span><span class=p>.</span><span class=n>Parse</span><span class=p>(</span><span class=n>mNode</span><span class=p>.</span><span class=n>Attributes</span><span class=p>[</span><span class=m>2</span><span class=p>].</span><span class=n>Value</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=n>mData</span><span class=p>.</span><span class=n>Wait</span><span class=p>=</span><span class=kt>float</span><span class=p>.</span><span class=n>Parse</span><span class=p>(</span><span class=n>mNode</span><span class=p>.</span><span class=n>Attributes</span><span class=p>[</span><span class=m>3</span><span class=p>].</span><span class=n>Value</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=n>mEnemyDatas</span><span class=p>.</span><span class=n>Add</span><span class=p>(</span><span class=n>mData</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>那么好了，在解析完Xml后我们得到了所有的敌人数据，接下来我们只需要按照顺序生成敌人就可以了。具体怎么做呢，我们知道在塔防游戏中生成敌人有两种情况：</p><ul><li>一个是要生成的敌人和当前敌人是同一波的，这种情况只要继续生成就好了。</li><li>一个是要生成的敌人的波数大于当前波数，这种情况需要等待这一波敌人被消灭完。</li></ul><p>好了，现在来写代码：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>using</span> <span class=nn>UnityEngine</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections.Generic</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Xml</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>EnemySpawn</span> <span class=p>:</span> <span class=n>MonoBehaviour</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//敌人寻路起点</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>PathNode</span> <span class=n>SpawnPath</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//敌人预制件</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>GameObject</span> <span class=n>Enemy</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//Xml文件</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>TextAsset</span> <span class=n>ConfigFile</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//存放敌人的数组</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>SpawnData</span><span class=p>&gt;</span> <span class=n>mEnemyDatas</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//当前敌人进攻波数</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=kt>int</span> <span class=n>mWave</span><span class=p>=</span><span class=m>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//当前敌人索引</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=kt>int</span> <span class=n>mIndex</span><span class=p>=</span><span class=m>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//当前等待的时间</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=kt>float</span> <span class=n>mWait</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Start</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//读取Xml数据</span>
+</span></span><span class=line><span class=cl>		<span class=n>ReadXml</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=n>mEnemyDatas</span><span class=p>.</span><span class=n>Count</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//初始化攻击波数</span>
+</span></span><span class=line><span class=cl>		<span class=n>SpawnData</span> <span class=n>mData</span><span class=p>=</span><span class=n>mEnemyDatas</span><span class=p>[</span><span class=n>mIndex</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//设置攻击波数和等待时间</span>
+</span></span><span class=line><span class=cl>		<span class=n>mWave</span><span class=p>=</span><span class=n>mData</span><span class=p>.</span><span class=n>Wave</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>mWait</span><span class=p>=</span><span class=n>mData</span><span class=p>.</span><span class=n>Wait</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>AttackWave</span><span class=p>=</span><span class=n>mWave</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//生成第一个敌人</span>
+</span></span><span class=line><span class=cl>		<span class=n>CreateEnemy</span><span class=p>(</span><span class=n>mData</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=n>mIndex</span><span class=p>+=</span><span class=m>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>CreateEnemy</span><span class=p>(</span><span class=n>SpawnData</span> <span class=n>mData</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>GameObject</span> <span class=n>go</span><span class=p>=(</span><span class=n>GameObject</span><span class=p>)</span><span class=n>Instantiate</span><span class=p>(</span><span class=n>Enemy</span><span class=p>,</span><span class=n>SpawnPath</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>,</span><span class=n>Quaternion</span><span class=p>.</span><span class=n>identity</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=n>Enemy</span> <span class=n>_Enemy</span><span class=p>=</span><span class=n>go</span><span class=p>.</span><span class=n>GetComponent</span><span class=p>&lt;</span><span class=n>Enemy</span><span class=p>&gt;();</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//根据Level计算敌人的生命值和移动速度</span>
+</span></span><span class=line><span class=cl>		<span class=n>_Enemy</span><span class=p>.</span><span class=n>MaxHP</span><span class=p>=</span> <span class=p>(</span><span class=kt>float</span><span class=p>)</span><span class=n>mData</span><span class=p>.</span><span class=n>Level</span><span class=p>*</span><span class=m>0.25F</span> <span class=p>*</span> <span class=m>100</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>_Enemy</span><span class=p>.</span><span class=n>HP</span><span class=p>=</span> <span class=p>(</span><span class=kt>float</span><span class=p>)</span><span class=n>mData</span><span class=p>.</span><span class=n>Level</span><span class=p>*</span><span class=m>0.25F</span> <span class=p>*</span> <span class=m>100</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>go</span><span class=p>.</span><span class=n>GetComponent</span><span class=p>&lt;</span><span class=n>Enemy</span><span class=p>&gt;().</span><span class=n>MoveSpeed</span><span class=p>=(</span><span class=kt>float</span><span class=p>)</span><span class=n>mData</span><span class=p>.</span><span class=n>Level</span> <span class=p>*</span> <span class=m>0.15F</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>go</span><span class=p>.</span><span class=n>GetComponent</span><span class=p>&lt;</span><span class=n>Enemy</span><span class=p>&gt;().</span><span class=n>StartNode</span><span class=p>=</span><span class=n>SpawnPath</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Update</span> <span class=p>()</span> 
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>	   <span class=k>if</span><span class=p>(</span><span class=n>mIndex</span><span class=p>&lt;=</span><span class=n>mEnemyDatas</span><span class=p>.</span><span class=n>Count</span><span class=p>-</span><span class=m>1</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>	     <span class=n>SpawnEnemy</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	   <span class=p>}</span><span class=k>else</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//当索引数目大于敌人列表中的数目时，表示所有敌人以及生成完毕，此时</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//如果所有的敌人都被消灭，则表示玩家获胜。</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span><span class=p>(</span><span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>Enemys</span><span class=p>.</span><span class=n>Count</span><span class=p>==</span><span class=m>0</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>				<span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>IsWin</span><span class=p>=</span><span class=kc>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>				<span class=n>Debug</span><span class=p>.</span><span class=n>Log</span><span class=p>(</span><span class=s>&#34;玩家胜&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=k>void</span> <span class=n>SpawnEnemy</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//取得下一个生成的敌人的数据</span>
+</span></span><span class=line><span class=cl>		<span class=n>SpawnData</span> <span class=n>mData</span><span class=p>=</span><span class=n>mEnemyDatas</span><span class=p>[</span><span class=n>mIndex</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>//开始计时</span>
+</span></span><span class=line><span class=cl>		<span class=n>mWait</span><span class=p>-=</span><span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>mWait</span><span class=p>&lt;=</span><span class=m>0</span> <span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//如果当前是同一波敌人，则继续生成敌人</span>
+</span></span><span class=line><span class=cl>		    <span class=k>if</span><span class=p>(</span><span class=n>mWave</span><span class=p>==</span><span class=n>mData</span><span class=p>.</span><span class=n>Wave</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			   <span class=c1>//设置等待时间</span>
+</span></span><span class=line><span class=cl>			   <span class=n>mWait</span><span class=p>=</span><span class=n>mEnemyDatas</span><span class=p>[</span><span class=n>mIndex</span><span class=p>].</span><span class=n>Wait</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			   <span class=c1>//设置进攻波数</span>
+</span></span><span class=line><span class=cl>			   <span class=n>mWave</span><span class=p>=</span><span class=n>mEnemyDatas</span><span class=p>[</span><span class=n>mIndex</span><span class=p>].</span><span class=n>Wave</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			   <span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>AttackWave</span><span class=p>=</span><span class=n>mWave</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			   <span class=c1>//生成一个敌人</span>
+</span></span><span class=line><span class=cl>			   <span class=k>if</span><span class=p>(</span><span class=n>mData</span><span class=p>!=</span><span class=kc>null</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			   <span class=n>CreateEnemy</span><span class=p>(</span><span class=n>mData</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			   <span class=p>}</span>
+</span></span><span class=line><span class=cl>			   <span class=n>mIndex</span><span class=p>+=</span><span class=m>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span><span class=c1>//如果是下一波敌人，则需要等待这一波敌人全部死亡后再生成</span>
+</span></span><span class=line><span class=cl>			<span class=k>else</span> <span class=k>if</span><span class=p>(</span><span class=n>mWave</span><span class=p>&lt;</span><span class=n>mData</span><span class=p>.</span><span class=n>Wave</span> <span class=p>&amp;&amp;</span> <span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>Enemys</span><span class=p>.</span><span class=n>Count</span><span class=p>==</span><span class=m>0</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//设置等待时间</span>
+</span></span><span class=line><span class=cl>				<span class=n>mWait</span><span class=p>=</span><span class=n>mData</span><span class=p>.</span><span class=n>Wait</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//设置进攻波数</span>
+</span></span><span class=line><span class=cl>				<span class=n>mWave</span><span class=p>=</span><span class=n>mData</span><span class=p>.</span><span class=n>Wave</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>				<span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>AttackWave</span><span class=p>=</span><span class=n>mWave</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//生成一个敌人</span>
+</span></span><span class=line><span class=cl>				<span class=n>CreateEnemy</span><span class=p>(</span><span class=n>mData</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>				<span class=n>mIndex</span><span class=p>+=</span><span class=m>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//解析Xml文件</span>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>ReadXml</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//创建一个字典以存储敌人列表</span>
+</span></span><span class=line><span class=cl>		<span class=n>mEnemyDatas</span><span class=p>=</span><span class=k>new</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>SpawnData</span><span class=p>&gt;();</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//加载Xml文档</span>
+</span></span><span class=line><span class=cl>		<span class=n>XmlDocument</span> <span class=n>mDocument</span><span class=p>=</span><span class=k>new</span> <span class=n>XmlDocument</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=n>mDocument</span><span class=p>.</span><span class=n>LoadXml</span><span class=p>(</span><span class=n>ConfigFile</span><span class=p>.</span><span class=n>text</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=n>XmlElement</span> <span class=n>mRoot</span><span class=p>=</span><span class=n>mDocument</span><span class=p>.</span><span class=n>DocumentElement</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//解析Xml文档</span>
+</span></span><span class=line><span class=cl>		<span class=n>XmlNodeList</span> <span class=n>mNodes</span><span class=p>=</span><span class=n>mRoot</span><span class=p>.</span><span class=n>SelectNodes</span><span class=p>(</span><span class=s>&#34;/Enemies/Enemy&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>foreach</span><span class=p>(</span><span class=n>XmlNode</span> <span class=n>mNode</span> <span class=k>in</span> <span class=n>mNodes</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//为每一个SpawnData赋值</span>
+</span></span><span class=line><span class=cl>			<span class=n>SpawnData</span> <span class=n>mData</span><span class=p>=</span><span class=k>new</span> <span class=n>SpawnData</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>			<span class=n>mData</span><span class=p>.</span><span class=n>Wave</span><span class=p>=</span><span class=kt>int</span><span class=p>.</span><span class=n>Parse</span><span class=p>(</span><span class=n>mNode</span><span class=p>.</span><span class=n>Attributes</span><span class=p>[</span><span class=m>0</span><span class=p>].</span><span class=n>Value</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=n>mData</span><span class=p>.</span><span class=n>EnemyName</span><span class=p>=</span><span class=n>mNode</span><span class=p>.</span><span class=n>Attributes</span><span class=p>[</span><span class=m>1</span><span class=p>].</span><span class=n>Value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=n>mData</span><span class=p>.</span><span class=n>Level</span><span class=p>=</span><span class=kt>int</span><span class=p>.</span><span class=n>Parse</span><span class=p>(</span><span class=n>mNode</span><span class=p>.</span><span class=n>Attributes</span><span class=p>[</span><span class=m>2</span><span class=p>].</span><span class=n>Value</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=n>mData</span><span class=p>.</span><span class=n>Wait</span><span class=p>=</span><span class=kt>float</span><span class=p>.</span><span class=n>Parse</span><span class=p>(</span><span class=n>mNode</span><span class=p>.</span><span class=n>Attributes</span><span class=p>[</span><span class=m>3</span><span class=p>].</span><span class=n>Value</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=n>mEnemyDatas</span><span class=p>.</span><span class=n>Add</span><span class=p>(</span><span class=n>mData</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>我们可以注意到，到现在为止敌人相关的内容博主都已经为大家讲解完了，这里博主和大家开了一个小玩笑，不知道大家有没有发现，在敌人的Xml配置文件中博主最后设计了一个等级为99级的敌人，哈哈，这个敌人在游戏中的特点大家要自己从代码中来探索了，大家可以按照博主的思路做出这个塔防游戏然后自己去试试看，相信大家会更加深刻地理解数值平衡的重要性吧！</p><h1 id=防守单位篇>防守单位篇</h1><p>防守单位是塔防游戏中玩家可以支配和控制的一种资源，玩家通过合理地分布防守单位的位置来对玩家的防守阵地进行防御，当玩家的防守阵地被摧毁时玩家将无法继续部署防守单位。这就是防守单位在游戏中的主要作用。通常为了增加游戏的可玩性，游戏设计者往往会设计多种防守单位，在博主的这个小游戏中，我们只设计了一种防守单位，更多的防守单位的设计大家可以参考《保卫萝卜》和《植物大战僵尸》这两个游戏。好了，说了这么多，那么防守单位在整个塔防游戏中主要的作用是什么呢？答案就是防守，哈哈，这是一句不折不扣的废话。可是就是这样一句废话，却足以让我们知道防守单位需要对敌人进行自动攻击，这就要涉及到简单的AI算法了。好了，我们来看下面的脚本：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>using</span> <span class=nn>UnityEngine</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>System.Collections</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>Defender</span> <span class=p>:</span> <span class=n>MonoBehaviour</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//目标敌人</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=n>Enemy</span> <span class=n>mTarget</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//攻击半径</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>float</span> <span class=n>AttackArea</span><span class=p>=</span><span class=m>2.5F</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//与敌人的距离</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=kt>float</span> <span class=n>mDistance</span><span class=p>=</span><span class=m>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//防守单位的旋转速度</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>float</span> <span class=n>RotateSpeed</span><span class=p>=</span><span class=m>1.5F</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//防守单位攻击间隔</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=kt>float</span> <span class=n>AttakTime</span><span class=p>=</span><span class=m>2.5F</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//防守单位攻击间隔</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=kt>float</span> <span class=n>mTime</span><span class=p>=</span><span class=m>0.0F</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//炮弹预设</span>
+</span></span><span class=line><span class=cl>	<span class=kd>public</span> <span class=n>GameObject</span> <span class=n>BulletObject</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Start</span> <span class=p>()</span> 
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//初始化防守单位攻击间隔</span>
+</span></span><span class=line><span class=cl>		<span class=n>mTime</span><span class=p>=</span><span class=n>AttakTime</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//查找攻击范围内的敌人</span>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>FindEnemy</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//初始化目标敌人</span>
+</span></span><span class=line><span class=cl>		<span class=n>mTarget</span><span class=p>=</span><span class=kc>null</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//获取敌人列表</span>
+</span></span><span class=line><span class=cl>		<span class=n>ArrayList</span> <span class=n>mEnemys</span><span class=p>=</span><span class=n>GameManager</span><span class=p>.</span><span class=n>Instance</span><span class=p>.</span><span class=n>Enemys</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//遍历每个敌人</span>
+</span></span><span class=line><span class=cl>		<span class=k>foreach</span><span class=p>(</span><span class=n>Enemy</span> <span class=n>_enemy</span> <span class=k>in</span> <span class=n>mEnemys</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//忽略生命值为0的敌人</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span><span class=p>(</span><span class=n>_enemy</span><span class=p>.</span><span class=n>HP</span><span class=p>==</span><span class=m>0</span><span class=p>)</span> <span class=k>continue</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=c1>//计算防守单位与敌人间的距离</span>
+</span></span><span class=line><span class=cl>			<span class=n>Vector3</span> <span class=n>mPos1</span><span class=p>=</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=n>Vector3</span> <span class=n>mPos2</span><span class=p>=</span><span class=n>_enemy</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=kt>float</span> <span class=n>mDis</span><span class=p>=</span><span class=n>Vector2</span><span class=p>.</span><span class=n>Distance</span><span class=p>(</span><span class=k>new</span> <span class=n>Vector2</span><span class=p>(</span><span class=n>mPos1</span><span class=p>.</span><span class=n>x</span><span class=p>,</span><span class=n>mPos1</span><span class=p>.</span><span class=n>y</span><span class=p>),</span><span class=k>new</span> <span class=n>Vector2</span><span class=p>(</span><span class=n>mPos2</span><span class=p>.</span><span class=n>x</span><span class=p>,</span><span class=n>mPos2</span><span class=p>.</span><span class=n>y</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span><span class=p>(</span><span class=n>mDis</span><span class=p>&gt;</span><span class=n>AttackArea</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//Debug.Log(&#34;敌人&#34; + _enemy.transform.name + &#34;未进入攻击范围,距离为:&#34; + mDis);</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//return;</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span><span class=k>else</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//Debug.Log(&#34;敌人&#34; + _enemy.transform.name + &#34;已进入攻击范围,距离为:&#34; + mDis);</span>
+</span></span><span class=line><span class=cl>				<span class=c1>//选择最近的敌人</span>
+</span></span><span class=line><span class=cl>				<span class=k>if</span><span class=p>(</span><span class=n>mDistance</span><span class=p>==</span><span class=m>0</span> <span class=p>||</span> <span class=n>mDistance</span> <span class=p>&gt;</span> <span class=n>mDis</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>					<span class=n>mTarget</span><span class=p>=</span><span class=n>_enemy</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>					<span class=n>mDistance</span><span class=p>=</span><span class=n>mDis</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>				<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>				<span class=cm>/*//选择生命值最低的敌人
+</span></span></span><span class=line><span class=cl><span class=cm>				if(mLife==0 || mLife &gt; _enemy.HP){
+</span></span></span><span class=line><span class=cl><span class=cm>					mTarget=_enemy;
+</span></span></span><span class=line><span class=cl><span class=cm>					mLife=_enemy.HP;
+</span></span></span><span class=line><span class=cl><span class=cm>				}
+</span></span></span><span class=line><span class=cl><span class=cm>				*/</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=n>mDistance</span><span class=p>=</span><span class=m>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>RotateTo</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//判断目标敌人是否为空</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>mTarget</span><span class=p>==</span><span class=kc>null</span><span class=p>)</span> <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//计算要旋转到敌人方向的角度</span>
+</span></span><span class=line><span class=cl>		<span class=n>Vector3</span> <span class=n>mPos1</span><span class=p>=</span><span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>Vector3</span> <span class=n>mPos2</span><span class=p>=</span><span class=n>mTarget</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=n>Vector3</span> <span class=n>mDir</span><span class=p>=(</span><span class=n>mPos2</span><span class=p>-</span><span class=n>mPos1</span><span class=p>).</span><span class=n>normalized</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//使得两向量共面</span>
+</span></span><span class=line><span class=cl>		<span class=n>mDir</span><span class=p>.</span><span class=n>z</span><span class=p>=</span><span class=m>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//计算两向量角度</span>
+</span></span><span class=line><span class=cl>		<span class=kt>float</span> <span class=n>mAngle</span><span class=p>=</span><span class=n>getAngle</span><span class=p>(</span><span class=n>Vector3</span><span class=p>.</span><span class=n>up</span><span class=p>,</span><span class=n>mDir</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>eulerAngles</span><span class=p>=</span><span class=k>new</span> <span class=n>Vector3</span><span class=p>(</span><span class=m>0</span><span class=p>,</span><span class=m>0</span><span class=p>,</span><span class=n>mAngle</span><span class=p>)</span> <span class=p>*</span> <span class=n>RotateSpeed</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//根据向量数学计算角度</span>
+</span></span><span class=line><span class=cl>	<span class=kd>private</span> <span class=kt>float</span> <span class=n>getAngle</span><span class=p>(</span><span class=n>Vector3</span> <span class=n>v1</span><span class=p>,</span><span class=n>Vector3</span> <span class=n>v2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=kt>float</span> <span class=n>mDot</span><span class=p>=</span><span class=n>Vector3</span><span class=p>.</span><span class=n>Dot</span><span class=p>(</span><span class=n>v1</span><span class=p>,</span><span class=n>v2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=kt>float</span> <span class=n>mv1</span><span class=p>=</span><span class=n>Mathf</span><span class=p>.</span><span class=n>Sqrt</span><span class=p>(</span><span class=n>v1</span><span class=p>.</span><span class=n>x</span><span class=p>*</span><span class=n>v1</span><span class=p>.</span><span class=n>x</span><span class=p>+</span><span class=n>v1</span><span class=p>.</span><span class=n>y</span><span class=p>*</span><span class=n>v1</span><span class=p>.</span><span class=n>y</span><span class=p>+</span><span class=n>v1</span><span class=p>.</span><span class=n>z</span><span class=p>*</span><span class=n>v1</span><span class=p>.</span><span class=n>z</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=kt>float</span> <span class=n>mv2</span><span class=p>=</span><span class=n>Mathf</span><span class=p>.</span><span class=n>Sqrt</span><span class=p>(</span><span class=n>v2</span><span class=p>.</span><span class=n>x</span><span class=p>*</span><span class=n>v2</span><span class=p>.</span><span class=n>x</span><span class=p>+</span><span class=n>v2</span><span class=p>.</span><span class=n>y</span><span class=p>*</span><span class=n>v2</span><span class=p>.</span><span class=n>y</span><span class=p>+</span><span class=n>v2</span><span class=p>.</span><span class=n>z</span><span class=p>*</span><span class=n>v2</span><span class=p>.</span><span class=n>z</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>v2</span><span class=p>.</span><span class=n>x</span><span class=p>&gt;</span><span class=n>v1</span><span class=p>.</span><span class=n>x</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span> <span class=p>-</span><span class=n>Mathf</span><span class=p>.</span><span class=n>Acos</span><span class=p>(</span><span class=n>mDot</span><span class=p>/(</span><span class=n>mv1</span><span class=p>*</span><span class=n>mv2</span><span class=p>))*</span> <span class=n>Mathf</span><span class=p>.</span><span class=n>Rad2Deg</span> <span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span><span class=k>else</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span> <span class=n>Mathf</span><span class=p>.</span><span class=n>Acos</span><span class=p>(</span><span class=n>mDot</span><span class=p>/(</span><span class=n>mv1</span><span class=p>*</span><span class=n>mv2</span><span class=p>))*</span> <span class=n>Mathf</span><span class=p>.</span><span class=n>Rad2Deg</span> <span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Attack</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>RotateTo</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>mTarget</span><span class=p>==</span><span class=kc>null</span><span class=p>)</span> <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//以下添加攻击逻辑</span>
+</span></span><span class=line><span class=cl>		<span class=n>mTime</span><span class=p>-=</span><span class=n>Time</span><span class=p>.</span><span class=n>deltaTime</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=n>mTime</span><span class=p>&lt;</span><span class=m>0</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>			<span class=n>Vector3</span> <span class=n>_angle</span><span class=p>=</span><span class=n>transform</span><span class=p>.</span><span class=n>Find</span><span class=p>(</span><span class=s>&#34;Bullet&#34;</span><span class=p>).</span><span class=n>eulerAngles</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=n>Vector3</span> <span class=n>_pos</span><span class=p>=</span><span class=k>new</span> <span class=n>Vector3</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>.</span><span class=n>x</span><span class=p>,</span><span class=k>this</span><span class=p>.</span><span class=n>transform</span><span class=p>.</span><span class=n>position</span><span class=p>.</span><span class=n>y</span><span class=p>,-</span><span class=m>2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=n>Instantiate</span><span class=p>(</span><span class=n>BulletObject</span><span class=p>,</span><span class=n>_pos</span><span class=p>,</span><span class=n>Quaternion</span><span class=p>.</span><span class=n>Euler</span><span class=p>(</span><span class=n>_angle</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>			<span class=n>mTime</span><span class=p>=</span><span class=n>AttakTime</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>void</span> <span class=n>Update</span> <span class=p>()</span> 
+</span></span><span class=line><span class=cl>	<span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>FindEnemy</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=n>Attack</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>防守单位的脚本定义在Defender这个类中，主要的行为有两个，即发现敌人后转向敌人、向敌人发射炮弹，这块的代码较为简单，大家自己去领会就好啦。我们知道在塔防游戏中玩家可以通过点击屏幕来自由地增加或移动防守单位，这部分的内容主要是和GUI相关的，因为目前博主对UGUI掌握地还不是很熟，所以就等以后博主有时间了再来补充吧！好了，这个塔防游戏的讲解教程就是这样了，希望大家能够喜欢，我知道大家等这篇下篇已经好久了，哈哈！
+最后想说的是，博主的独立博客<a href=http://qinyuanpei.github.io>http://qinyuanpei.github.io</a>正式开始使用了，以后发表的文章会在独立博客和CSDN同时更新，希望大家能继续关注博主的博客！谢谢大家</p></div><div class="copyright s-card"><div class=title><span class=post-name>Unity3D 塔防游戏开发项目讲解(下)</span>
+<a :href=https://blog.yuanpei.me/posts/1176959868/ class=post-link target=_blank>https://blog.yuanpei.me/posts/1176959868/</a></div><div class=post-meta><div class=meta-item><span class=tip>作者</span>
+<span class=name>飞鸿踏雪</span></div><div class=meta-item><span class=tip>发布于</span>
+<span class=name>2015-01-21</span></div><div class=meta-item><span class=tip>更新于</span>
+<span class=name>2015-01-21</span></div><div class="meta-item cc"><span class=tip>许可协议</span>
+<a class=name href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank>CC BY-NC-SA 4.0</a></div></div><span class=meta-tip>署名-非商业性使用-相同方式共享 4.0 国际</span></div><div class=other-meta><div class=all-tags><a href=/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91 class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>游戏开发</span>
+</a><a href=/tags/unity3d class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>Unity3D</span>
+</a><a href=/tags/%E5%A1%94%E9%98%B2 class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>塔防</span>
+</a><a href=/tags/%E6%95%99%E7%A8%8B class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>教程</span></a></div><a href=https://eqnxweimkr5.feishu.cn/share/base/form/shrcnCXCPmxCKKJYI3RKUfefJre class=report target=_blank><i class="iconfont icon-report"></i>
+反馈与投诉</a></div><div class=reward><div class=reward-btn onclick='window.$Modal.show("reward-modal")'><i class="iconfont icon-reward"></i>
+<span class=text>赞赏博主</span></div></div><div class=modal id=reward-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:430px><div class=title><div class=title-left><i class="iconfont icon-reward"></i>
+<span class=title-text>赞赏博主</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=reward-card><div class=thank>🙏 请博主喝一杯咖啡</div><div class=qr><a class=qr-img href=/images/reward/alipay.jpg target=_blank><img src=/images/reward/alipay.jpg alt=支付宝赞赏码><div class=tip><i class="iconfont icon-alipay"></i>
+<span>支付宝</span></div></a><a class=qr-img href=/images/reward/wechat.jpg target=_blank><img src=/images/reward/wechat.jpg alt=微信赞赏码><div class=tip><i class="iconfont icon-wechat"></i>
+<span>微信</span></div></a></div><div class="all-list s-card hover"><div class=title>赞赏记录</div><div class=tip>赞赏金额将全部用于开源项目维护，以及服务器、域名及各类云服务的开销</div></div></div></div></div></div><div class=related-post><div class=title><span class=name><i class="iconfont icon-star"></i>
+相关推荐
+</span><span class=shuffle onclick='window.location.href="/posts/2041685704/"'>随便逛逛</span></div><div class=post-lists><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/2799263488/"'><div class=post-content><span class=post-title>Unity3D 游戏开发之反编译 AssetBundle 提取游戏资源</span>
+<span class=post-desc>本文介绍了如何通过反编译 Unity3D 的 AssetBundle 来提取游戏资源，并强调了保护游戏资源的重要性。AssetBundle 是 Unity3D 中用于资源打包和动态加载的解决方法，有助于减少游戏容量。作者以《轩辕剑 6 外传穹之扉》和《新仙剑 OL》为例，探讨了 AssetBundle 的应用和注意事项，包括打包和加载 AssetBundle 的方法以及通过反编译观察游戏资源。最后总结了在使用 AssetBundle 时应注意的几点：打包多个资源到一个 AssetBundle 中、分割预制件、动态加载场景等。文章强调了细致研究 AssetBundle 打包的重要性。</span></div></article><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/1124152964/"'><div class=post-content><span class=post-title>解析 OBJ 模型并将其加载到 Unity3D 场景中</span></div></article></div><style>.post-lists{width:100%}.post-lists .post-item{padding:0!important;display:flex;margin-bottom:1rem;animation:fade-up .6s backwards;cursor:pointer;overflow:hidden;height:200px}.post-lists .post-item .post-cover{flex:0 0 35%;overflow:hidden;transform:translateZ(0)}.post-lists .post-item .post-cover img{width:100%;height:100%;object-fit:cover;transform-origin:center center;transition:transform .5s ease-out,filter .5s ease-out;backface-visibility:hidden}.post-lists .post-item .post-content{flex:1;padding:1.6rem 2rem;display:flex;flex-direction:column;justify-content:space-between}.post-lists .post-item .post-category{display:flex;flex-wrap:wrap;width:100%;color:var(--main-font-second-color);font-size:14px}.post-lists .post-item .post-category .cat-name{display:flex;flex-direction:row;align-items:center}.post-lists .post-item .post-category .cat-name .iconfont{opacity:.8;margin-right:6px;color:var(--main-font-second-color)}.post-lists .post-item .post-category .top{margin-left:12px;color:var(--main-color)}.post-lists .post-item .post-category .top .iconfont{opacity:.8;color:var(--main-color)}.post-lists .post-item .post-title{font-size:20px;line-height:30px;font-weight:700;margin:.6rem 0;transition:color .3s;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-desc{margin-top:-.4rem;margin-bottom:.8rem;opacity:.8;line-height:30px;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-meta{display:flex;flex-direction:row;align-items:center;justify-content:space-between;color:var(--main-font-second-color)}.post-lists .post-item .post-tags{display:flex;flex-wrap:wrap;opacity:.8;margin-right:20px;overflow:hidden;mask:linear-gradient(90deg,#fff 0,#fff 90%,hsla(0,0%,100%,.6) 95%,hsla(0,0%,100%,0) 100%)}.post-lists .post-item .post-tags .tags-name{display:flex;flex-direction:row;align-items:center;margin-right:12px;white-space:nowrap;transition:color .3s}.post-lists .post-item .post-time{opacity:.6;font-size:13px;white-space:nowrap}.post-lists .post-item:hover .post-cover img{filter:brightness(.8);transform:scale(1.05)}.post-lists .post-item:hover .post-title{color:var(--main-color)}.post-lists .post-item:active{transform:scale(.98)}.post-lists .post-item.cover-left{flex-direction:row}.post-lists .post-item.cover-right{flex-direction:row-reverse}.post-lists .post-item.cover-both:nth-child(odd){flex-direction:row}.post-lists .post-item.cover-both:nth-child(even){flex-direction:row-reverse}.post-lists.layout-grid{display:grid;grid-template-columns:repeat(var(--grid-columns,2),1fr);gap:var(--grid-gap,1rem)}.post-lists.layout-grid .post-item{margin:0;flex-direction:column;height:auto}.post-lists.layout-grid .post-item .post-cover{flex:none;width:100%;height:225px}@media(max-width:768px){.post-lists .post-item{flex-direction:column;height:auto}.post-lists .post-item .post-cover{flex:none;width:100%;height:200px}.post-lists .post-item.cover-left,.post-lists .post-item.cover-right,.post-lists .post-item.cover-both{flex-direction:column!important}.post-lists.layout-grid{grid-template-columns:1fr}.post-lists .post-item .post-tags{flex-wrap:nowrap}}.post-lists .post-item .simple{animation:none;padding:.5rem 1.4rem!important;background-color:var(--main-card-second-background);height:auto;margin-bottom:.5rem}.post-lists .post-item .simple .post-content{padding:.5rem 0}.post-lists .post-item .simple .post-title{margin:0;font-size:16px}.post-lists .post-item .simple .post-desc{margin:.3rem 0 0;font-size:14px;opacity:.6}</style></div><style>.related-post{margin-top:1rem}.related-post .title{display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;margin:3rem 0 1rem;padding:0 6px}.related-post .title .name{display:flex;align-items:center;font-size:24px;font-weight:700}.related-post .title .name .iconfont{font-size:26px;font-weight:400;margin-right:8px}.related-post .title .shuffle{opacity:.6;font-size:14px;transition:color .3s,opacity .3s;cursor:pointer}.related-post .title .shuffle:hover{opacity:1;color:var(--main-color)}</style><div id=comments><div id=main-comment class=comment style=padding-left:1.5rem;padding-right:1.5rem><div v-if=!fill class=title><span class=name><i class="iconfont icon-chat"></i>
+评论
+</span><span class=tool>隐私政策</span></div><link rel=stylesheet href=https://unpkg.com/@waline/client@v3/dist/waline.css><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}.waline-container .wl-content img{width:unset!important;max-width:unset!important;max-height:unset!important;border-radius:unset!important}.waline-container .wl-content p{font-size:.9rem!important}.wl-header label{font-size:.8em}.wl-sort li{font-size:.8em}</style><script type=module>
+        import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+        init({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+            emoji: [
+                '//unpkg.com/@waline/emojis@1.2.0/weibo'
+            ],
+            reaction: false,
+        });
+      </script></div></div><div class="next-post s-card" id=next-post data-is-next=true><a href=/posts/906436376/ class=next-post-link><span class=post-tip>下一篇阅读
+</span><span class=post-title>当 Unity3D 游戏开发遇上 Excel</span></a></div></article><aside class=main-aside><div class="hello s-card weidgets"><span class=tip id=hello-weidget-tip>好久不见</span><div class=content><div class=site-logo><div class=avatar><img src=/images/avatar.jpg alt=avatar loading=lazy></div></div><span class=site-desc>谢谢你，在这世界的角落，找到我。我是一位穿梭于数字与人文领域交界处的观察者，热衷于在数字迷雾中剖析谜题背后的真相，同时在人文星河中重拾温暖和光明。我期待，在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点。</span></div><div class=info><div class=name><span class=author>飞鸿踏雪</span>
+<span class=desc>纵有疾风起，人生不言弃</span></div><div class=link><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuapei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i></a></div></div></div><div class=sticky><div class="toc s-card weidgets" id=weidget-toc><div class=toc-title><i class="iconfont icon-toc"></i>
+<span class=name>目录</span></div><div id=toc-all class=toc-list></div></div><script>document.addEventListener("DOMContentLoaded",function(){const o=[];let e=null,t=null,n=0;const s=document.getElementById("toc-all"),i=()=>{try{if(e=document.getElementById("page-content"),!e)return!1;const t=Array.from(e.querySelectorAll("h1, h2, h3, h4")).filter(e=>e.parentElement.tagName.toLowerCase()==="div");return t}catch(e){console.error("获取所有目录数据出错：",e)}},r=()=>{const e=i();if(!e)return!1;s.innerHTML="",e.forEach((e,t)=>{const n={id:e.id,type:e.tagName,text:e.textContent?.replace(/\u200B/g,"").trim()},i=document.createElement("span");i.id="toc-"+n.id,i.className=`toc-item ${n.type} ${t===0?"active":""}`,i.textContent=n.text,i.addEventListener("click",()=>d(n.id)),s.appendChild(i),o.push(n)}),e&&e.length>0&&(t=e[0].id)},c=(e,t)=>{let n;return function(){const s=arguments,o=this;n||(e.apply(o,s),n=!0,setTimeout(()=>n=!1,t))}},l=c(()=>{if(!o.length)return!1;const e=i();if(!e)return!1;const s=120;if(window.scrollY===0){n=0,t=e[0]?.id,a();return}for(let n of e){const o=n.getBoundingClientRect();o.top-s<=0&&o.bottom+s>=0&&t!==n.id&&(t=n.id,a())}},100),a=()=>{document.querySelectorAll(".toc-item.active").forEach(e=>{e.classList.remove("active")});const e=document.getElementById("toc-"+t);if(!e)return!1;e.classList.add("active"),n=e.offsetTop-2||0,s.style.setProperty("--height",n+"px"),s.scrollTo({top:n-80,behavior:"smooth"})},d=t=>{try{const n=document.getElementById(t);if(!n||!e)return!1;const s=n.offsetTop,o=s+e.offsetTop-80;window.scroll({top:o,behavior:"smooth"})}catch(e){console.error("目录滚动失败：",e)}};r(),window.addEventListener("scroll",l)})</script><style lang=scss scoped>.toc{position:relative;padding:0!important;overflow:hidden;.toc-title { display: flex; flex-direction: row; align-items: center; padding: 18px; height: 58px; .iconfont { margin-right: 8px; font-weight: bold; opacity: 0.6; } .name { font-weight: bold; } } .toc-list { position: relative; padding: 20px; padding-top: 0; padding-left: 24px; display: flex; flex-direction: column; max-height: calc(70vh - 58px); overflow: auto; .toc-item { margin: 4px 0; padding: 6px 12px; border-radius: 8px; opacity: 0.6; transition: color 0.3s, opacity 0.3s, font-size 0.3s, background-color 0.3s; cursor: pointer; &:first-child { margin-top: 0; } &:last-child { margin-bottom: 0; } &.H1 { font-weight: bold; } &.H2 { font-size: 14px; margin-left: 15px; font-weight: normal; } &.H3 { font-size: 12px; margin-left: 25px; } &.active { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); &.H2 { font-size: 14px; } &.H3 { font-size: 12px; } } &:hover { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); } } &::after { content: ""; position: absolute; left: 12px; top: var(--height); width: 4px; height: 20px; margin: 8px 0; background-color: var(--main-color); border-radius: 8px; transition: top 0.3s; } } &::before { content: ""; position: absolute; left: 12px; bottom: 20px; width: 4px; height: calc(100% - 78px); background-color: var(--main-card-border); border-radius: 8px; }}</style><div class="tags-cloud s-card weidgets"><div class=title><i class="iconfont icon-hashtag"></i>
+<span class=title-name>热门标签</span></div><div class=all-tags><a href=/tags/%E6%A0%87%E6%B3%A8/ class=tags><span class=name>标注</span>
+<sup class=num>1</sup>
+</a><a href=/tags/https/ class=tags><span class=name>HTTPS</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E7%8A%B6%E6%80%81/ class=tags><span class=name>状态</span>
+<sup class=num>1</sup>
+</a><a href=/tags/jetbrain/ class=tags><span class=name>JetBrain</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%BA%8B%E4%BB%B6/ class=tags><span class=name>事件</span>
+<sup class=num>1</sup>
+</a><a href=/tags/http/ class=tags><span class=name>HTTP</span>
+<sup class=num>9</sup>
+</a><a href=/tags/kindle/ class=tags><span class=name>Kindle</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E5%8A%A0%E5%AF%86/ class=tags><span class=name>加密</span>
+<sup class=num>2</sup>
+</a><a href=/tags/bash/ class=tags><span class=name>Bash</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E6%A0%BC%E5%BC%8F%E5%8C%96/ class=tags><span class=name>格式化</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%B5%84%E6%BA%90%E6%8F%90%E5%8F%96/ class=tags><span class=name>资源提取</span>
+<sup class=num>1</sup>
+</a><a href=/tags/fody/ class=tags><span class=name>Fody</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%A1%8C%E4%B8%9A/ class=tags><span class=name>行业</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%95%B0%E5%AD%97/ class=tags><span class=name>数字</span>
+<sup class=num>1</sup>
+</a><a href=/tags/rtmp/ class=tags><span class=name>RTMP</span>
+<sup class=num>1</sup>
+</a><a href=/tags/dottrace/ class=tags><span class=name>DotTrace</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%B7%A5%E4%BD%9C/ class=tags><span class=name>工作</span>
+<sup class=num>3</sup>
+</a><a href=/tags/hashset/ class=tags><span class=name>HashSet</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%96%87%E6%A1%A3/ class=tags><span class=name>文档</span>
+<sup class=num>1</sup>
+</a><a href=/tags/python/ class=tags><span class=name>Python</span>
+<sup class=num>22</sup>
+</a><a href=/tags/cdn/ class=tags><span class=name>CDN</span>
+<sup class=num>1</sup>
+</a><a href=/tags/java/ class=tags><span class=name>Java</span>
+<sup class=num>1</sup>
+</a><a href=/tags/serverless/ class=tags><span class=name>Serverless</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%9F%A9%E5%AF%92/ class=tags><span class=name>韩寒</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%80%9A%E4%BF%A1/ class=tags><span class=name>通信</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E7%AE%A1%E9%81%93/ class=tags><span class=name>管道</span>
+<sup class=num>1</sup>
+</a><a href=/tags/mysql/ class=tags><span class=name>MySQL</span>
+<sup class=num>2</sup>
+</a><a href=/tags/ci/ class=tags><span class=name>CI</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E7%86%B5%E5%A2%9E%E5%AE%9A%E5%BE%8B/ class=tags><span class=name>熵增定律</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%B8%8B%E8%BD%BD/ class=tags><span class=name>下载</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%BB%B7%E5%80%BC/ class=tags><span class=name>价值</span>
+<sup class=num>1</sup>
+</a><a href=/tags/jsonp/ class=tags><span class=name>JSONP</span>
+<sup class=num>1</sup>
+</a><a href=/tags/elk/ class=tags><span class=name>ELK</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E8%AF%BB%E4%B9%A6/ class=tags><span class=name>读书</span>
+<sup class=num>6</sup>
+</a><a href=/tags/%E4%B8%8A%E4%BC%A0/ class=tags><span class=name>上传</span>
+<sup class=num>1</sup>
+</a><a href=/tags/ldap/ class=tags><span class=name>LDAP</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%BD%B1%E8%AF%84/ class=tags><span class=name>影评</span>
+<sup class=num>15</sup>
+</a><a href=/tags/%E6%84%9F%E6%82%9F/ class=tags><span class=name>感悟</span>
+<sup class=num>23</sup>
+</a><a href=/tags/wechat/ class=tags><span class=name>Wechat</span>
+<sup class=num>1</sup>
+</a><a href=/tags/lazyload/ class=tags><span class=name>LazyLoad</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%B9%B4%E5%8D%8E/ class=tags><span class=name>年华</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%85%AB%E5%8D%A6/ class=tags><span class=name>八卦</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%97%A5%E5%89%A7/ class=tags><span class=name>日剧</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A0%91/ class=tags><span class=name>表达式树</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%83%B3%E6%B3%95/ class=tags><span class=name>想法</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF/ class=tags><span class=name>贝塞尔曲线</span>
+<sup class=num>2</sup>
+</a><a href=/tags/protobuf/ class=tags><span class=name>Protobuf</span>
+<sup class=num>1</sup>
+</a><a href=/tags/nlog/ class=tags><span class=name>NLog</span>
+<sup class=num>1</sup>
+</a><a href=/tags/sdl/ class=tags><span class=name>SDL</span>
+<sup class=num>2</sup>
+</a><a href=/tags/form/ class=tags><span class=name>Form</span>
+<sup class=num>1</sup></a></div><a href=/tags class=more-tags>查看全部</a></div><div class="site-data s-card weidgets"><div class=title><i class="iconfont icon-chart"></i>
+<span class=title-name>站点数据</span></div><div class=all-data><div class=data-item><span class=name><i class="iconfont icon-article"></i>
+文章总数
+</span><span class=num>282 篇</span></div><div class=data-item><span class=name><i class="iconfont icon-date"></i>
+建站天数
+</span><span class=num>4033 天</span></div><div class=data-item><span class=name><i class="iconfont icon-words"></i>
+全站字数
+</span><span class=num>109213 字</span></div><div class=data-item><span class=name><i class="iconfont icon-visibility"></i>
+总访问量
+</span><span class=num id=umami_value_site_pv></span></div><div class=data-item><span class=name><i class="iconfont icon-account"></i>
+总访客数
+</span><span class=num id=umami_value_site_uv></span></div></div></div></div></aside><style>.main-aside{padding-left:1rem;display:flex;flex-direction:column;animation:fade-up .6s .3s backwards;.weidgets { padding: 18px; margin-bottom: 1rem; :deep(.title) { margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; opacity: 0.75; .iconfont { opacity: 0.6; margin-right: 6px; } .title-name { opacity: 0.8; } } } .sticky { position: sticky; top: calc(60px + 1rem); .weidgets { animation: fade-up 0.6s 0.4s backwards; &:last-child { margin-bottom: 0; } } }}</style></div></div></main><div class=footer-link><div class=footer-bar><span class=site-title>元视角</span>
+<span class=site-desc>纵有疾风起，人生不言弃</span>
+<a href=/ class=to-home>了解更多</a></div><div class=footer-social><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuanpei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i>
+</a><a href=/index.xml target=_blank class=social-link aria-label=RSS><i class="iconfont icon-rss"></i></a><div class=logo title=返回顶部 onclick='window.scrollTo({top:0,behavior:"smooth"})'><img src=/images/icons8-stellar-128.png alt=author class=author></div><a href=https://weibo.com/1278609231 target=_blank class=social-link aria-label=微博><i class="iconfont icon-weibo"></i>
+</a><a href=https://www.douban.com/people/60029335/ target=_blank class=social-link aria-label=豆瓣><i class="iconfont icon-douban"></i>
+</a><a href=https://www.zhihu.com/people/qinyuanpei target=_blank class=social-link aria-label=知乎><i class="iconfont icon-zhihu"></i></a></div><div class=footer-sitemap><div class=sitemap-item><span class=title>博客</span><div class=links><a href=/archives class=link-text>文章归档
+</a><a href=/categories class=link-text>全部分类
+</a><a href=/tags class=link-text>全部标签</a></div></div><div class=sitemap-item><span class=title>项目</span><div class=links><a href=https://github.com/qinyuanpei/mcp-server-weibo target=_blank class=link-text>mcp-server-weibo</a></div></div><div class=sitemap-item><span class=title>专栏</span><div class=links><a href=https://blog.csdn.net/qinyuanpei/category_10852603.html target=_blank class=link-text>.NET 源代码探案系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_7444699.html target=_blank class=link-text>Python 数据挖掘系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_11484903.html target=_blank class=link-text>分布式丛林探险系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_1708629.html target=_blank class=link-text>Unity3D 游戏开发系列</a></div></div><div class=sitemap-item><span class=title>页面</span><div class=links><a href=/comments class=link-text>留言
+</a><a href=/books class=link-text>读书
+</a><a href=/movies class=link-text>观影
+</a><a href=/musics class=link-text>听歌</a></div></div><div class=sitemap-item><span class=title>友情链接</span><div class=links><a href=https://gudong.site/ target=_blank class=link-text>咕咚同学
+</a><a href=https://coolshell.cn/ target=_blank class=link-text>酷壳
+</a><a href=https://blog.zhheo.com/ target=_blank class=link-text>张洪
+</a><a href=/links class=link-text>更多</a></div></div></div></div><footer id=main-footer class=main-footer><div class=footer-content><div class=footer-copyright><span class=time data-v-6001e979>@ 2014 - 2025 </span><a href=/ class="author link" target=_blank>飞鸿踏雪</a></div><div class=meta><a class="power link" href=https://gohugo.io/ target=_blank><span class=by>Powered by</span>
+<span class=name>Hugo</span>
+</a><a class="theme link" href=https://github.com/imsyy/vitepress-theme-curve><span class=name>主题</span>
+</a><a class="rss link" href=/index.xml target=_blank><i class="iconfont icon-rss"></i>
+<span class=name data-v-6001e979>订阅</span>
+</a><a class="cc link" href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank aria-label="Creative Commons"><i class="iconfont icon-line"></i>
+<i class="iconfont icon-by-line"></i>
+<i class="iconfont icon-nc-line"></i>
+<i class="iconfont icon-nd-line"></i></a></div></div></footer><script type=module src=/scripts/main.js></script><script src=https://cdn.jsdelivr.net/npm/fuse.js@7.1.0></script><script src=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js></script><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css media="(prefers-color-scheme: dark)"><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css media="(prefers-color-scheme: light)"><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css><script src=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js></script><script src=https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js></script><script type=text/javascript src=/scripts/modules/badge.js></script><script type=text/javascript>window.createBadge("Hugo","v0.126.1","#35495e","#41b883"),window.createBadge("Github","1ae5ebb","#35495e","#ffc107")</script></body></html>
