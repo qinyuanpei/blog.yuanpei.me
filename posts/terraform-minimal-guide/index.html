@@ -1,0 +1,378 @@
+<!doctype html><html lang=zh-cn><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=referrer content="no-referrer"><meta content="飞鸿踏雪" name=author><title>Terraform 极简入门：从 AWS-CLI 到基础设施即代码（IaC） - 元视角</title>
+<meta name=description content="一篇面向新手的 Terraform 极简入门指南，通过对比 AWS Console 与 SAM 的真实项目踩坑经历，阐述基础设施即代码（IaC）的声明式思维。详解 Resource、Provider、State 三大核心概念，并手把手演示从 terraform init 到 apply 的完整实战流程，覆盖变量、输出、 locals、资源引用与目录拆分等进阶用法，助你告别手动点选，迈入云资源自动化管理。"><link rel=icon type=image/png href=/images/favicons/favicon-96x96.png sizes=96x96><link rel=icon type=image/svg+xml href=/images/favicons/favicon.svg><link rel="shortcut icon" href=/images/favicons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/images/favicons/apple-touch-icon.png><meta name=apple-mobile-web-app-title content="元视角"><link rel=manifest href=/site.webmanifest><meta name=keywords content="terraform,aws,devops"><meta property="og:title" content="Terraform 极简入门：从 AWS-CLI 到基础设施即代码（IaC） - 元视角"><meta property="og:description" content="一篇面向新手的 Terraform 极简入门指南，通过对比 AWS Console 与 SAM 的真实项目踩坑经历，阐述基础设施即代码（IaC）的声明式思维。详解 Resource、Provider、State 三大核心概念，并手把手演示从 terraform init 到 apply 的完整实战流程，覆盖变量、输出、 locals、资源引用与目录拆分等进阶用法，助你告别手动点选，迈入云资源自动化管理。"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.yuanpei.me/posts/terraform-minimal-guide/"><meta property='og:site_name' content='元视角'><meta property="og:image" content="https://blog.yuanpei.me/posts/terraform-minimal-guide/cover.png"><meta property="twitter:image" content="https://blog.yuanpei.me/posts/terraform-minimal-guide/cover.png"><meta property='article:section' content='Posts'><meta property='article:tag' content='terraform'><meta property='article:tag' content='aws'><meta property='article:tag' content='devops'><meta property='article:published_time' content='2026-05-20T00:00:00+00:00'><meta property='article:modified_time' content='2026-05-20T00:00:00+00:00'><meta property="twitter:domain" content="https://blog.yuanpei.me/"><meta property="twitter:url" content="https://blog.yuanpei.me/"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.yuanpei.me/posts/terraform-minimal-guide/"><meta property="twitter:title" content="Terraform 极简入门：从 AWS-CLI 到基础设施即代码（IaC） - 元视角"><meta property="twitter:description" content="一篇面向新手的 Terraform 极简入门指南，通过对比 AWS Console 与 SAM 的真实项目踩坑经历，阐述基础设施即代码（IaC）的声明式思维。详解 Resource、Provider、State 三大核心概念，并手把手演示从 terraform init 到 apply 的完整实战流程，覆盖变量、输出、 locals、资源引用与目录拆分等进阶用法，助你告别手动点选，迈入云资源自动化管理。"><meta name=twitter:site content="飞鸿踏雪"><meta name=twitter:creator content="飞鸿踏雪"><link rel=stylesheet href=/styles/main.min.a86822613a0e34badf0f85c996d0b453eef65d8bc5b68c749454a5ffd96fd687.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css><link rel=dns-prefetch crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css><link rel=stylesheet href=/styles/iconfont.css><link rel=stylesheet href=/styles/iconfont-patch.css><script defer src=https://umami.yuanpei.me/JXOS5H5V data-website-id=445bd2eb-68f9-47fd-b93a-5dfa92be333d></script></head><body><div class="background patterns"><div class=bg-mask></div></div><style>.background{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:-2;&.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23494849' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } &.dark { &.patterns { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cpath fill='%23fcfcfc' fill-opacity='0.08' d='M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z'%3E%3C/path%3E%3C/svg%3E"); } .cover { filter: brightness(0.6); } } .cover { width: auto; height: auto; min-height: 100%; opacity: 0; transition: filter 0.3s, opacity 0.3s; &.loaded { opacity: 1; } }}</style><header class=main-header><nav class="main-nav up top"><div class=nav-all><div class=left-nav><div class=site-name onclick='location.href="/"'>元视角</div></div><div class=nav-center><div class=site-menu><div class=site-menu><div class=menu-item><span class=link-btn>文库</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+文章归档
+</span><span class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+全部分类
+</span><span class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+全部标签</span></div></div><div class=menu-item><span class=link-btn>书影音</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+读书
+</span><span class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+观影
+</span><span class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+听歌</span></div></div><div class=menu-item><span class=link-btn>页面</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+友情链接
+</span><span class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+个人作品
+</span><span class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+站点统计</span></div></div><div class=menu-item><span class=link-btn>更多</span><div class=link-child><span class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+留言
+</span><span class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+关于本站</span></div></div></div></div><span class=site-title>Terraform 极简入门：从 AWS-CLI 到基础设施即代码（IaC）</span></div><div class=right-nav><a class="menu-btn nav-btn travellings" title=开往-友链接力 href=https://www.travellings.cn/go.html target=_blank><i class="iconfont icon-subway"></i></a><div class="menu-btn nav-btn" title=随机前往一篇文章 id=randomToggle><i class="iconfont icon-shuffle"></i></div><div class="menu-btn nav-btn" title=全站搜索><i class="iconfont icon-search"></i></div><div class="menu-btn nav-btn" id=themeToggle title=切换主题模式><i class="iconfont icon-sun" id=themeIcon></i></div><div id=open-control class="menu-btn nav-btn pc" title=打开中控台><i class="iconfont icon-dashboard"></i></div><div class="to-top menu-btn hidden" title=返回顶部><div class=to-top-btn><span class=num>0</span>
+<i class="iconfont icon-up"></i></div></div><div class="menu-btn nav-btn mobile" title=打开菜单><i class="iconfont icon-toc"></i></div></div></div></nav><div class=mobile-menu id=mobileMenu><div class=menu-mask></div><div class="menu-content s-card"><div class=close-control><i class="iconfont icon-close"></i></div><div class=menu-list><div class=menu-item><span class=link-title>文库</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/archives"'><i class="iconfont icon-guidang"></i>
+<span class=name>文章归档</span></div><div class=link-child-btn onclick='window.location.href="/categories"'><i class="iconfont icon-folder"></i>
+<span class=name>全部分类</span></div><div class=link-child-btn onclick='window.location.href="/tags"'><i class="iconfont icon-hashtag"></i>
+<span class=name>全部标签</span></div></div></div><div class=menu-item><span class=link-title>书影音</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/books"'><i class="iconfont icon-book-fill"></i>
+<span class=name>读书</span></div><div class=link-child-btn onclick='window.location.href="/movies"'><i class="iconfont icon-movies"></i>
+<span class=name>观影</span></div><div class=link-child-btn onclick='window.location.href="/musics"'><i class="iconfont icon-music"></i>
+<span class=name>听歌</span></div></div></div><div class=menu-item><span class=link-title>页面</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/links"'><i class="iconfont icon-people"></i>
+<span class=name>友情链接</span></div><div class=link-child-btn onclick='window.location.href="/works"'><i class="iconfont icon-people"></i>
+<span class=name>个人作品</span></div><div class=link-child-btn onclick='window.location.href="/statics"'><i class="iconfont icon-tongji"></i>
+<span class=name>站点统计</span></div></div></div><div class=menu-item><span class=link-title>更多</span><div class=link-child><div class=link-child-btn onclick='window.location.href="/comments"'><i class="iconfont icon-chat"></i>
+<span class=name>留言</span></div><div class=link-child-btn onclick='window.location.href="/about"'><i class="iconfont icon-contacts"></i>
+<span class=name>关于本站</span></div></div></div></div></div></div><style>.mobile-menu{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;display:none}.mobile-menu .menu-mask{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;background-color:var(--main-mask-background)}.mobile-menu .menu-content{position:absolute;top:0;right:0;height:100%;width:100%;max-width:300px;border-radius:12px 0 0 12px;padding:20px;overflow:auto}.mobile-menu .close-control{position:absolute;top:10px;right:20px;display:flex;align-items:center;justify-content:center;width:35px;height:35px;padding:0;transition:background-color .3s,opacity .3s;border-radius:50%;cursor:pointer}.mobile-menu .close-control .iconfont{font-size:18px;line-height:1;color:var(--main-font-second-color);transition:color .3s,opacity .3s}.mobile-menu .close-control:hover{background-color:var(--main-color)}.mobile-menu .close-control:hover .iconfont{color:var(--main-card-background)}.mobile-menu .menu-list{margin-top:40px}.mobile-menu .menu-item{margin-bottom:12px}.mobile-menu .menu-item .link-title{font-size:14px;margin-bottom:12px;display:inline-block;color:var(--main-font-second-color)}.mobile-menu .menu-item .link-child{display:grid;gap:12px;grid-template-columns:1fr 1fr}.mobile-menu .menu-item .link-child-btn{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;border-radius:8px;padding:10px 12px;background-color:var(--main-card-background);border:1px solid var(--main-card-border);box-shadow:0 8px 16px -4px var(--main-border-shadow);font-size:15px;cursor:pointer;transition:all .3s}.mobile-menu .menu-item .link-child-btn:hover{background-color:var(--main-color);color:var(--main-card-background)}.mobile-menu .menu-item .link-child-btn .iconfont{margin-right:6px;opacity:.6}.mobile-menu .menu-item .link-child-btn .name{max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><script>function toggleMobileMenu(){const e=document.getElementById("mobileMenu");e&&(e.style.display=e.style.display==="none"?"block":"none")}</script><div class=modal id=search-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:800px><div class=title><div class=title-left><i class="iconfont icon-search"></i>
+<span class=title-text>全局搜索</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=search-modal><div class=search-input><input type=text id=search-input placeholder=今天你想搜点什么？ autocomplete=off></div><div class=search-results><div class=search-list></div><div class=search-empty><i class="iconfont icon-search"></i><p>输入关键字，开始搜索</p></div></div><div class=search-hint><span class=text id=search-hint-text></span>
+<span class=text><a class=powered_by href=https://www.fusejs.io/ target=_blank>Fuse.js</a></span></div></div></div></div></div></header><main class=main-layout><div class=post><div class=post-meta><div class=meta><div class=categories><a href=/categories/%e7%bc%96%e7%a8%8b%e8%af%ad%e8%a8%80/ class=cat-item><i class="iconfont icon-folder"></i>
+<span class=name>编程语言</span></a></div><div class=tags><a href=/tags/terraform/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>terraform</span>
+</a><a href=/tags/aws/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>aws</span>
+</a><a href=/tags/devops/ class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>devops</span></a></div></div><h1 class=title>Terraform 极简入门：从 AWS-CLI 到基础设施即代码（IaC）</h1><div class=other-meta><span class="meta date"><i class="iconfont icon-date"></i>
+2026-05-20
+</span><span class="update meta"><i class="iconfont icon-time"></i>
+2026-05-20
+</span><span class="hot meta"><i class="iconfont icon-fire"></i>
+<span class=artalk-pv-count id=umami_value_page_pv>0</span>
+</span><span class="chat meta hover" data-scroll-to=comments><i class="iconfont icon-chat"></i>
+<span id=waline_comments_count class=artalk-comment-count>0</span></span></div></div><div class=post-content><article class="post-article s-card"><div class="article-gpt s-card"><div class=title><span class=name><i class="iconfont icon-robot"></i>
+文章摘要
+<i class="iconfont icon-up"></i>
+</span><span class=logo>FakeGPT</span></div><div class="content s-card"><span class=text></span></div><div class=meta></div></div><script src=https://npm.elemecdn.com/typeit@8.7.1/dist/index.umd.js></script><script>document.addEventListener("DOMContentLoaded",function(){new TypeIt(".article-gpt .content .text",{strings:"一篇面向新手的 Terraform 极简入门指南，通过对比 AWS Console 与 SAM 的真实项目踩坑经历，阐述基础设施即代码（IaC）的声明式思维。详解 Resource、Provider、State 三大核心概念，并手把手演示从 terraform init 到 apply 的完整实战流程，覆盖变量、输出、 locals、资源引用与目录拆分等进阶用法，助你告别手动点选，迈入云资源自动化管理。",speed:10,lifeLike:!0,waitUntilVisible:!0}).go()})</script><div id=page-content class=markdown-main-style><h2 id=缘起为什么需要-terraform>缘起：为什么需要 Terraform</h2><p>最近，我参与了一个 AWS Serverless 项目。业务需求本身并不复杂：几个 Lambda 函数、一个 S3 存储、一个 EventBridge 定时触发，再加上精细化的 IAM 权限控制。在部署这套服务的过程中，我先后尝试了三种方案，几乎踩遍了云基础设施管理中的经典巨坑：</p><ol><li><p><strong>AWS Console</strong>：一开始为了快，直接上控制台点鼠标。创建 S3 Bucket、手动上传 Lambda zip 包、配置 EventBridge 规则。问题是：项目要部署到 dev、staging、prod 三个环境，在控制台里点一遍要花半小时，三个环境配置完一个半小时。两个月后，当有人问“这个安全组是谁配的，为什么开了 443端口”时，没人说得清。</p></li><li><p><strong>SAM</strong>：手动上传 zip 太繁琐，同事推荐了 SAM，通过一个 <code>template.yaml</code> 定义 Lambda 和权限，结合 <code>sam build && sam deploy</code> 确实省心。但当面对 VPC、安全组、S3 高级配置、更精细的 IAM 策略时，SAM 显得力不从心。于是我变成了“混合打法”：SAM 管理 Lambda，其余资源还是在控制台管理。两个工具，两套流程，让人身心俱疲。</p></li><li><p><strong>Terraform</strong>：运维同事终于看不下去了：“你这些资源应该用 Terraform 管理起来”。我一开始是抗拒的——一个 S3 Bucket 要写好几行代码，还要声明 Provider、定义变量，控制台里点几下搞定的事，为什么要大费周章写代码？</p></li></ol><p>但是，很快一次意外说服了我。某天，有人在控制台里偷偷修改了路由表，却没有同步到代码中。第二天跑 <code>terraform plan</code>，配置漂移直接暴露。那一刻我才真正顿悟：<strong>Terraform 不仅仅是帮你创建资源的工具，更是帮你锁定“期望状态”的终极防线</strong>。</p><p>故事到这里，你以为我全面拥抱 Terraform 了？并没有。对于 Lambda 函数的代码部署，我最后还是选择用 GitHub Actions + AWS CLI。因为：<strong>Terraform 擅长管理静态的基础设施，而高频的代码迭代更适合放在专业的 CI/CD 流水线中</strong>。所以，我最终的工程实践是：<strong>Terraform 掌管资源拓扑，CI/CD 流水线负责代码交付</strong>。架构没有银弹，关键在于各司其职。</p><h2 id=什么是-terraform>什么是 Terraform</h2><p>先说结论：<strong>用代码描述你期望的基础设施最终状态，然后让工具帮你自动实现</strong>，这就是基础设施即代码（IaC, Infrastructure as Code）的核心思想。我们可以对比一下两种思维模式：</p><ul><li><strong>AWS CLI 是“命令式”</strong>——你必须精确告诉它每一步该怎么做：</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 命令式：按顺序下达指令</span>
+</span></span><span class=line><span class=cl>aws s3api create-bucket --bucket my-bucket --region us-west-2
+</span></span><span class=line><span class=cl>aws s3api put-bucket-versioning --bucket my-bucket --versioning-configuration <span class=nv>Status</span><span class=o>=</span>Enabled
+</span></span></code></pre></div><ul><li><strong>Terraform 是“声明式”</strong>——你只需要描述你想要的最终结果：</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl># 声明式：只描述期望的最终状态
+</span></span><span class=line><span class=cl>resource &#34;aws_s3_bucket&#34; &#34;my_bucket&#34; {
+</span></span><span class=line><span class=cl>  bucket = &#34;my-bucket&#34;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>resource &#34;aws_s3_bucket_versioning&#34; &#34;my_bucket&#34; {
+</span></span><span class=line><span class=cl>  bucket = aws_s3_bucket.my_bucket.id
+</span></span><span class=line><span class=cl>  versioning_configuration {
+</span></span><span class=line><span class=cl>    status = &#34;Enabled&#34;
+</span></span><span class=line><span class=cl>  }
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>当你执行 <code>terraform apply</code> 命令时，Terraform 会自动查漏补缺，智能处理以下三种场景：</p><ol><li><strong>现实中没有</strong>：自动创建。</li><li><strong>现实中有，但配置不一致</strong>：自动修改、校准。</li><li><strong>代码里删除了</strong>：下次 apply 时自动释放对应资源。</li></ol><p>从“命令式指令”<strong>向</strong>“声明式状态”的思维转变，是开发者接触 Terraform 时需要跨越的第一道门槛。</p><h2 id=核心概念>核心概念</h2><p>第一次看 Terraform 代码，你可能会被一堆配置搞得眼花缭乱。其实，学习 Terraform 不需要死记硬背，牢牢把握住三个核心概念即可：<strong>Resource（资源）</strong>、<strong>Provider（服务商）</strong> 和 <strong>State（状态文件）</strong>。</p><h3 id=resource你想要什么>Resource：你想要什么</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>resource &#34;aws_s3_bucket&#34; &#34;my_bucket&#34; {
+</span></span><span class=line><span class=cl>  bucket = &#34;my-unique-bucket-name&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>其中：</p><ul><li>resource：关键字，声明“我要定义一个资源”。</li><li>aws_s3_bucket：<strong>资源类型</strong>，由 Provider 定义，此处对应 AWS S3 存储桶。</li><li>my_bucket：<strong>逻辑名称</strong>（Logical Name），仅在代码内部引用时使用，可以自由命名。</li><li>bucket = &ldquo;&mldr;"：<strong>参数/属性</strong>，配置该资源的真实具体属性。</li></ul><p><strong>核心避坑点</strong> —— 代码中的逻辑名称 <code>my_bucket</code> 与云端真实的资源名称 <code>my-unique-bucket-name</code> 是两码事：</p><ul><li>前者类似于代码中的变量名，方便你在其他 .tf 文件中引用该资源；</li><li>后者则是最终在 AWS 控制台上呈现的资源实体名称。</li></ul><h3 id=provider该找谁要>Provider：该找谁要</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>provider &#34;aws&#34; {
+</span></span><span class=line><span class=cl>  region = &#34;us-west-2&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>Provider 扮演着“翻译官”的角色。当你在代码中声明“我需要一个 S3 存储桶”时，Provider 负责将你的意图翻译成对应云厂商的底层的 API 调用：</p><ul><li><code>aws_s3_bucket</code> 资源只能由 AWS Provider 来解析和驱动</li><li><code>azurerm_storage_container</code> 资源则只能由 Azure Provider 来解析和驱动</li></ul><h3 id=state都有什么>State：都有什么</h3><p>当你运行 <code>terraform apply</code> 命令后，它会在本地或远程生成一个名为 <code>terraform.tfstate</code> 的状态文件。这个文件记录了：</p><ul><li>当前代码接管了哪些现实资源。</li><li>这些资源在云端的真实 ID 和属性快照。</li><li>上一次成功应用配置后的基线状态。</li></ul><p><strong>状态文件是 Terraform 的心脏</strong>。唯有依靠它，Terraform 才能精准计算出“云端实际状态”与“代码期望状态”之间的偏差。这与 Git 对比两次提交差异的底层逻辑相通：Git 比较的是代码的历史版本，而 Terraform 比较的则是本地代码与云端环境。</p><p>举例说明：假设代码中声明了 <code>bucket = "my-bucket"</code>。下次运行 <code>terraform plan</code> 命令时，Terraform 读取状态文件后得知"此前已管理过一个存储桶，云端 ID 为 my-bucket&rdquo;，随即向 AWS 发起实时校验。如配置完全一致，终端便会输出：<code>No changes</code>。<strong>一旦状态文件丢失</strong>，Terraform 将会“失忆”，误以为这是一份全新的配置，进而尝试在云端重新创建资源，最终导致名称冲突甚至意外覆盖。。</p><hr><h2 id=实战创建第一个资源>实战：创建第一个资源</h2><p>让我们从最简单的配置开始，创建 <code>main.tf</code>文件：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>provider &#34;aws&#34; {
+</span></span><span class=line><span class=cl>  region = &#34;us-west-2&#34;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>resource &#34;aws_s3_bucket&#34; &#34;my_bucket&#34; {
+</span></span><span class=line><span class=cl>  bucket = &#34;my-tutorial-bucket-2026&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>接下来，便是标准的 <strong>Terraform 三板斧</strong> 命令：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 1. 初始化：下载所需的 provider 插件</span>
+</span></span><span class=line><span class=cl>terraform init   
+</span></span><span class=line><span class=cl><span class=c1># 2. 预览：对比差异，预览将要发生的变更（不会真正动云端资源）</span>
+</span></span><span class=line><span class=cl>terraform plan 
+</span></span><span class=line><span class=cl><span class=c1># 3. 部署：将变更真正应用到云端</span>
+</span></span><span class=line><span class=cl>terraform apply  
+</span></span></code></pre></div><p>在执行 plan 时，终端会输出清晰的差异对比图：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Terraform will perform the following actions:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  # aws_s3_bucket.my_bucket will be created
+</span></span><span class=line><span class=cl>  + resource &#34;aws_s3_bucket&#34; &#34;my_bucket&#34; {
+</span></span><span class=line><span class=cl>      + bucket = &#34;my-tutorial-bucket-2026&#34;
+</span></span><span class=line><span class=cl>      + id     = (known after apply)
+</span></span><span class=line><span class=cl>      + arn    = (known after apply)
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Plan: 1 to add, 0 to change, 0 to destroy.
+</span></span></code></pre></div><p>此时，必须小心谨慎地对待以下变更差异符号：</p><ul><li><code>+</code> <strong>创建</strong>：表示创建了新资源</li><li><code>-</code> <strong>删除</strong>：表示删除了某个资源</li><li><code>~</code> <strong>修改</strong>：表示在原资源上更新特定属性</li><li><code>-/+</code> <strong>破坏性替换</strong>：由于修改了不可变参数，，Terraform 必须<strong>先删后建</strong>。在生产环境中可能到这个符号务必小心，这意味着可能会删除原有数据，属于<strong>危险</strong>操作</li></ul><p>执行完成后，你会看到目录中多出了 <code>terraform.tfstate</code> 文件，里面已经记录了当前存储桶的信息。</p><hr><h2 id=variables拒绝硬编码>Variables：拒绝硬编码</h2><p>在上面的例子中，我们把 region 和 bucket 名称直接写死了，这在软件工程中属于硬编码</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>provider &#34;aws&#34; {
+</span></span><span class=line><span class=cl>  region = &#34;us-west-2&#34;  # hardcode
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>resource &#34;aws_s3_bucket&#34; &#34;my_bucket&#34; {
+</span></span><span class=line><span class=cl>  bucket = &#34;my-tutorial-bucket-2026&#34;  # hardcode
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>考虑到代码的可维护性，我们引入一个新的文件 <code>variables.tf</code>，将可变参数抽离出来：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl># variables.tf
+</span></span><span class=line><span class=cl>variable &#34;region&#34; {
+</span></span><span class=line><span class=cl>  type    = string
+</span></span><span class=line><span class=cl>  default = &#34;us-west-2&#34;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>variable &#34;bucket_name&#34; {
+</span></span><span class=line><span class=cl>  type = string
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>然后在 <code>main.tf</code> 中通过 <code>var.xxx</code> 的形式动态引用变量：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl># main.tf
+</span></span><span class=line><span class=cl>provider &#34;aws&#34; {
+</span></span><span class=line><span class=cl>  region = var.region
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>resource &#34;aws_s3_bucket&#34; &#34;my_bucket&#34; {
+</span></span><span class=line><span class=cl>  bucket = var.bucket_name
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>在实际执行时，有三种常见的方式注入这些变量的值：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 1. 命令行</span>
+</span></span><span class=line><span class=cl>terraform apply -var<span class=o>=</span><span class=s2>&#34;bucket_name=my-prod-bucket&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 2. 变量文件（推荐）</span>
+</span></span><span class=line><span class=cl>terraform apply -var-file<span class=o>=</span><span class=s2>&#34;prod.tfvars&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 3. 环境变量</span>
+</span></span><span class=line><span class=cl><span class=nb>export</span> <span class=nv>TF_VAR_bucket_name</span><span class=o>=</span><span class=s2>&#34;my-prod-bucket&#34;</span>
+</span></span><span class=line><span class=cl>terraform apply
+</span></span></code></pre></div><p>其中 <code>prod.tfvars</code> 通常是类似下面这样的键值对形式：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>bucket_name = &#34;my-prod-bucket&#34;
+</span></span><span class=line><span class=cl>region      = &#34;us-west-2&#34;
+</span></span></code></pre></div><p>在需要多环境管理的生产级项目中，更推荐使用 <strong>workspaces</strong> 目录 + <code>tfvars.json</code> 实现多环境配置管理：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>workspaces/
+</span></span><span class=line><span class=cl>├── dev.tfvars.json
+</span></span><span class=line><span class=cl>├── staging.tfvars.json
+</span></span><span class=line><span class=cl>└── prod.tfvars.json
+</span></span></code></pre></div><hr><h2 id=outputs交付产物>Outputs：交付产物</h2><p>在 AWS 体系中，资源的 <strong>ARN（Amazon Resource Name，唯一资源标识）</strong> 是非常核心的概念。例如在编写 IAM 权限策略时，频繁需要引用其他资源的 ARN。当 Terraform 创建完资源后，我们如何将资源的 ID、ARN 等属性安全地暴露给下游服务或团队呢？这就需要用到 <code>outputs.tf</code>：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>output &#34;bucket_arn&#34; {
+</span></span><span class=line><span class=cl>  description = &#34;The ARN of the bucket&#34;
+</span></span><span class=line><span class=cl>  value       = aws_s3_bucket.my_bucket.arn
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>运行 <code>terraform apply</code> 命令后，终端将会打印出类似下面的信息：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Outputs:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bucket_arn = &#34;arn:aws:s3:::my-tutorial-bucket-2026&#34;
+</span></span></code></pre></div><p><strong>Output 的两大核心场景：</strong></p><ol><li><strong>直观可视</strong>：让运维人员或 CI/CD 脚本在部署完后，能快速直接获取到关键节点信息</li><li><strong>跨模块联动</strong>：下游的 Terraform 模块可以通过 <code>terraform_remote_state</code> 远程读取，实现模块解耦</li></ol><hr><h2 id=locals计算中间值>Locals：计算中间值</h2><p>variables 负责处理来自外部的输入参数，它可以通过 <code>tfvars</code> 或者 <code>tfvars.json</code> 文件传入，而内部复杂的逻辑计算和复用，则应该交给 locals。例如，我们希望规范资源命名，自动为所有资源带上环境后缀，并统一注入 Tag 标签：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl># local.tf
+</span></span><span class=line><span class=cl>locals {
+</span></span><span class=line><span class=cl>  bucket_name = &#34;my-app-${var.env}&#34;
+</span></span><span class=line><span class=cl>  tags = {
+</span></span><span class=line><span class=cl>    Environment = var.env
+</span></span><span class=line><span class=cl>    ManagedBy   = &#34;terraform&#34;
+</span></span><span class=line><span class=cl>  }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># main.tf
+</span></span><span class=line><span class=cl>resource &#34;aws_s3_bucket&#34; &#34;my_bucket&#34; {
+</span></span><span class=line><span class=cl>  bucket = local.bucket_name
+</span></span><span class=line><span class=cl>  tags   = local.tags
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p><strong>什么时候该用 locals？</strong></p><ul><li>多个资源需要共享一段完全相同的计算逻辑或字符串。</li><li>text 表达式太长、太复杂，不希望在 main.tf 中破坏可读性。</li><li>为了提高代码自解释性，给某段计算结果起个有意义的名字。</li></ul><hr><h2 id=资源引用隐式依赖处理>资源引用：隐式依赖处理</h2><p>我们来看一个稍微复杂的场景：为刚刚创建的 S3 存储桶配置一条 Bucket Policy。首先，我们在独立的文件 policies/s3-policy.json 中定义好标准的 JSON 策略模板，并预留占位符：</p><ul><li>先创建一个 JSON 模板文件 <code>policies/s3-policy.json</code>：</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;Version&#34;</span><span class=p>:</span> <span class=s2>&#34;2012-10-17&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;Statement&#34;</span><span class=p>:</span> <span class=p>[</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;Effect&#34;</span><span class=p>:</span> <span class=s2>&#34;Allow&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;Principal&#34;</span><span class=p>:</span> <span class=s2>&#34;*&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;Action&#34;</span><span class=p>:</span> <span class=s2>&#34;s3:GetObject&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;Resource&#34;</span><span class=p>:</span> <span class=s2>&#34;${bucket_arn}/*&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><ul><li>接着，在 <code>main.tf</code> 中用 <code>templatefile</code> 函数渲染该 JSON，并建立资源关联：</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>resource &#34;aws_s3_bucket&#34; &#34;my_bucket&#34; {
+</span></span><span class=line><span class=cl>  bucket = var.bucket_name
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>resource &#34;aws_s3_bucket_policy&#34; &#34;my_policy&#34; {
+</span></span><span class=line><span class=cl>  bucket = aws_s3_bucket.my_bucket.id
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  policy = templatefile(&#34;${path.module}/policies/s3-policy.json&#34;, {
+</span></span><span class=line><span class=cl>    bucket_arn = aws_s3_bucket.my_bucket.arn
+</span></span><span class=line><span class=cl>  })
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p><strong>注意看这里的 aws_s3_bucket.my_bucket.arn</strong>：在代码里，我们并没有手动去指定谁先创建、谁后创建。但 Terraform 在解析代码时，会通过这一行引用自动建立一张<strong>有向无环图（DAG）</strong>。它知道 Policy 依赖 Bucket 的 ARN，因此会<strong>极其智能地先创建存储桶，拿到 ARN 后再创建策略</strong>。这就是声明式编程带来的巨大红利。</p><hr><h2 id=进阶目录拆分>进阶：目录拆分</h2><p>随着项目规模的扩大，把所有基础设施全部写在一个 main.tf 里会变成一场灾难。优秀的实践是将资源按职责和生命周期拆分成独立的子目录。<strong>每个目录拥有自己独立的状态文件</strong>，这样可以极大程度地控制<strong>爆炸半径（Blast Radius）</strong>——哪怕你在改 Lambda 代码时配置写错了，绝对不会波及核心的网络和 IAM 权限：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>infra/
+</span></span><span class=line><span class=cl>├── iam/              # IAM 角色和策略
+</span></span><span class=line><span class=cl>│   ├── main.tf
+</span></span><span class=line><span class=cl>│   ├── variables.tf
+</span></span><span class=line><span class=cl>│   ├── outputs.tf
+</span></span><span class=line><span class=cl>│   └── workspaces/
+</span></span><span class=line><span class=cl>│       └── prod.tfvars.json
+</span></span><span class=line><span class=cl>└── lambda/           # Lambda 函数
+</span></span><span class=line><span class=cl>    ├── main.tf
+</span></span><span class=line><span class=cl>    ├── variables.tf
+</span></span><span class=line><span class=cl>    └── workspaces/
+</span></span><span class=line><span class=cl>        └── prod.tfvars.json
+</span></span></code></pre></div><p>在部署时，各自独立执行：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nb>cd</span> iam <span class=o>&amp;&amp;</span> terraform apply
+</span></span><span class=line><span class=cl><span class=nb>cd</span> lambda <span class=o>&amp;&amp;</span> terraform apply
+</span></span></code></pre></div><p>此时面临一个新挑战：lambda 目录在配置函数时，需要引用 iam 目录刚刚创建出来的角色 ARN。它们不仅文件独立，连状态文件都不在一个地方，该怎么打通？答案是利用 <code>terraform_remote_state</code> 数据源，跨边界直接读取对方的部署产物：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>data &#34;terraform_remote_state&#34; &#34;iam&#34; {
+</span></span><span class=line><span class=cl>  backend = &#34;s3&#34;
+</span></span><span class=line><span class=cl>  config = {
+</span></span><span class=line><span class=cl>    bucket = &#34;my-terraform-state&#34;
+</span></span><span class=line><span class=cl>    key    = &#34;iam/terraform.tfstate&#34;
+</span></span><span class=line><span class=cl>    region = &#34;us-west-2&#34;
+</span></span><span class=line><span class=cl>  }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>resource &#34;aws_lambda_function&#34; &#34;my_function&#34; {
+</span></span><span class=line><span class=cl>  role = data.terraform_remote_state.iam.outputs.lambda_role_arn
+</span></span><span class=line><span class=cl>  # ...
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p><strong>架构痛点与思考</strong>：使用这种方式，你需要在代码里硬编码对方的远程 S3 路径。当子目录繁多时，这些路径依赖会交织成一张复杂的蜘蛛网，维护成本极高。这解释了为什么在团队规模扩大后，往往需要引入 Terraform Cloud、Atlantis 或 Terragrunt 等高级编排工具的原因——它们能够帮你统一托管 Backend 和拓扑依赖，告别手动配置。</p><hr><h2 id=总结>总结</h2><p>万变不离其宗，掌握 Terraform 的核心其实就三件事：</p><ol><li><strong>声明你想要什么</strong>（Resource 描述期望状态）</li><li><strong>记录现在有什么</strong>（State 文件记录现实快照）</li><li><strong>计算差距并严格执行</strong>（Plan 预览变更，Apply 抹平差距）</li></ol><p>至于变量、输出、局部变量、数据源、模块等概念，统统是围绕这三件事衍生出来的效率工具。例如，当一个资源由你来控制时，你应该使用 resource 关键字描述资源；当一个资源已经存在时，你应该使用 data 关键字查询资源。</p><p><strong>什么时候用什么工具？</strong></p><table><thead><tr><th>业务场景</th><th>推荐选型</th><th>选用理由</th></tr></thead><tbody><tr><td>临时测试、一次性调研、做完就忘</td><td><strong>AWS 控制台</strong></td><td>纯可视化，直观方便，无额外心智负担</td></tr><tr><td>临时运维小脚本、快速查询或单步销毁</td><td><strong>AWS CLI</strong></td><td>轻量快捷，不需要初始化环境和声明状态</td></tr><tr><td>纯粹的 Serverless / Lambda 应用开发</td><td><strong>AWS SAM / Serverless 框架</strong></td><td>针对 FaaS 深度优化，代码打包与热编译体验极佳</td></tr><tr><td><strong>多云环境、多层资源交织、团队协作、长期演进</strong></td><td><strong>Terraform</strong></td><td>完善的状态管理、声明式依赖拓扑、变更计划预览</td></tr></tbody></table><p>在实际的工业界项目中，混用（Hybrid）才是常态：我们用 Terraform 锁死 VPC、数据库、IAM 等底层重型基础设施；用 SAM 或专有 CI/CD 流水线去高频发布 Lambda 业务代码；用 AWS CLI 临时处理线上紧急巡检。</p><p>最后，请允许我向 Terraform 新手们提供一份生存指南：</p><ul><li><strong>状态文件必须上云锁死</strong>：本地存 State 只适合个人玩具项目。多人协作务必配置远程 Backend（如 S3），并开启 <strong>DynamoDB 状态锁</strong>，防止两人同时 apply 导致状态文件损坏。</li><li><strong>严禁控制台“偷渡”修改</strong>：一旦用了 Terraform，就请管住去控制台修改参数的手。任何微小的线上人肉微调，都会在下一次自动化 apply 时被无情覆盖，甚至引发灾难。</li><li><strong>重视 prevent_destroy 护身符</strong>：对于生产环境的数据库、核心存储桶等不可再生资源，务必在代码中的 lifecycle 块里加上 prevent_destroy = true，最大程度防止误删风险。</li><li><strong>警惕 -/+ 符号</strong>：再次强调，plan 结果里一旦出现 <code>-/+</code>，说明有资源要被干掉重建，核对好该资源是否有未备份的持久化数据！</li></ul><p>如果你发现自己正在重复敲着一堆类似的 AWS CLI 命令，或者在控制台频繁为新客户克隆同一套配置，那么，请不要怀疑，你该用 Terraform 啦！</p></div><div class="copyright s-card"><div class=title><span class=post-name>Terraform 极简入门：从 AWS-CLI 到基础设施即代码（IaC）</span>
+<a :href=https://blog.yuanpei.me/posts/terraform-minimal-guide/ class=post-link target=_blank>https://blog.yuanpei.me/posts/terraform-minimal-guide/</a></div><div class=post-meta><div class=meta-item><span class=tip>作者</span>
+<span class=name>飞鸿踏雪</span></div><div class=meta-item><span class=tip>发布于</span>
+<span class=name>2026-05-20</span></div><div class=meta-item><span class=tip>更新于</span>
+<span class=name>2026-05-20</span></div><div class="meta-item cc"><span class=tip>许可协议</span>
+<a class=name href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank>CC BY-NC-SA 4.0</a></div></div><span class=meta-tip>署名-非商业性使用-相同方式共享 4.0 国际</span></div><div class=other-meta><div class=all-tags><a href=/tags/terraform class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>terraform</span>
+</a><a href=/tags/aws class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>aws</span>
+</a><a href=/tags/devops class=tag-item><i class="iconfont icon-hashtag"></i>
+<span class=name>devops</span></a></div><a href=https://eqnxweimkr5.feishu.cn/share/base/form/shrcnCXCPmxCKKJYI3RKUfefJre class=report target=_blank><i class="iconfont icon-report"></i>
+反馈与投诉</a></div><div class=reward><div class=reward-btn onclick='window.$Modal.show("reward-modal")'><i class="iconfont icon-reward"></i>
+<span class=text>赞赏博主</span></div></div><div class=modal id=reward-modal><div class=modal-mask></div><div class="modal-main s-card" style=max-width:430px><div class=title><div class=title-left><i class="iconfont icon-reward"></i>
+<span class=title-text>赞赏博主</span></div><i class="iconfont icon-close close" id=modal-close></i></div><div class=modal-content style=--height:80vh><div class=reward-card><div class=thank>🙏 请博主喝一杯咖啡</div><div class=qr><a class=qr-img href=/images/reward/alipay.jpg target=_blank><img src=/images/reward/alipay.jpg alt=支付宝赞赏码><div class=tip><i class="iconfont icon-alipay"></i>
+<span>支付宝</span></div></a><a class=qr-img href=/images/reward/wechat.jpg target=_blank><img src=/images/reward/wechat.jpg alt=微信赞赏码><div class=tip><i class="iconfont icon-wechat"></i>
+<span>微信</span></div></a></div><div class="all-list s-card hover"><div class=title>赞赏记录</div><div class=tip>赞赏金额将全部用于开源项目维护，以及服务器、域名及各类云服务的开销</div></div></div></div></div></div><div class=related-post><div class=title><span class=name><i class="iconfont icon-star"></i>
+相关推荐
+</span><span class=shuffle onclick='window.location.href="/posts/478946932/"'>随便逛逛</span></div><div class=post-lists><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/dotnet-agent-framework-comparison/"'><div class=post-content><span class=post-title>.NET 生态下的 Agent 框架选型：从 ReAct 到原生推理</span>
+<span class=post-desc>本文对比了 Semantic Kernel、Microsoft.Extensions.AI 和 Microsoft Agent Framework 三种 .NET 生态下的 Agent 框架，详细测试了流式输出、工具调用和推理内容获取能力。随着 OpenAI o1、DeepSeek Reasoner、Claude 4 等推理模型的兴起，Agent 系统正从 ReAct 模式向原生推理演进。本文实测了三大框架对 reasoning_content 的兼容情况，并提供了 DeepSeek 推理模型的接入方案，最后针对不同场景给出了选型建议。</span></div></article><article class="post-item s-card simple hover" style=animation-delay:.4s onclick='window.location.href="/posts/llm-streaming-evolution/"'><div class=post-content><span class=post-title>从「能用」到「好用」：LLM 流式响应实现方式的探索之路</span>
+<span class=post-desc>本文记录了在 ASP.NET Core 中实现 LLM 流式响应的完整探索历程。从直接操作 Response 的朴素写法，到引入事件抽象，再到 IAsyncEnumerable 的陷阱与中间件方案的局限，最终通过自定义的 SseResult 实现了优雅、可复用且符合框架哲学的 Server-Sent Events (SSE) 流式输出方案。文章对比了五种实现方式的复杂度与适用场景，为需要集成生成式 AI 流式交互的开发者提供了一条从「能用」到「好用」的清晰路径。</span></div></article></div><style>.post-lists{width:100%}.post-lists .post-item{padding:0!important;display:flex;margin-bottom:1rem;animation:fade-up .6s backwards;cursor:pointer;overflow:hidden;height:200px}.post-lists .post-item .post-cover{flex:0 0 35%;overflow:hidden;transform:translateZ(0)}.post-lists .post-item .post-cover img{width:100%;height:100%;object-fit:cover;transform-origin:center center;transition:transform .5s ease-out,filter .5s ease-out;backface-visibility:hidden}.post-lists .post-item .post-content{flex:1;padding:1.6rem 2rem;display:flex;flex-direction:column;justify-content:space-between}.post-lists .post-item .post-category{display:flex;flex-wrap:wrap;width:100%;color:var(--main-font-second-color);font-size:14px}.post-lists .post-item .post-category .cat-name{display:flex;flex-direction:row;align-items:center}.post-lists .post-item .post-category .cat-name .iconfont{opacity:.8;margin-right:6px;color:var(--main-font-second-color)}.post-lists .post-item .post-category .top{margin-left:12px;color:var(--main-color)}.post-lists .post-item .post-category .top .iconfont{opacity:.8;color:var(--main-color)}.post-lists .post-item .post-title{font-size:20px;line-height:30px;font-weight:700;margin:.6rem 0;transition:color .3s;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-desc{margin-top:-.4rem;margin-bottom:.8rem;opacity:.8;line-height:30px;display:-webkit-box;overflow:hidden;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:2}.post-lists .post-item .post-meta{display:flex;flex-direction:row;align-items:center;justify-content:space-between;color:var(--main-font-second-color)}.post-lists .post-item .post-tags{display:flex;flex-wrap:wrap;opacity:.8;margin-right:20px;overflow:hidden;mask:linear-gradient(90deg,#fff 0,#fff 90%,hsla(0,0%,100%,.6) 95%,hsla(0,0%,100%,0) 100%)}.post-lists .post-item .post-tags .tags-name{display:flex;flex-direction:row;align-items:center;margin-right:12px;white-space:nowrap;transition:color .3s}.post-lists .post-item .post-time{opacity:.6;font-size:13px;white-space:nowrap}.post-lists .post-item:hover .post-cover img{filter:brightness(.8);transform:scale(1.05)}.post-lists .post-item:hover .post-title{color:var(--main-color)}.post-lists .post-item:active{transform:scale(.98)}.post-lists .post-item.cover-left{flex-direction:row}.post-lists .post-item.cover-right{flex-direction:row-reverse}.post-lists .post-item.cover-both:nth-child(odd){flex-direction:row}.post-lists .post-item.cover-both:nth-child(even){flex-direction:row-reverse}.post-lists.layout-grid{display:grid;grid-template-columns:repeat(var(--grid-columns,2),1fr);gap:var(--grid-gap,1rem)}.post-lists.layout-grid .post-item{margin:0;flex-direction:column;height:auto}.post-lists.layout-grid .post-item .post-cover{flex:none;width:100%;height:225px}@media(max-width:768px){.post-lists .post-item{flex-direction:column;height:auto}.post-lists .post-item .post-cover{flex:none;width:100%;height:200px}.post-lists .post-item.cover-left,.post-lists .post-item.cover-right,.post-lists .post-item.cover-both{flex-direction:column!important}.post-lists.layout-grid{grid-template-columns:1fr}.post-lists .post-item .post-tags{flex-wrap:nowrap}}.post-lists .post-item .simple{animation:none;padding:.5rem 1.4rem!important;background-color:var(--main-card-second-background);height:auto;margin-bottom:.5rem}.post-lists .post-item .simple .post-content{padding:.5rem 0}.post-lists .post-item .simple .post-title{margin:0;font-size:16px}.post-lists .post-item .simple .post-desc{margin:.3rem 0 0;font-size:14px;opacity:.6}</style></div><style>.related-post{margin-top:1rem}.related-post .title{display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;margin:3rem 0 1rem;padding:0 6px}.related-post .title .name{display:flex;align-items:center;font-size:24px;font-weight:700}.related-post .title .name .iconfont{font-size:26px;font-weight:400;margin-right:8px}.related-post .title .shuffle{opacity:.6;font-size:14px;transition:color .3s,opacity .3s;cursor:pointer}.related-post .title .shuffle:hover{opacity:1;color:var(--main-color)}</style><div id=comments><div id=main-comment class=comment style=padding-left:1.5rem;padding-right:1.5rem><div v-if=!fill class=title><span class=name><i class="iconfont icon-chat"></i>
+评论
+</span><span class=tool>隐私政策</span></div><link rel=stylesheet href=https://unpkg.com/@waline/client@v3/dist/waline.css><div id=waline class=waline-container></div><style>.waline-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}.waline-container .vcount{color:var(--card-text-color-main)}.waline-container .wl-content img{width:unset!important;max-width:unset!important;max-height:unset!important;border-radius:unset!important}.waline-container .wl-content p{font-size:.9rem!important}.wl-header label{font-size:.8em}.wl-sort li{font-size:.8em}</style><script type=module>
+        import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+        init({
+            el: '#waline',
+            serverURL: 'https:\/\/waline.yuanpei.me\/',
+            lang: 'zh',
+            dark: 'auto',
+            path: window.location.href,
+            requiredMeta: ['nick','mail'],
+            emoji: [
+                '//unpkg.com/@waline/emojis@1.2.0/weibo'
+            ],
+            reaction: false,
+        });
+      </script></div></div><div class="next-post s-card" id=next-post data-is-next=false><a href=/posts/dotnet-agent-framework-comparison/ class=next-post-link><span class=post-tip>阅读上一篇
+</span><span class=post-title>.NET 生态下的 Agent 框架选型：从 ReAct 到原生推理</span></a></div></article><aside class=main-aside><div class="hello s-card weidgets"><span class=tip id=hello-weidget-tip>好久不见</span><div class=content><div class=site-logo><div class=avatar><img src=/images/avatar.jpg alt=avatar loading=lazy></div></div><span class=site-desc>谢谢你，在这世界的角落，找到我。我是一位穿梭于数字与人文领域交界处的观察者，热衷于在数字迷雾中剖析谜题背后的真相，同时在人文星河中重拾温暖和光明。我期待，在元视角的坐标系下，找到理性思考与感性体验共鸣完美平衡的交汇点。</span></div><div class=info><div class=name><span class=author>飞鸿踏雪</span>
+<span class=desc>纵有疾风起，人生不言弃</span></div><div class=link><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuapei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i></a></div></div></div><div class=sticky><div class="toc s-card weidgets" id=weidget-toc><div class=toc-title><i class="iconfont icon-toc"></i>
+<span class=name>目录</span></div><div id=toc-all class=toc-list></div></div><script>document.addEventListener("DOMContentLoaded",function(){const o=[];let e=null,t=null,n=0;const s=document.getElementById("toc-all"),i=()=>{try{if(e=document.getElementById("page-content"),!e)return!1;const t=Array.from(e.querySelectorAll("h1, h2, h3, h4")).filter(e=>e.parentElement.tagName.toLowerCase()==="div");return t}catch(e){console.error("获取所有目录数据出错：",e)}},r=()=>{const e=i();if(!e)return!1;s.innerHTML="",e.forEach((e,t)=>{const n={id:e.id,type:e.tagName,text:e.textContent?.replace(/\u200B/g,"").trim()},i=document.createElement("span");i.id="toc-"+n.id,i.className=`toc-item ${n.type} ${t===0?"active":""}`,i.textContent=n.text,i.addEventListener("click",()=>d(n.id)),s.appendChild(i),o.push(n)}),e&&e.length>0&&(t=e[0].id)},c=(e,t)=>{let n;return function(){const s=arguments,o=this;n||(e.apply(o,s),n=!0,setTimeout(()=>n=!1,t))}},l=c(()=>{if(!o.length)return!1;const e=i();if(!e)return!1;const s=120;if(window.scrollY===0){n=0,t=e[0]?.id,a();return}for(let n of e){const o=n.getBoundingClientRect();o.top-s<=0&&o.bottom+s>=0&&t!==n.id&&(t=n.id,a())}},100),a=()=>{document.querySelectorAll(".toc-item.active").forEach(e=>{e.classList.remove("active")});const e=document.getElementById("toc-"+t);if(!e)return!1;e.classList.add("active"),n=e.offsetTop-2||0,s.style.setProperty("--height",n+"px"),s.scrollTo({top:n-80,behavior:"smooth"})},d=t=>{try{const n=document.getElementById(t);if(!n||!e)return!1;const s=n.offsetTop,o=s+e.offsetTop-80;window.scroll({top:o,behavior:"smooth"})}catch(e){console.error("目录滚动失败：",e)}};r(),window.addEventListener("scroll",l)})</script><style lang=scss scoped>.toc{position:relative;padding:0!important;overflow:hidden;.toc-title { display: flex; flex-direction: row; align-items: center; padding: 18px; height: 58px; .iconfont { margin-right: 8px; font-weight: bold; opacity: 0.6; } .name { font-weight: bold; } } .toc-list { position: relative; padding: 20px; padding-top: 0; padding-left: 24px; display: flex; flex-direction: column; max-height: calc(70vh - 58px); overflow: auto; .toc-item { margin: 4px 0; padding: 6px 12px; border-radius: 8px; opacity: 0.6; transition: color 0.3s, opacity 0.3s, font-size 0.3s, background-color 0.3s; cursor: pointer; &:first-child { margin-top: 0; } &:last-child { margin-bottom: 0; } &.H1 { font-weight: bold; } &.H2 { font-size: 14px; margin-left: 15px; font-weight: normal; } &.H3 { font-size: 12px; margin-left: 25px; } &.active { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); &.H2 { font-size: 14px; } &.H3 { font-size: 12px; } } &:hover { opacity: 1; color: var(--main-color); background-color: var(--main-color-bg); } } &::after { content: ""; position: absolute; left: 12px; top: var(--height); width: 4px; height: 20px; margin: 8px 0; background-color: var(--main-color); border-radius: 8px; transition: top 0.3s; } } &::before { content: ""; position: absolute; left: 12px; bottom: 20px; width: 4px; height: calc(100% - 78px); background-color: var(--main-card-border); border-radius: 8px; }}</style><div class="calendar-widget s-card weidgets"><div class=title><i class="iconfont icon-date"></i>
+<span class=title-name>单向历</span></div><div class=calendar-cover-wrapper><div class=calendar-skeleton></div><img class=calendar-cover-img src=https://img.owspace.com/Public/uploads/Download/2026/0520.jpg data-publish-date=2026-05-20 alt="calendar cover"></div></div><style>.calendar-cover-wrapper{border-radius:0;overflow:hidden}.calendar-skeleton{width:100%;aspect-ratio:3/4;background:linear-gradient( 90deg,var(--main-card-second-background) 25%,var(--main-card-border) 50%,var(--main-card-second-background) 75% );background-size:200% 100%;animation:skeleton-shimmer 1.5s infinite}.calendar-skeleton.hidden{display:none}.calendar-cover-img{display:none;object-fit:scale-down;width:100%;aspect-ratio:3/4}.calendar-cover-img.loaded{display:block}@keyframes skeleton-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}</style><script>document.addEventListener("DOMContentLoaded",function(){const n=document.querySelector(".calendar-cover-wrapper"),t=n.querySelector(".calendar-skeleton"),e=n.querySelector(".calendar-cover-img"),s=e=>{const s=e.getFullYear(),t=e.getMonth()+1,n=e.getDate(),o=t<10?`0${t}`:t,i=n<10?`0${n}`:n;return`https://img.owspace.com/Public/uploads/Download/${s}/${o}${i}.jpg`};function o(){e.classList.add("loaded"),t.classList.add("hidden")}function i(){t.innerHTML='<span style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--main-font-second-color);font-size:14px;">图片加载失败</span>',t.classList.remove("calendar-skeleton")}if(e.complete&&e.naturalHeight!==0?o():(e.addEventListener("load",o),e.addEventListener("error",i)),document.location.pathname.startsWith("/posts")){const t=e.dataset.publishDate;t&&(e.src=s(new Date(t)))}else e.src=s(new Date)})</script><div class="tags-cloud s-card weidgets"><div class=title><i class="iconfont icon-hashtag"></i>
+<span class=title-name>热门标签</span></div><div class=all-tags><a href=/tags/di/ class=tags><span class=name>DI</span>
+<sup class=num>2</sup>
+</a><a href=/tags/pgvector/ class=tags><span class=name>Pgvector</span>
+<sup class=num>1</sup>
+</a><a href=/tags/.net-core/ class=tags><span class=name>.NET Core</span>
+<sup class=num>15</sup>
+</a><a href=/tags/%E8%AE%A4%E8%AF%81/ class=tags><span class=name>认证</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%9B%9E%E9%A1%BE/ class=tags><span class=name>回顾</span>
+<sup class=num>1</sup>
+</a><a href=/tags/ado.net/ class=tags><span class=name>ADO.NET</span>
+<sup class=num>1</sup>
+</a><a href=/tags/chatgpt/ class=tags><span class=name>ChatGPT</span>
+<sup class=num>3</sup>
+</a><a href=/tags/%E5%8F%8C%E5%8D%81%E4%B8%80/ class=tags><span class=name>双十一</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%97%E4%BA%BA/ class=tags><span class=name>诗人</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%87%AA%E6%88%91%E8%AE%A4%E7%9F%A5/ class=tags><span class=name>自我认知</span>
+<sup class=num>1</sup>
+</a><a href=/tags/http/ class=tags><span class=name>HTTP</span>
+<sup class=num>9</sup>
+</a><a href=/tags/%E4%BB%99%E5%89%91%E5%A5%87%E4%BE%A0%E4%BC%A0/ class=tags><span class=name>仙剑奇侠传</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/ class=tags><span class=name>人工智能</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E4%B8%80%E5%87%BA%E5%A5%BD%E6%88%8F/ class=tags><span class=name>一出好戏</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%85%8D%E8%BD%BD/ class=tags><span class=name>配载</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%9B%9E%E5%AE%B6/ class=tags><span class=name>回家</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%B7%E8%AE%B0%E4%BD%8F%E6%88%91/ class=tags><span class=name>请记住我</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%99%90%E6%B5%81/ class=tags><span class=name>限流</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%99%BA%E8%83%BD%E5%AE%B6%E5%B1%85/ class=tags><span class=name>智能家居</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/ class=tags><span class=name>自动化</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%85%B3%E5%8D%A1%E7%B3%BB%E7%BB%9F/ class=tags><span class=name>关卡系统</span>
+<sup class=num>1</sup>
+</a><a href=/tags/ugui/ class=tags><span class=name>UGUI</span>
+<sup class=num>5</sup>
+</a><a href=/tags/%E9%AA%8C%E8%AF%81/ class=tags><span class=name>验证</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%9B%8B%E7%82%92%E9%A5%AD/ class=tags><span class=name>蛋炒饭</span>
+<sup class=num>1</sup>
+</a><a href=/tags/protobuf/ class=tags><span class=name>Protobuf</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%AF%8D%E4%BA%91/ class=tags><span class=name>词云</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%93%B2%E5%AD%A6/ class=tags><span class=name>哲学</span>
+<sup class=num>3</sup>
+</a><a href=/tags/api/ class=tags><span class=name>API</span>
+<sup class=num>2</sup>
+</a><a href=/tags/ar/ class=tags><span class=name>AR</span>
+<sup class=num>3</sup>
+</a><a href=/tags/sklearn/ class=tags><span class=name>Sklearn</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E6%97%A5%E6%9C%AC/ class=tags><span class=name>日本</span>
+<sup class=num>1</sup>
+</a><a href=/tags/linq/ class=tags><span class=name>Linq</span>
+<sup class=num>1</sup>
+</a><a href=/tags/form/ class=tags><span class=name>Form</span>
+<sup class=num>1</sup>
+</a><a href=/tags/c++/ class=tags><span class=name>C++</span>
+<sup class=num>1</sup>
+</a><a href=/tags/visual-studio/ class=tags><span class=name>Visual Studio</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A0%91/ class=tags><span class=name>表达式树</span>
+<sup class=num>1</sup>
+</a><a href=/tags/windows/ class=tags><span class=name>Windows</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%95%BF%E5%AE%89%E5%8D%81%E4%BA%8C%E6%97%B6%E8%BE%B0/ class=tags><span class=name>长安十二时辰</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E5%A7%94%E6%89%98/ class=tags><span class=name>委托</span>
+<sup class=num>1</sup>
+</a><a href=/tags/opentelemetry/ class=tags><span class=name>OpenTelemetry</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E9%BB%91%E5%AE%A2/ class=tags><span class=name>黑客</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E5%91%BD%E4%BB%A4/ class=tags><span class=name>命令</span>
+<sup class=num>1</sup>
+</a><a href=/tags/liquid/ class=tags><span class=name>Liquid</span>
+<sup class=num>1</sup>
+</a><a href=/tags/sonar/ class=tags><span class=name>Sonar</span>
+<sup class=num>1</sup>
+</a><a href=/tags/openai/ class=tags><span class=name>OpenAI</span>
+<sup class=num>1</sup>
+</a><a href=/tags/%E8%81%9A%E7%B1%BB/ class=tags><span class=name>聚类</span>
+<sup class=num>1</sup>
+</a><a href=/tags/semantic-kernel/ class=tags><span class=name>Semantic Kernel</span>
+<sup class=num>2</sup>
+</a><a href=/tags/%E9%9A%8F%E7%AC%94/ class=tags><span class=name>随笔</span>
+<sup class=num>18</sup>
+</a><a href=/tags/text2sql/ class=tags><span class=name>Text2SQL</span>
+<sup class=num>1</sup>
+</a><a href=/tags/unity/ class=tags><span class=name>Unity</span>
+<sup class=num>1</sup></a></div><a href=/tags class=more-tags>查看全部</a></div><div class="site-data s-card weidgets"><div class=title><i class="iconfont icon-chart"></i>
+<span class=title-name>站点数据</span></div><div class=all-data><div class=data-item><span class=name><i class="iconfont icon-article"></i>
+文章总数
+</span><span class=num>285 篇</span></div><div class=data-item><span class=name><i class="iconfont icon-date"></i>
+建站天数
+</span><span class=num>4163 天</span></div><div class=data-item><span class=name><i class="iconfont icon-words"></i>
+全站字数
+</span><span class=num>111712 字</span></div><div class=data-item><span class=name><i class="iconfont icon-visibility"></i>
+总访问量
+</span><span class=num id=umami_value_site_pv></span></div><div class=data-item><span class=name><i class="iconfont icon-account"></i>
+总访客数
+</span><span class=num id=umami_value_site_uv></span></div></div></div></div></aside><style>.main-aside{padding-left:1rem;display:flex;flex-direction:column;animation:fade-up .6s .3s backwards;.weidgets { padding: 18px; margin-bottom: 1rem; :deep(.title) { margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; opacity: 0.75; .iconfont { opacity: 0.6; margin-right: 6px; } .title-name { opacity: 0.8; } } } .sticky { position: sticky; top: calc(60px + 1rem); .weidgets { animation: fade-up 0.6s 0.4s backwards; &:last-child { margin-bottom: 0; } } }}</style></div></div></main><div class=footer-link><div class=footer-bar><span class=site-title>元视角</span>
+<span class=site-desc>纵有疾风起，人生不言弃</span>
+<a href=/ class=to-home>了解更多</a></div><div class=footer-social><a href=https://github.com/qinyuanpei target=_blank class=social-link aria-label=GitHub><i class="iconfont icon-github"></i>
+</a><a href=mailto:qinyuanpei@163.com target=_blank class=social-link aria-label=Email><i class="iconfont icon-email"></i>
+</a><a href=/index.xml target=_blank class=social-link aria-label=RSS><i class="iconfont icon-rss"></i></a><div class=logo title=返回顶部 onclick='window.scrollTo({top:0,behavior:"smooth"})'><img src=/images/icons8-stellar-128.png alt=author class=author></div><a href=https://weibo.com/1278609231 target=_blank class=social-link aria-label=微博><i class="iconfont icon-weibo"></i>
+</a><a href=https://www.douban.com/people/60029335/ target=_blank class=social-link aria-label=豆瓣><i class="iconfont icon-douban"></i>
+</a><a href=https://www.zhihu.com/people/qinyuanpei target=_blank class=social-link aria-label=知乎><i class="iconfont icon-zhihu"></i></a></div><div class=footer-sitemap><div class=sitemap-item><span class=title>博客</span><div class=links><a href=/archives class=link-text>文章归档
+</a><a href=/categories class=link-text>全部分类
+</a><a href=/tags class=link-text>全部标签</a></div></div><div class=sitemap-item><span class=title>项目</span><div class=links><a href=https://github.com/qinyuanpei/mcp-server-weibo target=_blank class=link-text>mcp-server-weibo</a></div></div><div class=sitemap-item><span class=title>专栏</span><div class=links><a href=https://blog.csdn.net/qinyuanpei/category_10852603.html target=_blank class=link-text>.NET 源代码探案系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_7444699.html target=_blank class=link-text>Python 数据挖掘系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_11484903.html target=_blank class=link-text>分布式丛林探险系列
+</a><a href=https://blog.csdn.net/qinyuanpei/category_1708629.html target=_blank class=link-text>Unity3D 游戏开发系列</a></div></div><div class=sitemap-item><span class=title>页面</span><div class=links><a href=/comments class=link-text>留言
+</a><a href=/books class=link-text>读书
+</a><a href=/movies class=link-text>观影
+</a><a href=/musics class=link-text>听歌</a></div></div><div class=sitemap-item><span class=title>友情链接</span><div class=links><a href=https://gudong.site/ target=_blank class=link-text>咕咚同学
+</a><a href=https://coolshell.cn/ target=_blank class=link-text>酷壳
+</a><a href=https://blog.zhheo.com/ target=_blank class=link-text>张洪
+</a><a href=/links class=link-text>更多</a></div></div></div></div><footer id=main-footer class=main-footer><div class=footer-content><div class=footer-copyright><span class=time data-v-6001e979>@ 2014 - 2025 </span><a href=/ class="author link" target=_blank>飞鸿踏雪</a></div><div class=meta><a class="power link" href=https://gohugo.io/ target=_blank><span class=by>Powered by</span>
+<span class=name>Hugo</span>
+</a><a class="theme link" href=https://github.com/imsyy/vitepress-theme-curve><span class=name>主题</span>
+</a><a class="rss link" href=/index.xml target=_blank><i class="iconfont icon-rss"></i>
+<span class=name data-v-6001e979>订阅</span>
+</a><a class="cc link" href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans target=_blank aria-label="Creative Commons"><i class="iconfont icon-line"></i>
+<i class="iconfont icon-by-line"></i>
+<i class="iconfont icon-nc-line"></i>
+<i class="iconfont icon-nd-line"></i></a></div></div></footer><script type=module src=/scripts/main.js></script><script src=https://cdn.jsdelivr.net/npm/fuse.js@7.1.0></script><script src=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js></script><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css id=hljs-dark><link rel=stylesheet href=https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css id=hljs-light><script>function updateHljsTheme(){const e=document.documentElement.classList.contains("dark");document.getElementById("hljs-dark").disabled=!e,document.getElementById("hljs-light").disabled=e}updateHljsTheme();const observer=new MutationObserver(updateHljsTheme);observer.observe(document.documentElement,{attributes:!0,attributeFilter:["class"]})</script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css><script src=https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js></script><script src=https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js></script><script type=text/javascript src=/scripts/modules/badge.js></script><script type=text/javascript>window.createBadge("Hugo","v0.126.1","#35495e","#41b883"),window.createBadge("Github","9ab16f8","#35495e","#ffc107")</script></body></html>
